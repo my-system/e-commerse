@@ -11,10 +11,12 @@ import Testimonials from '@/components/sections/Testimonials';
 import Footer from '@/components/layout/Footer';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
 import { PWAInstallPrompt, NetworkStatus } from '@/components/PWAComponents';
-import { ServiceWorkerDebug } from '@/components/ServiceWorkerDebug';
+import { ServiceWorkerDebugDraggable } from '@/components/ServiceWorkerDebugDraggable';
 import { MobileNavigation, MobileGrid } from '@/components/MobileNavigation';
 import { MobileLayout, MobileSection } from '@/components/MobileLayout';
-import { MobileProductGrid, MobileFeaturedProducts, MobileCategoryGrid } from '@/components/MobileProductGrid';
+import { MobileProductGridPremium } from '@/components/MobileProductGridPremium'
+import { MobileCategoryGridPremium } from '@/components/MobileCategoryGridPremium'
+import { MobileFeaturedProductsPremium } from '@/components/MobileFeaturedProductsPremium';
 
 export default function Home() {
   // Sample data for mobile components
@@ -81,36 +83,66 @@ export default function Home() {
       </div>
 
       {/* Mobile Version */}
-      <div className="md:hidden">
-        <MobileNavigation />
-        
-        {/* Main Content with proper spacing */}
-        <div className="pb-20">
-          {/* Mobile Featured Products */}
-          <MobileFeaturedProducts products={sampleProducts} />
-          
-          {/* Mobile Categories */}
-          <MobileSection title="Shop by Category">
-            <MobileCategoryGrid categories={categories} />
-          </MobileSection>
+      <div className="md:hidden bg-gray-50 min-h-screen">
+        <MobileNavigation>
+          {/* Main Content with proper spacing */}
+          <div className="px-4 py-6 space-y-6">
+            {/* Mobile Featured Products */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Featured Products</h2>
+                  <p className="text-sm text-gray-600 mt-1">Handpicked for you</p>
+                </div>
+                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                  See All
+                </button>
+              </div>
+              <MobileFeaturedProductsPremium products={sampleProducts} />
+            </section>
+            
+            {/* Mobile Categories */}
+            <section className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Shop by Category</h2>
+                <p className="text-sm text-gray-600 mt-1">Browse our collections</p>
+              </div>
+              <MobileCategoryGridPremium categories={categories} />
+            </section>
 
-          {/* Mobile Products */}
-          <MobileSection 
-            title="Trending Products" 
-            subtitle="Most popular items this week"
-          >
-            <MobileProductGrid products={sampleProducts} />
-          </MobileSection>
+            {/* Mobile Products */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Trending Now</h2>
+                  <p className="text-sm text-gray-600 mt-1">Most popular items this week</p>
+                </div>
+                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                  View More
+                </button>
+              </div>
+              <MobileProductGridPremium products={sampleProducts} />
+            </section>
 
-          {/* Mobile Flash Sales */}
-          <MobileSection title="Flash Deals" subtitle="Limited time offers">
-            <MobileProductGrid products={sampleProducts.slice(0, 2)} columns={1} />
-          </MobileSection>
-        </div>
+            {/* Mobile Flash Sales */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-red-600">⚡ Flash Deals</h2>
+                  <p className="text-sm text-gray-600 mt-1">Limited time offers</p>
+                </div>
+                <div className="text-sm font-medium text-red-600">
+                  Ends in 2:45:30
+                </div>
+              </div>
+              <MobileProductGridPremium products={sampleProducts.slice(0, 2)} columns={1} />
+            </section>
+          </div>
+        </MobileNavigation>
       </div>
       
       {/* Debug Components - Only visible in development */}
-      <ServiceWorkerDebug />
+      <ServiceWorkerDebugDraggable />
       <PWAInstallPrompt />
       <NetworkStatus />
       

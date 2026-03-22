@@ -1,17 +1,56 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ServiceWorkerUtils } from '@/lib/serviceWorkerUtils'
 
-export function ServiceWorkerDebug() {
+export function ServiceWorkerDebugDraggable() {
   const [status, setStatus] = useState<any>(null)
   const [logs, setLogs] = useState<string[]>([])
   const [isVisible, setIsVisible] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [position, setPosition] = useState({ x: 20, y: 4 })
+  const [isDragging, setIsDragging] = useState(false)
+  const dragRef = useRef<{ startX: number; startY: number }>({ startX: 0, startY: 0 })
 
   const addLog = (message: string) => {
     setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
   }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    dragRef.current = {
+      startX: e.clientX - position.x,
+      startY: e.clientY - position.y
+    }
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return
+    
+    const newX = e.clientX - dragRef.current.startX
+    const newY = e.clientY - dragRef.current.startY
+    
+    setPosition({
+      x: Math.max(0, Math.min(window.innerWidth - 320, newX)),
+      y: Math.max(0, Math.min(window.innerHeight - 200, newY))
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging])
 
   const checkStatus = async () => {
     try {
@@ -94,9 +133,24 @@ export function ServiceWorkerDebug() {
   }
 
   return (
-    <div className={`fixed top-20 left-4 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-40 ${isMinimized ? 'h-12' : 'max-h-96 overflow-hidden'}`}>
+    <div 
+      className={`fixed bg-white border border-gray-200 rounded-lg shadow-lg z-40 ${
+        isMinimized ? 'h-12' : 'max-h-96 overflow-hidden'
+      }`}
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: '320px',
+        cursor: isDragging ? 'grabbing' : 'grab'
+      }}
+      onMouseDown={handleMouseDown}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200">
+      <div 
+        className="flex items-center justify-between p-3 border-b border-gray-200"
+        onMouseDown={handleMouseDown}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
         <h3 className="font-semibold text-gray-900 text-sm">Service Worker Debug</h3>
         <div className="flex gap-1">
           <button
@@ -180,7 +234,7 @@ export function ServiceWorkerDebug() {
           <div className="px-3 pb-3">
             <div className="h-32 overflow-y-auto bg-gray-50 rounded p-2">
               {logs.map((log, index) => (
-                <div key={index} className="text-xs text-gray-600 mb-1">
+                <div key={index} className="text-xs text-gray-600 mb-1 font-mono">
                   {log}
                 </div>
               ))}

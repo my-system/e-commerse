@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store } from 'lucide-react'
 
-export function MobileNavigation() {
+export function MobileNavigation({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -163,7 +163,7 @@ export function MobileNavigation() {
       </div>
 
       {/* Main Content - Add proper spacing for mobile */}
-      <div className="md:hidden pt-16 pb-20">
+      <div className="md:hidden pt-16 pb-20 bg-gray-50">
         {children}
       </div>
     </>
