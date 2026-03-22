@@ -6,7 +6,7 @@ import { Menu, X, ShoppingCart, User, Search as SearchIcon, ChevronDown, Chevron
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import MiniCart from '@/components/ui/MiniCart';
-import SmartSearch from '@/components/ui/SmartSearch';
+import SmartSearchNew from '@/components/ui/SmartSearchNew';
 import AIChatbot from '@/components/ui/AIChatbot';
 import AccountDropdown from '@/components/ui/AccountDropdown';
 import { categories } from '@/data/categories';
@@ -92,7 +92,7 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <SmartSearch className="w-64" />
+            <SmartSearchNew className="w-64" />
             <AccountDropdown 
               user={user} 
               isLoggedIn={isLoggedIn} 
@@ -198,7 +198,7 @@ export default function Navbar() {
                 </a>
               </div>
               <div className="flex items-center space-x-4 px-3 py-2 border-t mt-2 pt-4">
-                <SmartSearch className="w-full" />
+                <SmartSearchNew className="w-full" />
                 <AccountDropdown 
                   user={user} 
                   isLoggedIn={isLoggedIn} 
