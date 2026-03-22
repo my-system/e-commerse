@@ -51,9 +51,12 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">L</span>
+              <span className="text-white font-bold text-sm">D</span>
             </div>
-            <span className="font-semibold text-gray-900">LUXE</span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-sm font-medium text-gray-900">DEMO WEB</span>
+              <span className="text-xs font-light text-gray-500">E-COMMERCE</span>
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -92,9 +95,12 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
             <div className="flex items-center justify-between p-4 border-b">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">L</span>
+                  <span className="text-white font-bold text-sm">D</span>
                 </div>
-                <span className="font-semibold text-gray-900">LUXE</span>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-sm font-medium text-gray-900">DEMO WEB</span>
+                  <span className="text-xs font-light text-gray-500">E-COMMERCE</span>
+                </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
