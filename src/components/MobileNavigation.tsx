@@ -6,6 +6,7 @@ import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings
 export function MobileNavigation({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,10 +64,7 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <button 
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              onClick={() => {
-                // Navigate to search page or open search modal
-                window.location.href = '/search'
-              }}
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
               <Search className="w-5 h-5 text-gray-700" />
             </button>
@@ -163,7 +161,26 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
-      {/* Mobile Search Bar - REMOVED to avoid duplication with header search icon */}
+      {/* Mobile Search Bar - Expandable */}
+      {isSearchOpen && (
+        <div className="md:hidden fixed top-16 left-0 right-0 z-30 bg-white border-b p-4 animate-in slide-in-from-top">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoFocus
+            />
+            <button
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              onClick={() => setIsSearchOpen(false)}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content - Add proper spacing for mobile */}
       <div className="md:hidden pt-16 pb-20 bg-gray-50">
