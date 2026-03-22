@@ -61,7 +61,13 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
-            <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <button 
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={() => {
+                // Navigate to search page or open search modal
+                window.location.href = '/search'
+              }}
+            >
               <Search className="w-5 h-5 text-gray-700" />
             </button>
             <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
@@ -157,17 +163,7 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
-      {/* Mobile Search Bar */}
-      <div className="md:hidden fixed top-16 left-0 right-0 z-30 bg-white border-b p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
+      {/* Mobile Search Bar - REMOVED to avoid duplication with header search icon */}
 
       {/* Main Content - Add proper spacing for mobile */}
       <div className="md:hidden pt-16 pb-20 bg-gray-50">
