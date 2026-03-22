@@ -161,6 +161,11 @@ export function MobileNavigation() {
           />
         </div>
       </div>
+
+      {/* Main Content - Add proper spacing for mobile */}
+      <div className="md:hidden pt-16 pb-20">
+        {children}
+      </div>
     </>
   )
 }
@@ -168,14 +173,8 @@ export function MobileNavigation() {
 // Mobile Grid Layout Component
 export function MobileGrid({ children }: { children: React.ReactNode }) {
   return (
-    <div className="md:hidden">
-      {/* Add padding for mobile header */}
-      <div className="pt-16">
-        {/* Add padding for mobile bottom nav */}
-        <div className="pb-20">
-          {children}
-        </div>
-      </div>
+    <div className="md:hidden pt-16 pb-20">
+      {children}
     </div>
   )
 }

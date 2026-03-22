@@ -84,26 +84,29 @@ export default function Home() {
       <div className="md:hidden">
         <MobileNavigation />
         
-        {/* Mobile Featured Products */}
-        <MobileFeaturedProducts products={sampleProducts} />
-        
-        {/* Mobile Categories */}
-        <MobileSection title="Shop by Category">
-          <MobileCategoryGrid categories={categories} />
-        </MobileSection>
+        {/* Main Content with proper spacing */}
+        <div className="pb-20">
+          {/* Mobile Featured Products */}
+          <MobileFeaturedProducts products={sampleProducts} />
+          
+          {/* Mobile Categories */}
+          <MobileSection title="Shop by Category">
+            <MobileCategoryGrid categories={categories} />
+          </MobileSection>
 
-        {/* Mobile Products */}
-        <MobileSection 
-          title="Trending Products" 
-          subtitle="Most popular items this week"
-        >
-          <MobileProductGrid products={sampleProducts} />
-        </MobileSection>
+          {/* Mobile Products */}
+          <MobileSection 
+            title="Trending Products" 
+            subtitle="Most popular items this week"
+          >
+            <MobileProductGrid products={sampleProducts} />
+          </MobileSection>
 
-        {/* Mobile Flash Sales */}
-        <MobileSection title="Flash Deals" subtitle="Limited time offers">
-          <MobileProductGrid products={sampleProducts.slice(0, 2)} columns={1} />
-        </MobileSection>
+          {/* Mobile Flash Sales */}
+          <MobileSection title="Flash Deals" subtitle="Limited time offers">
+            <MobileProductGrid products={sampleProducts.slice(0, 2)} columns={1} />
+          </MobileSection>
+        </div>
       </div>
       
       {/* Debug Components - Only visible in development */}
@@ -112,7 +115,7 @@ export default function Home() {
       <NetworkStatus />
       
       {/* Push Notification Manager - Fixed Position */}
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-20 right-4 z-50 md:hidden">
         <PushNotificationManager />
       </div>
     </div>
