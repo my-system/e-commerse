@@ -186,7 +186,7 @@ export function useTouchGestures(
   options: TouchGestureOptions = {}
 ) {
   const gestureManagerRef = React.useRef<TouchGestureManager | null>(null)
-  const elementRef = React.useRef<HTMLElement | null>(null)
+  const elementRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     if (elementRef.current) {
