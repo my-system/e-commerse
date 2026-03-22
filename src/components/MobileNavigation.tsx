@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store, Info } from 'lucide-react'
 
 export function MobileNavigation({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -31,12 +31,13 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
   const menuItems = [
     { icon: Home, label: 'Home', href: '/' },
     { icon: ShoppingBag, label: 'Shop', href: '/shop' },
+    { icon: ShoppingCart, label: 'Cart', href: '/cart' },
+    { icon: Heart, label: 'Wishlist', href: '/wishlist' },
+    { icon: User, label: 'Account', href: '/account' },
     { icon: TrendingUp, label: 'Analytics', href: '/analytics' },
     { icon: Package, label: 'Inventory', href: '/inventory' },
     { icon: Store, label: 'Marketplace', href: '/marketplace' },
-    { icon: Heart, label: 'Wishlist', href: '/wishlist' },
-    { icon: ShoppingCart, label: 'Cart', href: '/cart' },
-    { icon: User, label: 'Account', href: '/account' },
+    { icon: Info, label: 'Tentang', href: '/tentang' },
     { icon: Settings, label: 'Settings', href: '/settings' },
   ]
 
