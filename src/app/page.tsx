@@ -87,6 +87,76 @@ export default function Home() {
         <MobileNavigation>
           {/* Main Content with proper spacing */}
           <div className="px-4 py-6 space-y-6">
+            {/* Mobile Hero Section */}
+            <section className="space-y-4">
+              <HeroSection />
+            </section>
+
+            {/* Mobile Product Categories */}
+            <section className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Categories</h2>
+                <p className="text-sm text-gray-600 mt-1">Browse by category</p>
+              </div>
+              <ProductCategories />
+            </section>
+
+            {/* Mobile Personalized Recommendations */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">🤖 AI Recommendations</h2>
+                  <p className="text-sm text-gray-600 mt-1">Personalized for you</p>
+                </div>
+                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                  Refresh
+                </button>
+              </div>
+              <PersonalizedRecommendations />
+            </section>
+
+            {/* Mobile Advanced Recommendations */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">🔥 Advanced AI</h2>
+                  <p className="text-sm text-gray-600 mt-1">Smart suggestions</p>
+                </div>
+                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                  More
+                </button>
+              </div>
+              <AdvancedRecommendations />
+            </section>
+
+            {/* Mobile Flash Sales */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-red-600">⚡ Flash Sales</h2>
+                  <p className="text-sm text-gray-600 mt-1">Limited time offers</p>
+                </div>
+                <div className="text-sm font-medium text-red-600">
+                  Ends in 2:45:30
+                </div>
+              </div>
+              <FlashSales />
+            </section>
+
+            {/* Mobile Bundle Deals */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-green-600">🎁 Bundle Deals</h2>
+                  <p className="text-sm text-gray-600 mt-1">Save more together</p>
+                </div>
+                <button className="text-sm font-medium text-green-600 hover:text-green-700">
+                  View All
+                </button>
+              </div>
+              <BundleDeals />
+            </section>
+
             {/* Mobile Featured Products */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
@@ -101,7 +171,7 @@ export default function Home() {
               <MobileFeaturedProductsPremium products={sampleProducts} />
             </section>
             
-            {/* Mobile Categories */}
+            {/* Mobile Categories Grid */}
             <section className="space-y-4">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Shop by Category</h2>
@@ -110,7 +180,7 @@ export default function Home() {
               <MobileCategoryGridPremium categories={categories} />
             </section>
 
-            {/* Mobile Products */}
+            {/* Mobile Trending Products */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -124,18 +194,18 @@ export default function Home() {
               <MobileProductGridPremium products={sampleProducts} />
             </section>
 
-            {/* Mobile Flash Sales */}
+            {/* Mobile Promo Banner */}
             <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-red-600">⚡ Flash Deals</h2>
-                  <p className="text-sm text-gray-600 mt-1">Limited time offers</p>
-                </div>
-                <div className="text-sm font-medium text-red-600">
-                  Ends in 2:45:30
-                </div>
+              <PromoBanner />
+            </section>
+
+            {/* Mobile Testimonials */}
+            <section className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Customer Reviews</h2>
+                <p className="text-sm text-gray-600 mt-1">What our customers say</p>
               </div>
-              <MobileProductGridPremium products={sampleProducts.slice(0, 2)} columns={1} />
+              <Testimonials />
             </section>
           </div>
         </MobileNavigation>
