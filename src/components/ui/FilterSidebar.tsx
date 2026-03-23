@@ -261,7 +261,7 @@ export default function FilterSidebar({
 
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-50 flex">
+      <div className="fixed inset-0 z-40 flex">
         {/* Backdrop */}
         <div
           className="fixed inset-0 bg-black/50"
