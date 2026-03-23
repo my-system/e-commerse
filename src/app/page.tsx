@@ -14,9 +14,10 @@ import { PWAInstallPrompt, NetworkStatus } from '@/components/PWAComponents';
 import { ServiceWorkerDebugDraggable } from '@/components/ServiceWorkerDebugDraggable';
 import { MobileNavigation, MobileGrid } from '@/components/MobileNavigation';
 import { MobileLayout, MobileSection } from '@/components/MobileLayout';
-import { MobileProductGridPremium } from '@/components/MobileProductGridPremium'
-import { MobileCategoryGridPremium } from '@/components/MobileCategoryGridPremium'
-import { MobileFeaturedProductsPremium } from '@/components/MobileFeaturedProductsPremium';
+import { ProductGridModern } from '@/components/mobile/ProductGridModern'
+import { CategoryGridModern } from '@/components/mobile/CategoryGridModern'
+import { FeaturedProductsModern } from '@/components/mobile/FeaturedProductsModern'
+import { MobileContainerModern, MobileSectionModern } from '@/components/mobile/MobileLayoutModern'
 
 export default function Home() {
   // Sample data for mobile components
@@ -82,132 +83,80 @@ export default function Home() {
         <Footer />
       </div>
 
-      {/* Mobile Version */}
-      <div className="md:hidden bg-gray-50 min-h-screen">
+      {/* Mobile Version - Modern Design */}
+      <div className="md:hidden">
         <MobileNavigation>
-          {/* Main Content with proper spacing */}
-          <div className="px-4 py-6 space-y-6">
+          <MobileContainerModern>
             {/* Mobile Hero Section */}
-            <section className="space-y-4">
+            <MobileSectionModern 
+              title="Welcome to DEMO WEB"
+              subtitle="Discover amazing products"
+            >
               <HeroSection />
-            </section>
-
-            {/* Mobile Product Categories */}
-            <section className="space-y-4">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Categories</h2>
-                <p className="text-sm text-gray-600 mt-1">Browse by category</p>
-              </div>
-              <ProductCategories />
-            </section>
-
-            {/* Mobile Personalized Recommendations */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">🤖 AI Recommendations</h2>
-                  <p className="text-sm text-gray-600 mt-1">Personalized for you</p>
-                </div>
-                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
-                  Refresh
-                </button>
-              </div>
-              <PersonalizedRecommendations />
-            </section>
-
-            {/* Mobile Advanced Recommendations */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">🔥 Advanced AI</h2>
-                  <p className="text-sm text-gray-600 mt-1">Smart suggestions</p>
-                </div>
-                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
-                  More
-                </button>
-              </div>
-              <AdvancedRecommendations />
-            </section>
-
-            {/* Mobile Flash Sales */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-red-600">⚡ Flash Sales</h2>
-                  <p className="text-sm text-gray-600 mt-1">Limited time offers</p>
-                </div>
-                <div className="text-sm font-medium text-red-600">
-                  Ends in 2:45:30
-                </div>
-              </div>
-              <FlashSales />
-            </section>
-
-            {/* Mobile Bundle Deals */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-green-600">🎁 Bundle Deals</h2>
-                  <p className="text-sm text-gray-600 mt-1">Save more together</p>
-                </div>
-                <button className="text-sm font-medium text-green-600 hover:text-green-700">
-                  View All
-                </button>
-              </div>
-              <BundleDeals />
-            </section>
+            </MobileSectionModern>
 
             {/* Mobile Featured Products */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">Featured Products</h2>
-                  <p className="text-sm text-gray-600 mt-1">Handpicked for you</p>
-                </div>
-                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
-                  See All
-                </button>
-              </div>
-              <MobileFeaturedProductsPremium products={sampleProducts} />
-            </section>
+            <MobileSectionModern 
+              title="⭐ Featured Products"
+              subtitle="Handpicked for you"
+              action={{ label: "See All", href: "/featured" }}
+            >
+              <FeaturedProductsModern products={sampleProducts} />
+            </MobileSectionModern>
             
-            {/* Mobile Categories Grid */}
-            <section className="space-y-4">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Shop by Category</h2>
-                <p className="text-sm text-gray-600 mt-1">Browse our collections</p>
-              </div>
-              <MobileCategoryGridPremium categories={categories} />
-            </section>
+            {/* Mobile Categories */}
+            <MobileSectionModern 
+              title="📂 Shop by Category"
+              subtitle="Browse our collections"
+            >
+              <CategoryGridModern categories={categories} />
+            </MobileSectionModern>
 
             {/* Mobile Trending Products */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">Trending Now</h2>
-                  <p className="text-sm text-gray-600 mt-1">Most popular items this week</p>
+            <MobileSectionModern 
+              title="🔥 Trending Now"
+              subtitle="Most popular items this week"
+              action={{ label: "View More", href: "/trending" }}
+            >
+              <ProductGridModern products={sampleProducts} columns={2} />
+            </MobileSectionModern>
+
+            {/* Mobile Flash Sales */}
+            <MobileSectionModern 
+              title="⚡ Flash Deals"
+              subtitle="Limited time offers"
+            >
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-red-600 font-bold text-sm">⏰ Ends in:</span>
+                  <span className="text-red-600 font-bold">2:45:30</span>
                 </div>
-                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
-                  View More
-                </button>
+                <ProductGridModern products={sampleProducts.slice(0, 2)} columns={1} />
               </div>
-              <MobileProductGridPremium products={sampleProducts} />
-            </section>
+            </MobileSectionModern>
+
+            {/* Mobile Bundle Deals */}
+            <MobileSectionModern 
+              title="🎁 Bundle Deals"
+              subtitle="Save more together"
+              action={{ label: "View All", href: "/bundles" }}
+            >
+              <BundleDeals />
+            </MobileSectionModern>
 
             {/* Mobile Promo Banner */}
-            <section className="space-y-4">
+            <MobileSectionModern>
               <PromoBanner />
-            </section>
+            </MobileSectionModern>
 
             {/* Mobile Testimonials */}
-            <section className="space-y-4">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Customer Reviews</h2>
-                <p className="text-sm text-gray-600 mt-1">What our customers say</p>
-              </div>
+            <MobileSectionModern 
+              title="💬 Customer Reviews"
+              subtitle="What our customers say"
+            >
               <Testimonials />
-            </section>
-          </div>
+            </MobileSectionModern>
+          </MobileContainerModern>
         </MobileNavigation>
       </div>
       
