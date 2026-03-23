@@ -79,7 +79,7 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
 
       {/* Modern Sidebar */}
       {isSidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-50">
+        <div className="md:hidden fixed inset-0 z-[60]">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -87,9 +87,9 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
           />
           
           {/* Menu Panel */}
-          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl overflow-hidden">
+          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl overflow-hidden flex flex-col">
             {/* Menu Header */}
-            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700">
+            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700 flex-shrink-0">
               <div className="flex items-center gap-3">
                 {/* Logo */}
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -110,19 +110,6 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
               >
                 <X className="w-5 h-5 text-white" />
               </button>
-            </div>
-
-            {/* User Profile Section */}
-            <div className="p-6 border-b border-gray-100 bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900">John Doe</p>
-                  <p className="text-sm text-gray-600">john@example.com</p>
-                </div>
-              </div>
             </div>
 
             {/* Menu Items */}
@@ -206,7 +193,7 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Footer */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
+            <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
               <button
                 onClick={() => {
                   // Handle logout
