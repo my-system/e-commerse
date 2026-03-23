@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store, Info } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store, Info, LogOut } from 'lucide-react'
 import { MobileSearch } from './MobileSearch'
 
 export function MobileNavigation({ children }: { children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
@@ -19,29 +19,12 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
-
   const menuItems = [
     { icon: Home, label: 'Home', href: '/' },
     { icon: ShoppingBag, label: 'Shop', href: '/shop' },
     { icon: ShoppingCart, label: 'Cart', href: '/cart' },
     { icon: Heart, label: 'Wishlist', href: '/wishlist' },
     { icon: User, label: 'Account', href: '/account' },
-    { icon: TrendingUp, label: 'Analytics', href: '/analytics' },
-    { icon: Package, label: 'Inventory', href: '/inventory' },
-    { icon: Store, label: 'Marketplace', href: '/marketplace' },
-    { icon: Info, label: 'Tentang', href: '/tentang' },
-    { icon: Settings, label: 'Settings', href: '/settings' },
   ]
 
   return (
@@ -70,14 +53,14 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
             >
               <Search className="w-5 h-5 text-gray-700" />
             </button>
-            <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
+            <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <ShoppingCart className="w-5 h-5 text-gray-700" />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
                 2
               </span>
             </button>
             <button
-              onClick={() => setIsOpen(true)}
+              onClick={() => setIsSidebarOpen(true)}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <Menu className="w-5 h-5 text-gray-700" />
@@ -86,63 +69,181 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
-      {isOpen && (
+      {/* Modern Sidebar */}
+      {isSidebarOpen && (
         <div className="md:hidden fixed inset-0 z-50">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setIsOpen(false)}
+            onClick={() => setIsSidebarOpen(false)}
           />
-
+          
           {/* Menu Panel */}
-          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
+          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl">
             {/* Menu Header */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">D</span>
+            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700">
+              <div className="flex items-center gap-3">
+                {/* Logo */}
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <span className="text-blue-100 font-bold text-lg">D</span>
                 </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-sm font-medium text-gray-900">DEMO WEB</span>
-                  <span className="text-xs font-light text-gray-500">E-COMMERCE</span>
+                
+                {/* Brand Info */}
+                <div>
+                  <h1 className="text-xl font-bold text-white">DEMO WEB</h1>
+                  <p className="text-blue-100 text-sm">E-COMMERCE</p>
                 </div>
               </div>
+
+              {/* Close Button */}
               <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-2 rounded-lg hover:bg-white/20 transition-colors"
               >
-                <X className="w-5 h-5 text-gray-700" />
+                <X className="w-6 h-6 text-white" />
               </button>
             </div>
 
-            {/* Menu Items */}
-            <nav className="p-4">
-              <div className="space-y-2">
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <item.icon className="w-5 h-5 text-gray-700" />
-                    <span className="text-gray-900 font-medium">{item.label}</span>
-                  </Link>
-                ))}
-              </div>
-
-              {/* User Section */}
-              <div className="mt-8 pt-8 border-t">
-                <div className="px-4 mb-4">
-                  <p className="text-sm text-gray-600 mb-2">Welcome back!</p>
-                  <p className="font-medium text-gray-900">user@example.com</p>
+            {/* User Profile Section */}
+            <div className="p-6 border-b border-gray-100 bg-gray-50">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
                 </div>
-                <button className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium">
-                  Sign Out
-                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900">John Doe</p>
+                  <p className="text-sm text-gray-600">john@example.com</p>
+                </div>
               </div>
-            </nav>
+            </div>
+
+            {/* Menu Items */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 space-y-1">
+                {/* Main Menu */}
+                <div className="mb-4">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-4">Menu Utama</h3>
+                  <div className="space-y-1">
+                    <Link
+                      href="/"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <Home className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium text-gray-900">Beranda</span>
+                    </Link>
+                    
+                    <Link
+                      href="/shop"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+                        <ShoppingBag className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium text-gray-900">Belanja</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Management Menu */}
+                <div className="mb-4">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-4">Manajemen</h3>
+                  <div className="space-y-1">
+                    <Link
+                      href="/cart"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center relative">
+                        <ShoppingCart className="w-5 h-5" />
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                          2
+                        </span>
+                      </div>
+                      <span className="font-medium text-gray-900">Keranjang</span>
+                    </Link>
+                    
+                    <Link
+                      href="/analytics"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium text-gray-900">Analitik</span>
+                    </Link>
+                    
+                    <Link
+                      href="/inventory"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center">
+                        <Package className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium text-gray-900">Inventaris</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Other Menu */}
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-4">Lainnya</h3>
+                  <div className="space-y-1">
+                    <Link
+                      href="/marketplace"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center">
+                        <Store className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium text-gray-900">Marketplace</span>
+                    </Link>
+                    
+                    <Link
+                      href="/tentang"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center">
+                        <Info className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium text-gray-900">Tentang</span>
+                    </Link>
+                    
+                    <Link
+                      href="/account"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium text-gray-900">Akun</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={() => {
+                  // Handle logout
+                  console.log('Logout clicked')
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="font-medium">Keluar</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -150,7 +251,7 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-40">
         <div className="flex items-center justify-around py-2">
-          {menuItems.slice(0, 5).map((item) => (
+          {menuItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
@@ -163,15 +264,13 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
-      {/* Mobile Search Bar - REMOVED - Using MobileSearch component instead */}
+      {/* Mobile Search Modal */}
+      <MobileSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
-      {/* Main Content - Add proper spacing for mobile */}
+      {/* Main Content */}
       <div className="md:hidden pt-16 pb-20 bg-gray-50">
         {children}
       </div>
-
-      {/* Mobile Search Modal */}
-      <MobileSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   )
 }
