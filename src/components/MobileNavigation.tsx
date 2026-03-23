@@ -60,8 +60,12 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
               </span>
             </button>
             <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={() => {
+                console.log('Hamburger menu clicked');
+                setIsSidebarOpen(true);
+              }}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative z-10"
+              style={{ pointerEvents: 'auto' }}
             >
               <Menu className="w-5 h-5 text-gray-700" />
             </button>

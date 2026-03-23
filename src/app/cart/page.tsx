@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { MobileNavigation } from '@/components/MobileNavigation';
 import CartItem from '@/components/ui/CartItem';
 import { useCart } from '@/contexts/CartContext';
 import { formatPrice } from '@/lib/utils';
