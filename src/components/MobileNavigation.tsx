@@ -22,12 +22,23 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
   }, [])
 
   const menuItems = [
-    { icon: Home, label: 'Beranda', href: '/' },
-    { icon: ShoppingBag, label: 'Belanja', href: '/shop' },
+    { icon: Home, label: 'Home', href: '/' },
+    { icon: ShoppingBag, label: 'Shop', href: '/shop' },
     { icon: ShoppingCart, label: 'Keranjang', href: '/cart' },
     { icon: Heart, label: 'Wishlist', href: '/wishlist' },
     { icon: User, label: 'Akun', href: '/account' },
-  ]
+  ];
+
+  const sidebarMenuItems = [
+    { icon: Home, label: 'Home', href: '/' },
+    { icon: ShoppingBag, label: 'Shop', href: '/shop' },
+    { icon: ShoppingCart, label: 'Keranjang', href: '/cart' },
+    { icon: User, label: 'Akun', href: '/account' },
+    { icon: Package, label: 'Inventory', href: '/inventory' },
+    { icon: TrendingUp, label: 'Analytics', href: '/analytics' },
+    { icon: Store, label: 'Marketplace', href: '/marketplace' },
+    { icon: Info, label: 'Tentang', href: '/tentang' },
+  ];
 
   return (
     <>
@@ -117,77 +128,19 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
               <div className="py-4">
                 {/* Menu List */}
                 <div className="space-y-1">
-                  {/* Beranda */}
-                  <div
-                    onClick={() => {
-                      setIsSidebarOpen(false)
-                      window.location.href = '/'
-                    }}
-                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <Home className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-800 font-medium">Beranda</span>
-                  </div>
-                  
-                  {/* Belanja */}
-                  <div
-                    onClick={() => {
-                      setIsSidebarOpen(false)
-                      window.location.href = '/shop'
-                    }}
-                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <ShoppingBag className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-800 font-medium">Belanja</span>
-                  </div>
-                  
-                  {/* Keranjang */}
-                  <div
-                    onClick={() => {
-                      setIsSidebarOpen(false)
-                      window.location.href = '/cart'
-                    }}
-                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <ShoppingCart className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-800 font-medium">Keranjang</span>
-                  </div>
-                  
-                  {/* Akun */}
-                  <div
-                    onClick={() => {
-                      setIsSidebarOpen(false)
-                      window.location.href = '/account'
-                    }}
-                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <User className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-800 font-medium">Akun</span>
-                  </div>
-                  
-                  {/* Marketplace */}
-                  <div
-                    onClick={() => {
-                      setIsSidebarOpen(false)
-                      window.location.href = '/marketplace'
-                    }}
-                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <Store className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-800 font-medium">Marketplace</span>
-                  </div>
-                  
-                  {/* Tentang */}
-                  <div
-                    onClick={() => {
-                      setIsSidebarOpen(false)
-                      window.location.href = '/tentang'
-                    }}
-                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <Info className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-800 font-medium">Tentang</span>
-                  </div>
+                  {sidebarMenuItems.map((item) => (
+                    <div
+                      key={item.label}
+                      onClick={() => {
+                        setIsSidebarOpen(false)
+                        window.location.href = item.href
+                      }}
+                      className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      <item.icon className="w-5 h-5 text-gray-600" />
+                      <span className="text-gray-800 font-medium">{item.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
