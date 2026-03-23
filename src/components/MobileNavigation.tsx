@@ -30,14 +30,19 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
   ];
 
   const sidebarMenuItems = [
-    { icon: Home, label: 'Home', href: '/' },
-    { icon: ShoppingBag, label: 'Shop', href: '/shop' },
-    { icon: ShoppingCart, label: 'Keranjang', href: '/cart' },
-    { icon: User, label: 'Akun', href: '/account' },
-    { icon: Package, label: 'Inventory', href: '/inventory' },
-    { icon: TrendingUp, label: 'Analytics', href: '/analytics' },
-    { icon: Store, label: 'Marketplace', href: '/marketplace' },
-    { icon: Info, label: 'Tentang', href: '/tentang' },
+    // Grup Navigasi Utama (Belanja)
+    { icon: Home, label: 'Home', href: '/', group: 'main' },
+    { icon: ShoppingBag, label: 'Shop', href: '/shop', group: 'main' },
+    { icon: Store, label: 'Marketplace', href: '/marketplace', group: 'main' },
+    { icon: ShoppingCart, label: 'Keranjang', href: '/cart', group: 'main', badge: true },
+    
+    // Grup Manajemen & Data
+    { icon: Package, label: 'Inventory', href: '/inventory', group: 'management' },
+    { icon: TrendingUp, label: 'Analytics', href: '/analytics', group: 'management' },
+    
+    // Grup Informasi & Profil
+    { icon: User, label: 'Akun', href: '/account', group: 'profile' },
+    { icon: Info, label: 'Tentang', href: '/tentang', group: 'profile' },
   ];
 
   return (
@@ -128,19 +133,76 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
               <div className="py-4">
                 {/* Menu List */}
                 <div className="space-y-1">
-                  {sidebarMenuItems.map((item) => (
-                    <div
-                      key={item.label}
-                      onClick={() => {
-                        setIsSidebarOpen(false)
-                        window.location.href = item.href
-                      }}
-                      className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                    >
-                      <item.icon className="w-5 h-5 text-gray-600" />
-                      <span className="text-gray-800 font-medium">{item.label}</span>
+                  {/* Grup Navigasi Utama (Belanja) */}
+                  <div className="mb-2">
+                    <div className="px-6 py-2">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Belanja</span>
                     </div>
-                  ))}
+                    {sidebarMenuItems.filter(item => item.group === 'main').map((item) => (
+                      <div
+                        key={item.label}
+                        onClick={() => {
+                          setIsSidebarOpen(false)
+                          window.location.href = item.href
+                        }}
+                        className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <item.icon className="w-5 h-5 text-gray-600" />
+                        <span className="text-gray-800 font-medium">{item.label}</span>
+                        {item.badge && state.totalItems > 0 && (
+                          <span className="ml-auto bg-blue-600 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                            {state.totalItems > 99 ? '99+' : state.totalItems}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-200 my-2"></div>
+
+                  {/* Grup Manajemen & Data */}
+                  <div className="mb-2">
+                    <div className="px-6 py-2">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Manajemen</span>
+                    </div>
+                    {sidebarMenuItems.filter(item => item.group === 'management').map((item) => (
+                      <div
+                        key={item.label}
+                        onClick={() => {
+                          setIsSidebarOpen(false)
+                          window.location.href = item.href
+                        }}
+                        className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <item.icon className="w-5 h-5 text-gray-600" />
+                        <span className="text-gray-800 font-medium">{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-200 my-2"></div>
+
+                  {/* Grup Informasi & Profil */}
+                  <div className="mb-2">
+                    <div className="px-6 py-2">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Profil</span>
+                    </div>
+                    {sidebarMenuItems.filter(item => item.group === 'profile').map((item) => (
+                      <div
+                        key={item.label}
+                        onClick={() => {
+                          setIsSidebarOpen(false)
+                          window.location.href = item.href
+                        }}
+                        className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <item.icon className="w-5 h-5 text-gray-600" />
+                        <span className="text-gray-800 font-medium">{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
