@@ -75,7 +75,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setIsSidebarOpen(false)}
+            onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
           />
           
           {/* Menu Panel */}
@@ -97,7 +100,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
 
               {/* Close Button */}
               <button
-                onClick={() => setIsSidebarOpen(false)}
+                onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                 className="p-2 rounded-lg hover:bg-white/20 transition-colors"
               >
                 <X className="w-6 h-6 text-white" />
@@ -126,7 +132,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                   <div className="space-y-1">
                     <Link
                       href="/"
-                      onClick={() => setIsSidebarOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -137,7 +146,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                     
                     <Link
                       href="/shop"
-                      onClick={() => setIsSidebarOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
@@ -154,7 +166,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                   <div className="space-y-1">
                     <Link
                       href="/cart"
-                      onClick={() => setIsSidebarOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center relative">
@@ -168,7 +183,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                     
                     <Link
                       href="/analytics"
-                      onClick={() => setIsSidebarOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
@@ -179,7 +197,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                     
                     <Link
                       href="/inventory"
-                      onClick={() => setIsSidebarOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center">
@@ -196,7 +217,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                   <div className="space-y-1">
                     <Link
                       href="/marketplace"
-                      onClick={() => setIsSidebarOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center">
@@ -207,7 +231,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                     
                     <Link
                       href="/tentang"
-                      onClick={() => setIsSidebarOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center">
@@ -218,7 +245,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                     
                     <Link
                       href="/account"
-                      onClick={() => setIsSidebarOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsSidebarOpen(false)
+                      }}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
