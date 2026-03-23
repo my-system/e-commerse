@@ -5,6 +5,7 @@ import { User, Package, Heart, ShoppingBag, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { MobileNavigation } from '@/components/MobileNavigation';
 
 interface User {
   name: string;
@@ -79,21 +80,30 @@ export default function AccountDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="h-32 bg-gray-200 rounded-lg"></div>
-              <div className="h-32 bg-gray-200 rounded-lg"></div>
-              <div className="h-32 bg-gray-200 rounded-lg"></div>
+        {/* Desktop Navigation */}
+        <div className="hidden md:block">
+          <Navbar />
+        </div>
+        
+        {/* Mobile Navigation */}
+        <div className="md:hidden">
+          <MobileNavigation>
+            <div className="px-4 py-6">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="h-32 bg-gray-200 rounded-lg"></div>
+                  <div className="h-32 bg-gray-200 rounded-lg"></div>
+                  <div className="h-32 bg-gray-200 rounded-lg"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="h-24 bg-gray-200 rounded-lg"></div>
+                  <div className="h-24 bg-gray-200 rounded-lg"></div>
+                  <div className="h-24 bg-gray-200 rounded-lg"></div>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="h-24 bg-gray-200 rounded-lg"></div>
-              <div className="h-24 bg-gray-200 rounded-lg"></div>
-              <div className="h-24 bg-gray-200 rounded-lg"></div>
-            </div>
-          </div>
+          </MobileNavigation>
         </div>
         <Footer />
       </div>
@@ -102,105 +112,230 @@ export default function AccountDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Halo, {user?.name}! 👋
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Selamat datang di dashboard akun Anda
-          </p>
-        </div>
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
+        <Navbar />
       </div>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {stats.map((stat) => (
-            <Link
-              key={stat.label}
-              href={stat.href}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                </div>
-                <div className={`p-3 rounded-lg ${stat.color}`}>
-                  <stat.icon className="h-6 w-6" />
-                </div>
-              </div>
-            </Link>
-          ))}
+      
+      {/* Mobile Navigation */}
+      <div className="md:hidden">
+        <MobileNavigation>
+          <div className="px-4 py-6">
+            {/* Account Content for Mobile */}
+          </div>
+        </MobileNavigation>
+      </div>
+      
+      {/* Desktop Content */}
+      <div className="hidden md:block">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Halo, {user?.name}! 👋
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Selamat datang di dashboard akun Anda
+            </p>
+          </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {quickActions.map((action) => (
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {stats.map((stat) => (
               <Link
-                key={action.title}
-                href={action.href}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 group"
+                key={stat.label}
+                href={stat.href}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
               >
-                <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200`}>
-                  <action.icon className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">{action.title}</h3>
-                <p className="text-sm text-gray-600 mb-4">{action.description}</p>
-                <div className="flex items-center text-blue-600 text-sm font-medium">
-                  <span>Buka</span>
-                  <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                  </div>
+                  <div className={`p-3 rounded-lg ${stat.color}`}>
+                    <stat.icon className="h-6 w-6" />
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
-        </div>
 
-        {/* Recent Orders */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Pesanan Terbaru</h2>
-            <Link
-              href="/account/orders"
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              Lihat Semua
-            </Link>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">Order #12345</p>
-                    <p className="text-sm text-gray-600">2 produk • Rp 500.000</p>
+          {/* Quick Actions */}
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.title}
+                  href={action.href}
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 group"
+                >
+                  <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200`}>
+                    <action.icon className="h-6 w-6 text-white" />
                   </div>
-                  <div className="text-right">
-                    <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                      Dikirim
-                    </span>
-                    <p className="text-xs text-gray-500 mt-1">2 hari lalu</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">{action.title}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{action.description}</p>
+                  <div className="flex items-center text-blue-600 text-sm font-medium">
+                    <span>Buka</span>
+                    <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Orders */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Pesanan Terbaru</h2>
+              <Link
+                href="/account/orders"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                Lihat Semua
+              </Link>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Order #12345</p>
+                      <p className="text-sm text-gray-600">2 produk • Rp 500.000</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                        Dikirim
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">2 hari lalu</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Order #12346</p>
+                      <p className="text-sm text-gray-600">1 produk • Rp 250.000</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                        Diproses
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">5 hari lalu</p>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">Order #12346</p>
-                    <p className="text-sm text-gray-600">1 produk • Rp 250.000</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Content */}
+      <div className="md:hidden">
+        <div className="px-4 py-6">
+          {/* Mobile Header */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <h1 className="text-xl font-bold text-gray-900">
+              Halo, {user?.name}! 👋
+            </h1>
+            <p className="text-gray-600 mt-1 text-sm">
+              Selamat datang di dashboard akun Anda
+            </p>
+          </div>
+
+          {/* Mobile Stats */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {stats.map((stat) => (
+              <Link
+                key={stat.label}
+                href={stat.href}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${stat.color}`}>
+                    <stat.icon className="h-5 w-5" />
                   </div>
-                  <div className="text-right">
-                    <span className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                      Diproses
-                    </span>
-                    <p className="text-xs text-gray-500 mt-1">5 hari lalu</p>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">{stat.label}</p>
+                    <p className="text-lg font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Mobile Quick Actions */}
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Aksi Cepat</h2>
+            <div className="space-y-3">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.title}
+                  href={action.href}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+                      <action.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base font-medium text-gray-900">{action.title}</h3>
+                      <p className="text-sm text-gray-600">{action.description}</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile Recent Orders */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-900">Pesanan Terbaru</h2>
+              <Link
+                href="/account/orders"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                Lihat Semua
+              </Link>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="p-4">
+                <div className="space-y-3">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">Order #12345</p>
+                        <p className="text-xs text-gray-600">2 produk • Rp 500.000</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                          Dikirim
+                        </span>
+                        <p className="text-xs text-gray-500 mt-1">2 hari lalu</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">Order #12346</p>
+                        <p className="text-xs text-gray-600">1 produk • Rp 250.000</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                          Diproses
+                        </span>
+                        <p className="text-xs text-gray-500 mt-1">5 hari lalu</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
