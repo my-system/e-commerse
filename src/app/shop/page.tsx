@@ -4,12 +4,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { MobileNavigation } from '@/components/MobileNavigation';
 import ProductCard from '@/components/ui/ProductCard';
 import FilterSidebar, { FilterState } from '@/components/ui/FilterSidebar';
 import SortingControls from '@/components/ui/SortingControls';
 import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
 import { products } from '@/data/products';
+import { categories } from '@/data/categories';
 import { filterProducts, sortProducts, paginateProducts, getTotalPages, generateMoreProducts } from '@/lib/product-utils';
 import { formatPrice } from '@/lib/utils';
 import { Filter, X, ShoppingCart, Eye } from 'lucide-react';
@@ -132,81 +134,220 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      {/* Page Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
-            <a href="/" className="hover:text-gray-700 transition-colors duration-200">
-              Home
-            </a>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">Shop</span>
-          </nav>
-          
-          {/* Page Title */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Semua Produk</h1>
-              <p className="text-gray-600 mt-1">
-                Temukan produk berkualitas dengan harga terbaik
-              </p>
-            </div>
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <Navbar />
+        
+        {/* Page Header */}
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {/* Breadcrumb */}
+            <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+              <a href="/" className="hover:text-gray-700 transition-colors duration-200">
+                Home
+              </a>
+              <span>/</span>
+              <span className="text-gray-900 font-medium">Shop</span>
+            </nav>
             
-            {/* Mobile Filter Button */}
-            <button
-              onClick={() => setShowMobileFilter(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 sm:hidden"
-            >
-              <Filter className="h-4 w-4" />
-              Filter
+            {/* Page Title */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Semua Produk</h1>
+                <p className="text-gray-600 mt-1">
+                  Temukan produk berkualitas dengan harga terbaik
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content - Desktop */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Sidebar - Desktop */}
+            <div className="hidden lg:block w-80 flex-shrink-0">
+              <FilterSidebar
+                filters={filters}
+                onFiltersChange={handleFilterChange}
+                onReset={handleFilterReset}
+              />
+            </div>
+
+            {/* Products Section */}
+            <div className="flex-1">
+              {/* Active Filters */}
               {hasActiveFilters && (
-                <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                <div className="mb-6 p-4 bg-white rounded-lg border">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
+                    
+                    {filters.categories.map((categoryId) => {
+                      const category = categories.find(c => c.id === categoryId);
+                      return category ? (
+                        <span key={categoryId} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                          {category.name}
+                          <button
+                            onClick={() => handleFilterChange({
+                              ...filters,
+                              categories: filters.categories.filter(id => id !== categoryId)
+                            })}
+                            className="hover:text-blue-900"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ) : null;
+                    })}
+                    
+                    {(filters.priceRange.min > 0 || filters.priceRange.max < Infinity) && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                        Rp {filters.priceRange.min.toLocaleString('id-ID')} - {filters.priceRange.max === Infinity ? '∞' : `Rp ${filters.priceRange.max.toLocaleString('id-ID')}`}
+                        <button
+                          onClick={() => handleFilterChange({
+                            ...filters,
+                            priceRange: { min: 0, max: Infinity }
+                          })}
+                          className="hover:text-blue-900"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    
+                    {filters.rating > 0 && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                        {filters.rating}★ ke atas
+                        <button
+                          onClick={() => handleFilterChange({
+                            ...filters,
+                            rating: 0
+                          })}
+                          className="hover:text-blue-900"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    
+                    <button
+                      onClick={handleFilterReset}
+                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                    >
+                      Reset semua
+                    </button>
+                  </div>
+                </div>
               )}
-            </button>
+
+              {/* Sorting Controls */}
+              <SortingControls
+                currentSort={filters.sortBy}
+                onSortChange={handleSortChange}
+                totalProducts={filteredAndSortedProducts.length}
+                currentPage={currentPage}
+                productsPerPage={PRODUCTS_PER_PAGE}
+              />
+
+              {/* Products Grid */}
+              {paginatedProducts.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {paginatedProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onQuickView={handleQuickView}
+                        onAddToCart={handleAddToCart}
+                        onToggleWishlist={handleToggleWishlist}
+                        isWishlisted={wishlist.includes(product.id)}
+                        onClick={handleProductClick}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </>
+              ) : (
+                <EmptyState
+                  type={hasActiveFilters ? 'filter-no-results' : 'no-products'}
+                  onReset={handleFilterReset}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar - Desktop */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <FilterSidebar
-              filters={filters}
-              onFiltersChange={handleFilterChange}
-              onReset={handleFilterReset}
-            />
+      {/* Mobile Version */}
+      <div className="md:hidden">
+        <MobileNavigation>
+          {/* Page Header */}
+          <div className="bg-white border-b">
+            <div className="px-4 py-6">
+              {/* Breadcrumb */}
+              <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+                <a href="/" className="hover:text-gray-700 transition-colors duration-200">
+                  Home
+                </a>
+                <span>/</span>
+                <span className="text-gray-900 font-medium">Shop</span>
+              </nav>
+              
+              {/* Page Title */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Semua Produk</h1>
+                  <p className="text-gray-600 mt-1">
+                    Temukan produk berkualitas dengan harga terbaik
+                  </p>
+                </div>
+                
+                {/* Mobile Filter Button */}
+                <button
+                  onClick={() => setShowMobileFilter(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 sm:hidden"
+                >
+                  <Filter className="h-4 w-4" />
+                  Filter
+                  {hasActiveFilters && (
+                    <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Products Section */}
-          <div className="flex-1">
+          {/* Main Content - Mobile */}
+          <div className="px-4 py-8">
             {/* Active Filters */}
             {hasActiveFilters && (
               <div className="mb-6 p-4 bg-white rounded-lg border">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
                   
-                  {filters.categories.map(categoryId => (
-                    <span
-                      key={categoryId}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
-                    >
-                      {categoryId}
-                      <button
-                        onClick={() => handleFilterChange({
-                          ...filters,
-                          categories: filters.categories.filter(id => id !== categoryId)
-                        })}
-                        className="hover:text-blue-900"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
+                  {filters.categories.map((categoryId) => {
+                    const category = categories.find(c => c.id === categoryId);
+                    return category ? (
+                      <span key={categoryId} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                        {category.name}
+                        <button
+                          onClick={() => handleFilterChange({
+                            ...filters,
+                            categories: filters.categories.filter(id => id !== categoryId)
+                          })}
+                          className="hover:text-blue-900"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ) : null;
+                  })}
                   
                   {(filters.priceRange.min > 0 || filters.priceRange.max < Infinity) && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
@@ -248,19 +389,10 @@ export default function ShopPage() {
               </div>
             )}
 
-            {/* Sorting Controls */}
-            <SortingControls
-              currentSort={filters.sortBy}
-              onSortChange={handleSortChange}
-              totalProducts={filteredAndSortedProducts.length}
-              currentPage={currentPage}
-              productsPerPage={PRODUCTS_PER_PAGE}
-            />
-
             {/* Products Grid */}
             {paginatedProducts.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 gap-4">
                   {paginatedProducts.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -288,7 +420,7 @@ export default function ShopPage() {
               />
             )}
           </div>
-        </div>
+        </MobileNavigation>
       </div>
 
       {/* Floating Checkout Button */}
@@ -297,9 +429,8 @@ export default function ShopPage() {
           href="/checkout"
           className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 group"
         >
-          <ShoppingCart className="h-5 w-5" />
-          <span className="font-medium">Checkout</span>
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <ShoppingCart className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+          <span>Checkout</span>
         </a>
       </div>
 
