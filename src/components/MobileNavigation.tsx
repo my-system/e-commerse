@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store, Info } from 'lucide-react'
 import { MobileSearch } from './MobileSearch'
 
@@ -119,7 +120,7 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
             <nav className="p-4">
               <div className="space-y-2">
                 {menuItems.map((item) => (
-                  <a
+                  <Link
                     key={item.label}
                     href={item.href}
                     onClick={() => setIsOpen(false)}
@@ -127,7 +128,7 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                   >
                     <item.icon className="w-5 h-5 text-gray-700" />
                     <span className="text-gray-900 font-medium">{item.label}</span>
-                  </a>
+                  </Link>
                 ))}
               </div>
 
@@ -150,14 +151,14 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-40">
         <div className="flex items-center justify-around py-2">
           {menuItems.slice(0, 5).map((item) => (
-            <a
+            <Link
               key={item.label}
               href={item.href}
               className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <item.icon className="w-5 h-5 text-gray-700" />
               <span className="text-xs text-gray-600">{item.label}</span>
-            </a>
+            </Link>
           ))}
         </div>
       </nav>
