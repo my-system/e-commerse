@@ -83,14 +83,11 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={(e) => {
-                        e.preventDefault()
-                        setIsSidebarOpen(false)
-                      }}
+            onClick={() => setIsSidebarOpen(false)}
           />
           
           {/* Menu Panel */}
-          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl">
+          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl overflow-hidden">
             {/* Menu Header */}
             <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700">
               <div className="flex items-center gap-3">
@@ -108,13 +105,10 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
 
               {/* Close Button */}
               <button
-                onClick={(e) => {
-                        e.preventDefault()
-                        setIsSidebarOpen(false)
-                      }}
+                onClick={() => setIsSidebarOpen(false)}
                 className="p-2 rounded-lg hover:bg-white/20 transition-colors"
               >
-                <X className="w-6 h-6 text-white" />
+                <X className="w-5 h-5 text-white" />
               </button>
             </div>
 
