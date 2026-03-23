@@ -29,34 +29,67 @@ export default function CartPage() {
   if (state.items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {/* Empty State */}
-          <div className="bg-white rounded-lg p-8 text-center">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShoppingCart className="h-10 w-10 text-gray-400" />
+        {/* Desktop Version */}
+        <div className="hidden md:block">
+          <Navbar />
+          
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            {/* Empty State */}
+            <div className="bg-white rounded-lg p-8 text-center">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShoppingCart className="h-10 w-10 text-gray-400" />
+              </div>
+              
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Keranjang Masih Kosong
+              </h2>
+              
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                Belum ada produk di keranjang Anda. Yuk, temukan produk favorit Anda!
+              </p>
+              
+              <button
+                onClick={handleContinueShopping}
+                className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
+              >
+                <ArrowRight className="h-5 w-5" />
+                Belanja Sekarang
+              </button>
             </div>
-            
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Keranjang Masih Kosong
-            </h2>
-            
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Belum ada produk di keranjang Anda. Yuk, temukan produk favorit Anda!
-            </p>
-            
-            <button
-              onClick={handleContinueShopping}
-              className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
-            >
-              <ArrowRight className="h-5 w-5" />
-              Belanja Sekarang
-            </button>
           </div>
+
+          <Footer />
         </div>
 
-        <Footer />
+        {/* Mobile Version */}
+        <div className="md:hidden">
+          <MobileNavigation>
+            <div className="px-4 py-16">
+              {/* Empty State */}
+              <div className="bg-white rounded-lg p-8 text-center">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ShoppingCart className="h-10 w-10 text-gray-400" />
+                </div>
+                
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Keranjang Masih Kosong
+                </h2>
+                
+                <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                  Belum ada produk di keranjang Anda. Yuk, temukan produk favorit Anda!
+                </p>
+                
+                <button
+                  onClick={handleContinueShopping}
+                  className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                  Belanja Sekarang
+                </button>
+              </div>
+            </div>
+          </MobileNavigation>
+        </div>
       </div>
     );
   }
