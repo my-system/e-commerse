@@ -79,17 +79,17 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
 
       {/* Modern Sidebar */}
       {isSidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-[60]">
+        <div className="md:hidden fixed inset-0 z-[9999]">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50"
             onClick={() => setIsSidebarOpen(false)}
           />
           
           {/* Menu Panel */}
-          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl overflow-hidden flex flex-col">
+          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
             {/* Menu Header */}
-            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700 flex-shrink-0">
+            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700">
               <div className="flex items-center gap-3">
                 {/* Logo */}
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -113,7 +113,7 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Menu Items */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="h-full overflow-y-auto">
               <div className="py-4">
                 {/* Menu List */}
                 <div className="space-y-1">
@@ -190,20 +190,6 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-              <button
-                onClick={() => {
-                  // Handle logout
-                  console.log('Logout clicked')
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="font-medium">Keluar</span>
-              </button>
             </div>
           </div>
         </div>
