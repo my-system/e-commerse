@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store, Info, LogOut } from 'lucide-react'
 import { MobileSearch } from './MobileSearch'
+import { useCart } from '@/contexts/CartContext'
 
 export function MobileNavigation({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const { state } = useCart()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,9 +57,11 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
             </button>
             <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <ShoppingCart className="w-5 h-5 text-gray-700" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
-                2
-              </span>
+              {state.totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
+                  {state.totalItems > 99 ? '99+' : state.totalItems}
+                </span>
+              )}
             </button>
             <button
               onClick={() => {
