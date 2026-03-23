@@ -143,19 +143,18 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                       <span className="font-medium text-gray-900">Beranda</span>
                     </div>
                     
-                    <Link
-                      href="/shop"
-                      onClick={(e) => {
-                        e.preventDefault()
+                    <div
+                      onClick={() => {
                         setIsSidebarOpen(false)
+                        window.location.href = '/shop'
                       }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group cursor-pointer"
                     >
                       <div className="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
                         <ShoppingBag className="w-5 h-5" />
                       </div>
                       <span className="font-medium text-gray-900">Belanja</span>
-                    </Link>
+                    </div>
                   </div>
                 </div>
 
