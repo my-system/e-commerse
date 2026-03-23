@@ -20,11 +20,11 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
   }, [])
 
   const menuItems = [
-    { icon: Home, label: 'Home', href: '/' },
-    { icon: ShoppingBag, label: 'Shop', href: '/shop' },
-    { icon: ShoppingCart, label: 'Cart', href: '/cart' },
+    { icon: Home, label: 'Beranda', href: '/' },
+    { icon: ShoppingBag, label: 'Belanja', href: '/shop' },
+    { icon: ShoppingCart, label: 'Keranjang', href: '/cart' },
     { icon: Heart, label: 'Wishlist', href: '/wishlist' },
-    { icon: User, label: 'Account', href: '/account' },
+    { icon: User, label: 'Akun', href: '/account' },
   ]
 
   return (
