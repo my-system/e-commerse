@@ -125,135 +125,79 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
 
             {/* Menu Items */}
             <div className="flex-1 overflow-y-auto">
-              <div className="p-4 space-y-1">
-                {/* Main Menu */}
-                <div className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-4">Menu Utama</h3>
-                  <div className="space-y-1">
-                    <div
-                      onClick={() => {
-                        setIsSidebarOpen(false)
-                        window.location.href = '/'
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group cursor-pointer"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                        <Home className="w-5 h-5" />
-                      </div>
-                      <span className="font-medium text-gray-900">Beranda</span>
-                    </div>
-                    
-                    <div
-                      onClick={() => {
-                        setIsSidebarOpen(false)
-                        window.location.href = '/shop'
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group cursor-pointer"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
-                        <ShoppingBag className="w-5 h-5" />
-                      </div>
-                      <span className="font-medium text-gray-900">Belanja</span>
-                    </div>
+              <div className="py-4">
+                {/* Menu List */}
+                <div className="space-y-1">
+                  {/* Beranda */}
+                  <div
+                    onClick={() => {
+                      setIsSidebarOpen(false)
+                      window.location.href = '/'
+                    }}
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <Home className="w-5 h-5 text-gray-600" />
+                    <span className="text-gray-800 font-medium">Beranda</span>
                   </div>
-                </div>
-
-                {/* Management Menu */}
-                <div className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-4">Manajemen</h3>
-                  <div className="space-y-1">
-                    <Link
-                      href="/cart"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsSidebarOpen(false)
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center relative">
-                        <ShoppingCart className="w-5 h-5" />
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                          2
-                        </span>
-                      </div>
-                      <span className="font-medium text-gray-900">Keranjang</span>
-                    </Link>
-                    
-                    <Link
-                      href="/analytics"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsSidebarOpen(false)
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5" />
-                      </div>
-                      <span className="font-medium text-gray-900">Analitik</span>
-                    </Link>
-                    
-                    <Link
-                      href="/inventory"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsSidebarOpen(false)
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center">
-                        <Package className="w-5 h-5" />
-                      </div>
-                      <span className="font-medium text-gray-900">Inventaris</span>
-                    </Link>
+                  
+                  {/* Belanja */}
+                  <div
+                    onClick={() => {
+                      setIsSidebarOpen(false)
+                      window.location.href = '/shop'
+                    }}
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <ShoppingBag className="w-5 h-5 text-gray-600" />
+                    <span className="text-gray-800 font-medium">Belanja</span>
                   </div>
-                </div>
-
-                {/* Other Menu */}
-                <div>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-4">Lainnya</h3>
-                  <div className="space-y-1">
-                    <Link
-                      href="/marketplace"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsSidebarOpen(false)
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center">
-                        <Store className="w-5 h-5" />
-                      </div>
-                      <span className="font-medium text-gray-900">Marketplace</span>
-                    </Link>
-                    
-                    <Link
-                      href="/tentang"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsSidebarOpen(false)
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center">
-                        <Info className="w-5 h-5" />
-                      </div>
-                      <span className="font-medium text-gray-900">Tentang</span>
-                    </Link>
-                    
-                    <Link
-                      href="/account"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsSidebarOpen(false)
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
-                        <User className="w-5 h-5" />
-                      </div>
-                      <span className="font-medium text-gray-900">Akun</span>
-                    </Link>
+                  
+                  {/* Keranjang */}
+                  <div
+                    onClick={() => {
+                      setIsSidebarOpen(false)
+                      window.location.href = '/cart'
+                    }}
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <ShoppingCart className="w-5 h-5 text-gray-600" />
+                    <span className="text-gray-800 font-medium">Keranjang</span>
+                  </div>
+                  
+                  {/* Akun */}
+                  <div
+                    onClick={() => {
+                      setIsSidebarOpen(false)
+                      window.location.href = '/account'
+                    }}
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <User className="w-5 h-5 text-gray-600" />
+                    <span className="text-gray-800 font-medium">Akun</span>
+                  </div>
+                  
+                  {/* Marketplace */}
+                  <div
+                    onClick={() => {
+                      setIsSidebarOpen(false)
+                      window.location.href = '/marketplace'
+                    }}
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <Store className="w-5 h-5 text-gray-600" />
+                    <span className="text-gray-800 font-medium">Marketplace</span>
+                  </div>
+                  
+                  {/* Tentang */}
+                  <div
+                    onClick={() => {
+                      setIsSidebarOpen(false)
+                      window.location.href = '/tentang'
+                    }}
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <Info className="w-5 h-5 text-gray-600" />
+                    <span className="text-gray-800 font-medium">Tentang</span>
                   </div>
                 </div>
               </div>
