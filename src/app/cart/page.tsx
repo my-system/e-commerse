@@ -63,144 +63,191 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      {/* Page Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Keranjang Belanja</h1>
-          <p className="text-gray-600 mt-1">
-            {state.totalItems} {state.totalItems === 1 ? 'produk' : 'produk'} di keranjang Anda
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Clear Cart Button */}
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Daftar Produk</h2>
-              <button
-                onClick={() => {
-                  if (window.confirm('Apakah Anda yakin ingin mengosongkan keranjang?')) {
-                    clearCart();
-                  }
-                }}
-                className="text-sm text-red-600 hover:text-red-700 transition-colors duration-200"
-              >
-                Kosongkan Keranjang
-              </button>
-            </div>
-
-            {/* Cart Items List */}
-            <div className="space-y-4">
-              {state.items.map((item) => (
-                <CartItem
-                  key={item.id}
-                  item={item}
-                  onQuantityChange={updateQuantity}
-                  onRemove={removeItem}
-                />
-              ))}
-            </div>
-
-            {/* Continue Shopping */}
-            <div className="mt-6 text-center">
-              <button
-                onClick={handleContinueShopping}
-                className="text-blue-600 hover:text-blue-700 transition-colors duration-200"
-              >
-                ← Lanjut Belanja
-              </button>
-            </div>
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <Navbar />
+        
+        {/* Page Header */}
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-3xl font-bold text-gray-900">Keranjang Belanja</h1>
+            <p className="text-gray-600 mt-1">
+              {state.totalItems} {state.totalItems === 1 ? 'produk' : 'produk'} di keranjang Anda
+            </p>
           </div>
+        </div>
 
-          {/* Cart Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg p-6 sticky top-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Ringkasan Belanja</h2>
-              
-              {/* Price Breakdown */}
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal ({state.totalItems} produk)</span>
-                  <span>{formatPrice(state.totalPrice)}</span>
-                </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg">
+                {state.items.map((item) => (
+                  <CartItem
+                    key={item.id}
+                    item={item}
+                    onQuantityChange={updateQuantity}
+                    onRemove={removeItem}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Ringkasan Pesanan</h3>
                 
-                <div className="flex justify-between text-gray-600">
-                  <span>Ongkir</span>
-                  <span>
-                    {shippingCost === 0 ? (
-                      <span className="text-green-600">Gratis</span>
-                    ) : (
-                      formatPrice(shippingCost)
-                    )}
-                  </span>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium">{formatPrice(state.totalPrice)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Biaya Kirim</span>
+                    <span className="font-medium">
+                      {shippingCost === 0 ? 'Gratis' : formatPrice(shippingCost)}
+                    </span>
+                  </div>
+                  
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between">
+                      <span className="text-lg font-semibold">Total</span>
+                      <span className="text-lg font-bold text-blue-600">{formatPrice(finalTotal)}</span>
+                    </div>
+                  </div>
                 </div>
-                
-                {state.totalPrice < 500000 && (
-                  <div className="text-sm text-green-600 bg-green-50 p-3 rounded-lg">
-                    🎉 Tambah {formatPrice(500000 - state.totalPrice)} lagi untuk gratis ongkir!
+
+                {shippingCost > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-5 w-5 text-green-600" />
+                      <div>
+                        <p className="text-sm font-medium text-green-800">
+                          Gratis ongkir untuk pembelian Rp 500.000+
+                        </p>
+                        <p className="text-xs text-green-600">
+                          Tambah {formatPrice(500000 - state.totalPrice)} lagi
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
-                
-                <div className="border-t pt-3">
-                  <div className="flex justify-between text-lg font-semibold text-gray-900">
-                    <span>Total</span>
-                    <span>{formatPrice(finalTotal)}</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Promo Code */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kode Promo
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Masukkan kode promo"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                    Terapkan
+                <div className="space-y-3">
+                  <button
+                    onClick={handleCheckout}
+                    className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2"
+                  >
+                    Checkout
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
+                  
+                  <button
+                    onClick={handleContinueShopping}
+                    className="w-full px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    Lanjut Belanja
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
 
-              {/* Checkout Button */}
-              <button
-                onClick={handleCheckout}
-                className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2"
-              >
-                Lanjut ke Checkout
-                <ArrowRight className="h-5 w-5" />
-              </button>
+        <Footer />
+      </div>
 
-              {/* Trust Badges */}
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Truck className="h-4 w-4" />
-                  <span>Pengiriman aman & terpercaya</span>
+      {/* Mobile Version */}
+      <div className="md:hidden">
+        <MobileNavigation>
+          {/* Page Header */}
+          <div className="bg-white border-b">
+            <div className="px-4 py-6">
+              <h1 className="text-2xl font-bold text-gray-900">Keranjang Belanja</h1>
+              <p className="text-gray-600 mt-1">
+                {state.totalItems} {state.totalItems === 1 ? 'produk' : 'produk'} di keranjang Anda
+              </p>
+            </div>
+          </div>
+
+          <div className="px-4 py-8">
+            <div className="space-y-6">
+              {/* Cart Items */}
+              <div className="bg-white rounded-lg">
+                {state.items.map((item) => (
+                  <CartItem
+                    key={item.id}
+                    item={item}
+                    onQuantityChange={updateQuantity}
+                    onRemove={removeItem}
+                  />
+                ))}
+              </div>
+
+              {/* Order Summary */}
+              <div className="bg-white rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Ringkasan Pesanan</h3>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium">{formatPrice(state.totalPrice)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Biaya Kirim</span>
+                    <span className="font-medium">
+                      {shippingCost === 0 ? 'Gratis' : formatPrice(shippingCost)}
+                    </span>
+                  </div>
+                  
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between">
+                      <span className="text-lg font-semibold">Total</span>
+                      <span className="text-lg font-bold text-blue-600">{formatPrice(finalTotal)}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Shield className="h-4 w-4" />
-                  <span>Pembayaran 100% aman</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <RefreshCw className="h-4 w-4" />
-                  <span>Pengembalian mudah</span>
+
+                {shippingCost > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-5 w-5 text-green-600" />
+                      <div>
+                        <p className="text-sm font-medium text-green-800">
+                          Gratis ongkir untuk pembelian Rp 500.000+
+                        </p>
+                        <p className="text-xs text-green-600">
+                          Tambah {formatPrice(500000 - state.totalPrice)} lagi
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <button
+                    onClick={handleCheckout}
+                    className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2"
+                  >
+                    Checkout
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
+                  
+                  <button
+                    onClick={handleContinueShopping}
+                    className="w-full px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    Lanjut Belanja
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </MobileNavigation>
       </div>
-
-      <Footer />
     </div>
   );
 }
