@@ -35,7 +35,7 @@ export default function PersonalizedRecommendations() {
     const recentlyViewedIds = state.preferences.viewedProducts.slice(0, 8);
     return recentlyViewedIds
       .map(id => products.find(p => p.id === id))
-      .filter(Boolean);
+      .filter((product): product is NonNullable<typeof product> => product !== undefined);
   }, [state.preferences.viewedProducts]);
 
   useEffect(() => {
