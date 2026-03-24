@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 interface Category {
   name: string
@@ -25,16 +26,14 @@ function CategoryCardModern({ category, onClick }: { category: Category; onClick
     >
       {/* Category Image - Mobile Optimized */}
       <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-        {category.image && !isImageError ? (
-          <img
+        {category.image ? (
+          <OptimizedImage
             src={category.image}
             alt={category.name}
-            className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-              isImageLoading ? 'opacity-0' : 'opacity-100'
-            }`}
-            onLoad={() => setIsImageLoading(false)}
-            onError={() => setIsImageError(true)}
-            loading="lazy"
+            className="w-full h-full group-hover:scale-105 transition-transform duration-300"
+            priority={false}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            placeholder="blur"
           />
         ) : (
           // Modern placeholder design

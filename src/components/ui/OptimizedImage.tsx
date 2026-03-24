@@ -122,9 +122,6 @@ export default function OptimizedImage({
 
   return (
     <div className={cn('relative overflow-hidden', className)}>
-      {/* Skeleton loading */}
-      {!isLoaded && placeholder !== 'empty' && <Skeleton />}
-      
       {/* Actual image */}
       <img
         ref={imgRef}
@@ -139,8 +136,7 @@ export default function OptimizedImage({
         onError={() => setHasError(true)}
         className={cn(
           'w-full h-full object-cover transition-all duration-300',
-          isLoaded ? 'opacity-100' : 'opacity-0',
-          className
+          isLoaded ? 'opacity-100' : 'opacity-0'
         )}
         style={{
           width: width || '100%',

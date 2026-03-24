@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Star, ShoppingCart, Heart } from 'lucide-react'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 interface Product {
   id: string
@@ -48,19 +49,16 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
     >
       {/* Product Image - Mobile Optimized */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-        {product.image && !isImageError ? (
-          <img
+        {product.image ? (
+          <OptimizedImage
             src={product.image}
             alt={product.name}
-            className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-              isImageLoading ? 'opacity-0' : 'opacity-100'
-            }`}
-            onLoad={() => setIsImageLoading(false)}
-            onError={() => setIsImageError(true)}
-            loading="lazy"
+            className="w-full h-full group-hover:scale-105 transition-transform duration-300"
+            priority={false}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            placeholder="blur"
           />
         ) : (
-          // Modern placeholder
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
             <div className="text-center">
               <div className="w-12 h-12 bg-gray-300 rounded-lg mx-auto mb-2"></div>
