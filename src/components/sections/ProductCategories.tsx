@@ -1,6 +1,6 @@
 import { categories } from '@/data/categories';
 import Link from 'next/link';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 export default function ProductCategories() {
   return (
@@ -26,10 +26,13 @@ export default function ProductCategories() {
             >
               {/* Category Image */}
               <div className="relative h-64 overflow-hidden">
-                <img
+                <OptimizedImage
                   src={category.image}
                   alt={category.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full group-hover:scale-110 transition-transform duration-700"
+                  priority={false}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  placeholder="blur"
                 />
                 
                 {/* Overlay */}

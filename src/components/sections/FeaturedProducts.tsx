@@ -6,6 +6,7 @@ import { ShoppingCart, Eye, Heart, X } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 export default function FeaturedProducts() {
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
@@ -85,10 +86,13 @@ export default function FeaturedProducts() {
             >
               {/* Product Image */}
               <div className="relative h-80 overflow-hidden bg-gray-100">
-                <img
+                <OptimizedImage
                   src={product.images[0]}
                   alt={product.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full group-hover:scale-110 transition-transform duration-700"
+                  priority={false}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  placeholder="blur"
                 />
                 
                 {/* Quick Actions Overlay */}
@@ -212,10 +216,13 @@ export default function FeaturedProducts() {
               <div className="grid md:grid-cols-2 gap-8">
                 {/* Product Image */}
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                  <img
+                  <OptimizedImage
                     src={quickViewProduct.images[0]}
                     alt={quickViewProduct.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full"
+                    priority={true}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    placeholder="blur"
                   />
                 </div>
 

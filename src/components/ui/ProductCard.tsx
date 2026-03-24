@@ -8,6 +8,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import QuickViewModal from './QuickViewModal';
+import OptimizedImage from './OptimizedImage';
 
 interface ProductCardProps {
   product: Product;
@@ -125,10 +126,13 @@ export default function ProductCard({
     >
       {/* Product Image */}
       <div className="relative h-64 sm:h-80 overflow-hidden bg-gray-100">
-        <img
+        <OptimizedImage
           src={product.images[0]}
           alt={product.title}
-          className="w-full h-full object-cover transition-transform duration-300"
+          className="w-full h-full"
+          priority={false}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          placeholder="blur"
         />
         
         {/* Badge */}
