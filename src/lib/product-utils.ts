@@ -46,7 +46,13 @@ export function sortProducts(products: Product[], sortBy: string): Product[] {
   const config = sortOptions[sortBy];
   if (!config) return products;
 
-  return [...products].sort((a, b) => {
+  // Create stable array with original indices
+  const productsWithIndex = products.map((product, index) => ({
+    ...product,
+    originalIndex: index
+  }));
+
+  return productsWithIndex.sort((a, b) => {
     let aValue: any = a[config.field as keyof Product];
     let bValue: any = b[config.field as keyof Product];
 
@@ -68,11 +74,20 @@ export function sortProducts(products: Product[], sortBy: string): Product[] {
       bValue = bValue.toLowerCase();
     }
 
+    // Primary comparison
+    let comparison = 0;
     if (config.direction === 'asc') {
-      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      comparison = aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
     } else {
-      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      comparison = aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
     }
+
+    // If values are equal, use original index to maintain absolute stability
+    if (comparison === 0) {
+      return a.originalIndex - b.originalIndex;
+    }
+
+    return comparison;
   });
 }
 
@@ -91,11 +106,14 @@ export function generateMoreProducts(baseProducts: Product[], count: number): Pr
   
   for (let i = 0; i < count; i++) {
     const baseProduct = baseProducts[i % baseProducts.length];
+    // Use consistent price variation based on index instead of random
+    const priceVariation = (i % 10 - 5) * 10000; // Consistent variation from -50k to +50k
+    
     moreProducts.push({
       ...baseProduct,
       id: `${baseProduct.id}-more-${i}`,
       title: `${baseProduct.title} (Variant ${i + 1})`,
-      price: baseProduct.price + (Math.random() * 500000 - 250000), // Random price variation
+      price: baseProduct.price + priceVariation,
     });
   }
   

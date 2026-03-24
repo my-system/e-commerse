@@ -13,7 +13,6 @@ import { PushNotificationManager } from '@/components/PushNotificationManager';
 import { PWAInstallPrompt, NetworkStatus } from '@/components/PWAComponents';
 import { ServiceWorkerDebugDraggable } from '@/components/ServiceWorkerDebugDraggable';
 import { MobileNavigation, MobileGrid } from '@/components/MobileNavigation';
-import { MobileLayout, MobileSection } from '@/components/MobileLayout';
 import { ProductGridModern } from '@/components/mobile/ProductGridModern'
 import { CategoryGridModern } from '@/components/mobile/CategoryGridModern'
 import { FeaturedProductsModern } from '@/components/mobile/FeaturedProductsModern'

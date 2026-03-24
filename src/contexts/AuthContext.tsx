@@ -6,6 +6,8 @@ interface User {
   name: string;
   email: string;
   phone: string;
+  role: 'user' | 'admin';
+  avatar?: string | null;
 }
 
 interface AuthState {
@@ -81,11 +83,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Mock authentication - accept any email/password for demo
+    // Mock authentication - determine role based on email
+    const isAdmin = email === 'admin@admin.com' || email.includes('admin');
+    
     const mockUser: User = {
-      name: 'John Doe',
+      name: isAdmin ? 'Admin User' : 'John Doe',
       email: email,
-      phone: '08123456789'
+      phone: '08123456789',
+      role: isAdmin ? 'admin' : 'user'
     };
     
     // Save to localStorage
@@ -100,6 +105,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = () => {
+    console.log('Logout function called - clearing user data');
     // Clear localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('isLoggedIn');
@@ -116,10 +122,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Mock registration - auto-login after registration
+    const isAdmin = userData.email.includes('admin');
+    
     const mockUser: User = {
       name: userData.name,
       email: userData.email,
-      phone: '08123456789'
+      phone: '08123456789',
+      role: isAdmin ? 'admin' : 'user'
     };
     
     // Save to localStorage

@@ -17,7 +17,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const { state: cartState, openCart } = useCart();
-  const { user, isLoggedIn, login } = useAuth();
+  const { user, isLoggedIn, login, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,11 +31,11 @@ export default function Navbar() {
   const navItems = [
     { name: 'Home', href: '/' },
     { name: 'Shop', href: '/shop' },
-    { name: 'Analytics', href: '/analytics' },
-    { name: 'Inventory', href: '/inventory' },
-    { name: 'Marketplace', href: '/marketplace' },
     { name: 'Tentang', href: '/tentang' },
   ];
+
+  // Admin items hanya muncul di sidebar, tidak di navbar desktop
+  const allNavItems = navItems;
 
   return (
     <>
@@ -60,7 +60,7 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
+            {allNavItems.map((item) => (
               item.name === 'Shop' ? (
                 <div key={item.name} className="relative">
                   <a
@@ -109,7 +109,7 @@ export default function Navbar() {
               user={user} 
               isLoggedIn={isLoggedIn} 
               onLogin={() => login('demo@example.com', 'password')}
-              onLogout={() => {}} // logout handled by context
+              onLogout={logout}
             />
             <button 
               className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
@@ -143,7 +143,7 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              {navItems.map((item) => (
+              {allNavItems.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
@@ -185,37 +185,39 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Additional Menu Items */}
-              <div className="border-t pt-2 mt-2">
-                <a
-                  href="/analytics"
-                  className="text-gray-700 hover:text-black block px-3 py-2 text-base font-medium transition-colors duration-200"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Analytics
-                </a>
-                <a
-                  href="/inventory"
-                  className="text-gray-700 hover:text-black block px-3 py-2 text-base font-medium transition-colors duration-200"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Inventory
-                </a>
-                <a
-                  href="/marketplace"
-                  className="text-gray-700 hover:text-black block px-3 py-2 text-base font-medium transition-colors duration-200"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Marketplace
-                </a>
-              </div>
+              {/* Admin Menu Items for Mobile */}
+              {user?.role === 'admin' && (
+                <div className="border-t pt-2 mt-2">
+                  <a
+                    href="/analytics"
+                    className="text-gray-700 hover:text-black block px-3 py-2 text-base font-medium transition-colors duration-200"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Analytics
+                  </a>
+                  <a
+                    href="/inventory"
+                    className="text-gray-700 hover:text-black block px-3 py-2 text-base font-medium transition-colors duration-200"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Inventory
+                  </a>
+                  <a
+                    href="/marketplace"
+                    className="text-gray-700 hover:text-black block px-3 py-2 text-base font-medium transition-colors duration-200"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Marketplace
+                  </a>
+                </div>
+              )}
               <div className="flex items-center space-x-4 px-3 py-2 border-t mt-2 pt-4">
                 <SmartSearchNew className="w-full" />
                 <AccountDropdown 
                   user={user} 
                   isLoggedIn={isLoggedIn} 
                   onLogin={() => login('demo@example.com', 'password')}
-                  onLogout={() => {}} // logout handled by context
+                  onLogout={logout}
                 />
                 <button className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200" onClick={openCart}>
                   <ShoppingCart className="h-5 w-5" />

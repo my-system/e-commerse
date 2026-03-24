@@ -1,44 +1,58 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store, Info, LogOut, UserCircle, PackageOpen, FileText, MapPin } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, Search, Home, ShoppingBag, Heart, Settings, TrendingUp, Package, Store, Info, LogOut, UserCircle, PackageOpen, FileText, MapPin, ChevronRight, UserPlus, LogIn, HelpCircle } from 'lucide-react'
 import { MobileSearch } from './MobileSearch'
 import { useCart } from '@/contexts/CartContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function MobileNavigation({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { state } = useCart()
+  const { user, isLoggedIn, logout } = useAuth()
+
+  // Check if current page should show sidebar
+  const shouldShowSidebar = () => {
+    if (typeof window === 'undefined') return true; // Default to true on server-side
+    const currentPath = window.location.pathname;
+    // Hide sidebar on admin pages
+    const adminPages = ['/admin', '/inventory', '/analytics', '/marketplace'];
+    return !adminPages.some(path => currentPath.startsWith(path));
+  };
+
+  // Use useEffect to avoid hydration issues
+  const [mounted, setMounted] = useState(false);
   
-  // Mock user state - dalam implementasi nyata, ini akan datang dari context/auth
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState({
-    name: 'Yusuf',
-    email: 'yusuf@example.com',
-    avatar: null
-  })
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleMenuClick = (href: string) => {
+    console.log('Menu clicked:', href);
+    setIsSidebarOpen(false);
+    // Navigate without triggering logout
+    if (typeof window !== 'undefined') {
+      window.location.href = href;
+    }
+  };
 
   const handleLogout = () => {
-    setIsLoggedIn(false)
-    setUser({ name: '', email: '', avatar: null })
-    setIsSidebarOpen(false)
-    // Dalam implementasi nyata, tambahkan logout logic di sini
-    console.log('User logged out')
-  }
+    console.log('User logged out');
+    logout(); // Use the logout function from AuthContext
+    setIsSidebarOpen(false);
+  };
 
   const handleLogin = () => {
-    setIsLoggedIn(true)
-    setUser({
-      name: 'Yusuf',
-      email: 'yusuf@example.com',
-      avatar: null
-    })
-    setIsSidebarOpen(false)
-    // Dalam implementasi nyata, redirect ke login page
-    console.log('User logged in')
-  }
+    console.log('Navigate to login');
+    setIsSidebarOpen(false);
+    // Navigate to login page instead of mock login
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,17 +73,45 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
 
   const sidebarMenuItems = [
     // Grup Navigasi Utama (Belanja)
-    { icon: Home, label: 'Home', href: '/', group: 'main' },
-    { icon: ShoppingBag, label: 'Shop', href: '/shop', group: 'main' },
-    { icon: Store, label: 'Marketplace', href: '/marketplace', group: 'main' },
-    { icon: ShoppingCart, label: 'Keranjang', href: '/cart', group: 'main', badge: true },
+    { icon: Home, label: 'Home', href: '/', group: 'navigation' },
+    { icon: ShoppingBag, label: 'Shop', href: '/shop', group: 'navigation' },
+    { icon: ShoppingCart, label: 'Keranjang', href: '/cart', group: 'navigation', badge: true },
     
-    // Grup Manajemen & Data
-    { icon: Package, label: 'Inventory', href: '/inventory', group: 'management' },
-    { icon: TrendingUp, label: 'Analytics', href: '/analytics', group: 'management' },
+    // Grup Admin (hanya untuk admin)
+    { icon: Store, label: 'Marketplace', href: '/marketplace', group: 'admin' },
+    { icon: Package, label: 'Inventory', href: '/inventory', group: 'admin' },
+    { icon: TrendingUp, label: 'Analytics', href: '/analytics', group: 'admin' },
     
-    // Grup Informasi & Profil (Tentang saja, Akun akan dihandle secara khusus)
-    { icon: Info, label: 'Tentang', href: '/tentang', group: 'profile' },
+    // Grup Support
+    { icon: Info, label: 'Tentang Kami', href: '/tentang', group: 'support' },
+    { icon: HelpCircle, label: 'Bantuan', href: '/help', group: 'support' },
+  ];
+
+  const profileMenuItems = [
+    {
+      icon: UserCircle,
+      label: 'Profil Saya',
+      description: 'Kelola informasi profil Anda',
+      href: '/account/profile'
+    },
+    {
+      icon: PackageOpen,
+      label: 'Pesanan Saya',
+      description: 'Lihat riwayat pesanan',
+      href: '/account/orders'
+    },
+    {
+      icon: Heart,
+      label: 'Wishlist',
+      description: 'Produk yang Anda simpan',
+      href: '/account/wishlist'
+    },
+    {
+      icon: Settings,
+      label: 'Pengaturan',
+      description: 'Pengaturan akun dan privasi',
+      href: '/account/settings'
+    }
   ];
 
   return (
@@ -106,47 +148,41 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                 </span>
               )}
             </button>
+            {shouldShowSidebar() && mounted && (
             <button
               onClick={() => {
                 console.log('Hamburger menu clicked');
                 setIsSidebarOpen(true);
               }}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative z-10"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative z-50"
               style={{ pointerEvents: 'auto' }}
+              aria-label="Menu"
+              type="button"
             >
               <Menu className="w-5 h-5 text-gray-700" />
             </button>
+          )}
           </div>
         </div>
       </header>
 
       {/* Modern Sidebar */}
-      {isSidebarOpen && (
+      {isSidebarOpen && shouldShowSidebar() && mounted && (
         <div className="md:hidden fixed inset-0 z-[9999]">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setIsSidebarOpen(false)}
+            style={{ zIndex: 9998 }}
           />
           
           {/* Menu Panel */}
-          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
+          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl" style={{ zIndex: 9999 }}>
             {/* Menu Header */}
             <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700">
-              <div className="flex items-center gap-3">
-                {/* Logo */}
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                  <span className="text-blue-100 font-bold text-lg">D</span>
-                </div>
-                
-                {/* Brand Info */}
-                <div>
-                  <h1 className="text-xl font-bold text-white">DEMO WEB</h1>
-                  <p className="text-blue-100 text-sm">E-COMMERCE</p>
-                </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">DEMO WEB E-COMMERCE</h1>
               </div>
-
-              {/* Close Button */}
               <button
                 onClick={() => setIsSidebarOpen(false)}
                 className="p-2 rounded-lg hover:bg-white/20 transition-colors"
@@ -156,22 +192,19 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Menu Items */}
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto pb-20">
               <div className="py-4">
                 {/* Menu List */}
                 <div className="space-y-1">
-                  {/* Grup Navigasi Utama (Belanja) */}
+                  {/* Grup 1: NAVIGASI */}
                   <div className="mb-2">
                     <div className="px-6 py-2">
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Belanja</span>
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Navigasi</span>
                     </div>
-                    {sidebarMenuItems.filter(item => item.group === 'main').map((item) => (
+                    {sidebarMenuItems.filter(item => item.group === 'navigation').map((item) => (
                       <div
                         key={item.label}
-                        onClick={() => {
-                          setIsSidebarOpen(false)
-                          window.location.href = item.href
-                        }}
+                        onClick={() => handleMenuClick(item.href)}
                         className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
                       >
                         <item.icon className="w-5 h-5 text-gray-600" />
@@ -188,38 +221,18 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                   {/* Divider */}
                   <div className="border-t border-gray-200 my-2"></div>
 
-                  {/* Grup Manajemen & Data */}
+                  {/* Grup 2: AKUN & MANAJEMEN */}
                   <div className="mb-2">
                     <div className="px-6 py-2">
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Manajemen</span>
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Akun & Manajemen</span>
                     </div>
-                    {sidebarMenuItems.filter(item => item.group === 'management').map((item) => (
-                      <div
-                        key={item.label}
-                        onClick={() => {
-                          setIsSidebarOpen(false)
-                          window.location.href = item.href
-                        }}
-                        className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                      >
-                        <item.icon className="w-5 h-5 text-gray-600" />
-                        <span className="text-gray-800 font-medium">{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Divider */}
-                  <div className="border-t border-gray-200 my-2"></div>
-
-                  {/* Area Profil Pengguna */}
-                  <div className="mb-2">
+                    
                     {isLoggedIn ? (
-                      // Jika sudah login - tampilkan profil lengkap
                       <div>
                         {/* Header Profil */}
                         <div className="px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
                           <div className="flex items-center gap-3">
-                            {user.avatar ? (
+                            {user?.avatar ? (
                               <img 
                                 src={user.avatar} 
                                 alt={user.name}
@@ -228,89 +241,61 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                             ) : (
                               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                                 <span className="text-white font-semibold text-sm">
-                                  {user.name.charAt(0).toUpperCase()}
+                                  {user?.name?.charAt(0).toUpperCase() || 'U'}
                                 </span>
                               </div>
                             )}
                             <div className="flex-1">
-                              <div className="font-semibold text-gray-900 text-sm">{user.name}</div>
-                              <div className="text-xs text-gray-500">{user.email}</div>
+                              <div className="font-semibold text-gray-900 text-sm">{user?.name || 'User'}</div>
+                              <div className="text-xs text-gray-500">{user?.email || 'user@example.com'}</div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Sub-menu Profil */}
-                        <div className="px-6 py-2">
-                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Akun Saya</span>
-                        </div>
-                        
+                        {/* Menu Profil */}
                         <div className="space-y-1">
-                          <div
-                            onClick={() => {
-                              setIsSidebarOpen(false)
-                              window.location.href = '/account/profile'
-                            }}
-                            className="flex items-center gap-3 px-6 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                            <UserCircle className="w-4 h-4 text-gray-600" />
-                            <span className="text-gray-800 text-sm">Edit Profil</span>
-                          </div>
-                          
-                          <div
-                            onClick={() => {
-                              setIsSidebarOpen(false)
-                              window.location.href = '/account/orders'
-                            }}
-                            className="flex items-center gap-3 px-6 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                            <PackageOpen className="w-4 h-4 text-gray-600" />
-                            <span className="text-gray-800 text-sm">Pesanan Saya</span>
-                          </div>
-                          
-                          <div
-                            onClick={() => {
-                              setIsSidebarOpen(false)
-                              window.location.href = '/account/addresses'
-                            }}
-                            className="flex items-center gap-3 px-6 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                            <MapPin className="w-4 h-4 text-gray-600" />
-                            <span className="text-gray-800 text-sm">Alamat</span>
-                          </div>
+                          {profileMenuItems.map((item) => (
+                            <Link
+                              key={item.label}
+                              href={item.href}
+                              onClick={() => setIsSidebarOpen(false)}
+                              className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition-colors group"
+                            >
+                              <item.icon className="w-5 h-5 text-gray-600" />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {item.label}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {item.description}
+                                </div>
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                            </Link>
+                          ))}
                         </div>
 
-                        {/* Divider */}
-                        <div className="border-t border-gray-200 my-2"></div>
-
-                        {/* Menu Informasi */}
-                        <div className="px-6 py-2">
-                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Informasi</span>
-                        </div>
-                        
-                        {sidebarMenuItems.filter(item => item.group === 'profile').map((item) => (
-                          <div
-                            key={item.label}
-                            onClick={() => {
-                              setIsSidebarOpen(false)
-                              window.location.href = item.href
-                            }}
-                            className="flex items-center gap-3 px-6 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                            <item.icon className="w-4 h-4 text-gray-600" />
-                            <span className="text-gray-800 text-sm">{item.label}</span>
-                          </div>
-                        ))}
-
-                        {/* Tombol Logout */}
-                        <div className="px-6 py-3 mt-4">
-                          <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            <span className="font-medium">Keluar</span>
-                          </button>
-                        </div>
+                        {/* Admin Menu (hanya untuk admin) */}
+                        {user?.role === 'admin' && (
+                          <>
+                            {/* Divider */}
+                            <div className="border-t border-gray-100 my-2"></div>
+                            <div className="px-6 py-2">
+                              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin Panel</span>
+                            </div>
+                            {sidebarMenuItems.filter(item => item.group === 'admin').map((item) => (
+                              <div
+                                key={item.label}
+                                onClick={() => handleMenuClick(item.href)}
+                                className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                              >
+                                <item.icon className="w-5 h-5 text-gray-600" />
+                                <span className="text-gray-800 font-medium">{item.label}</span>
+                                <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                              </div>
+                            ))}
+                          </>
+                        )}
                       </div>
                     ) : (
                       // Jika belum login - tampilkan tombol login/register
@@ -321,12 +306,72 @@ export function MobileNavigation({ children }: { children: React.ReactNode }) {
                           <div className="text-xs text-gray-500">Masuk untuk mengakses akun Anda</div>
                         </div>
                         
+                        <div className="space-y-2">
+                          <Link
+                            href="/login"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors group"
+                          >
+                            <LogIn className="w-4 h-4" />
+                            <span className="font-medium">Masuk Ke Akun</span>
+                          </Link>
+                          
+                          <Link
+                            href="/register"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors group"
+                          >
+                            <UserPlus className="w-4 h-4" />
+                            <span className="font-medium">Daftar Akun Baru</span>
+                          </Link>
+                        </div>
+                        
+                        <div className="text-center mt-3">
+                          <div className="text-xs text-gray-500">
+                            Masuk untuk akses pesanan & profil
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-200 my-2"></div>
+
+                  {/* Grup 3: LAINNYA */}
+                  <div className="mb-2">
+                    <div className="px-6 py-2">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Lainnya</span>
+                    </div>
+                    {sidebarMenuItems.filter(item => item.group === 'support').map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition-colors group"
+                      >
+                        <item.icon className="w-5 h-5 text-gray-600" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.label}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {item.label === 'Tentang Kami' ? 'Kenali lebih tentang kami' : 'Dapatkan bantuan dan dukungan'}
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                      </Link>
+                    ))}
+
+                    {/* Tombol Logout */}
+                    {isLoggedIn && (
+                      <div className="px-6 py-4 mt-6 border-t-2 border-gray-200 bg-gray-50 sticky bottom-0">
                         <button
-                          onClick={handleLogin}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mb-2"
+                          onClick={handleLogout}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-4 text-red-500 bg-white rounded-lg hover:bg-red-50 transition-colors border-2 border-red-200 shadow-sm"
                         >
-                          <User className="w-4 h-4" />
-                          <span className="font-medium">Masuk / Daftar</span>
+                          <LogOut className="w-5 h-5" />
+                          <span className="font-medium text-base">Logout</span>
                         </button>
                       </div>
                     )}

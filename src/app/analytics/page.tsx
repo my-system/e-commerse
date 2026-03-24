@@ -432,26 +432,37 @@ export default function AnalyticsPage() {
       {/* Mobile Version */}
       <div className="md:hidden">
         <MobileNavigation>
-          <div className="px-4 py-8">
-            {/* Header */}
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-              <p className="text-gray-600 mt-1">Business performance insights</p>
-            </div>
-
-            {/* Time Range Selector */}
-            <div className="mb-6">
-              <label className="text-sm font-medium text-gray-700 block mb-2">Time Range:</label>
-              <select
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="24h">Last 24 Hours</option>
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="90d">Last 90 Days</option>
-              </select>
+          <div className="px-4 py-6 space-y-6">
+            {/* Mobile Analytics Header */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <h1 className="text-xl font-bold text-gray-900 mb-2">Analytics</h1>
+              <p className="text-sm text-gray-600">Lihat performa bisnis Anda</p>
+              
+              {/* Mobile Stats Grid */}
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <TrendingUp className="w-4 h-4 text-green-600" />
+                    <span className="text-xs text-green-600 font-medium">+12.5%</span>
+                  </div>
+                  <p className="text-xs text-green-600 font-medium">Total Penjualan</p>
+                  <p className="text-lg font-bold text-green-900">Rp 45.2M</p>
+                </div>
+              </div>
+              
+              {/* Mobile Time Range Selector */}
+              <div className="mt-4">
+                <select
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="24h">Last 24 Hours</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                  <option value="90d">Last 90 Days</option>
+                </select>
+              </div>
             </div>
 
             {/* Real-time Metrics */}

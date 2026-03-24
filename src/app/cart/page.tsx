@@ -14,9 +14,8 @@ export default function CartPage() {
   const { state, updateQuantity, removeItem, clearCart } = useCart();
 
   const handleCheckout = () => {
-    // Navigate to checkout page (will be created later)
-    console.log('Proceeding to checkout...');
-    // router.push('/checkout');
+    // Navigate to checkout page
+    router.push('/checkout');
   };
 
   const handleContinueShopping = () => {

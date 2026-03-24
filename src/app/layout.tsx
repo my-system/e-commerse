@@ -4,6 +4,7 @@ import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -97,9 +98,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <CartProvider>
-            <UserPreferencesProvider>
-              {children}
-            </UserPreferencesProvider>
+            <WishlistProvider>
+              <UserPreferencesProvider>
+                {children}
+              </UserPreferencesProvider>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

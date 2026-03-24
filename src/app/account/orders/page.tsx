@@ -5,6 +5,7 @@ import { Package, ArrowLeft, Search, Filter, Calendar, Truck, CheckCircle, Clock
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { MobileNavigation } from '@/components/MobileNavigation';
 
 interface Order {
   id: string;
@@ -175,28 +176,176 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/account"
-                className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Pesanan Saya</h1>
-                <p className="text-gray-600 mt-2">
-                  Lihat riwayat dan status pesanan Anda
-                </p>
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
+        <Navbar />
+        
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/account"
+                  className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Link>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Pesanan Saya</h1>
+                  <p className="text-gray-600 mt-2">
+                    Lihat riwayat dan status pesanan Anda
+                  </p>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Desktop Search & Filter */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Cari pesanan..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
             
-            <div className="flex items-center space-x-4">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">Semua Status</option>
+              <option value="pending">Menunggu Pembayaran</option>
+              <option value="processing">Diproses</option>
+              <option value="shipped">Dikirim</option>
+              <option value="delivered">Selesai</option>
+              <option value="cancelled">Dibatalkan</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Desktop Content */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {filteredOrders.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchQuery || statusFilter !== 'all' ? 'Tidak ada pesanan yang cocok' : 'Belum ada pesanan'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {searchQuery || statusFilter !== 'all' 
+                  ? 'Coba ubah filter atau kata kunci pencarian'
+                  : 'Mulai berbelanja untuk melihat pesanan Anda di sini'
+                }
+              </p>
+              <Link
+                href="/shop"
+                className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              >
+                Mulai Belanja
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {filteredOrders.map((order) => {
+                const statusConfig = getStatusConfig(order.status);
+                const StatusIcon = statusConfig.icon;
+                
+                return (
+                  <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="p-6">
+                      {/* Order Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{order.orderNumber}</h3>
+                          <p className="text-sm text-gray-600">
+                            {new Date(order.date).toLocaleDateString('id-ID', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        
+                        <div className="text-right">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusConfig.color}`}>
+                            <StatusIcon className="h-4 w-4 mr-1" />
+                            {statusConfig.label}
+                          </span>
+                          <p className="text-lg font-bold text-gray-900 mt-2">
+                            Rp {order.total.toLocaleString('id-ID')}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Products */}
+                      <div className="border-t border-gray-200 pt-4">
+                        <div className="space-y-3">
+                          {order.products.map((product, index) => (
+                            <div key={index} className="flex items-center space-x-4">
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-16 h-16 object-cover rounded-lg"
+                              />
+                              <div className="flex-1">
+                                <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
+                                <p className="text-sm text-gray-600">
+                                  {product.quantity} × Rp {product.price.toLocaleString('id-ID')}
+                                </p>
+                              </div>
+                              <div className="text-sm font-medium text-gray-900">
+                                Rp {(product.quantity * product.price).toLocaleString('id-ID')}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="border-t border-gray-200 pt-4 mt-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-gray-600">
+                            {order.items} produk • Total Rp {order.total.toLocaleString('id-ID')}
+                          </p>
+                          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200">
+                            Lihat Detail
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Content */}
+      <div className="md:hidden">
+        <MobileNavigation>
+          <div className="px-4 py-6">
+            {/* Mobile Header */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Link href="/account" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                </Link>
+                <h1 className="text-lg font-bold text-gray-900">Pesanan Saya</h1>
+              </div>
+            </div>
+
+            {/* Mobile Search */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -204,109 +353,63 @@ export default function OrdersPage() {
                   placeholder="Cari pesanan..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
                 />
               </div>
-              
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">Semua Status</option>
-                <option value="pending">Menunggu Pembayaran</option>
-                <option value="processing">Diproses</option>
-                <option value="shipped">Dikirim</option>
-                <option value="delivered">Selesai</option>
-                <option value="cancelled">Dibatalkan</option>
-              </select>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {filteredOrders.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchQuery || statusFilter !== 'all' ? 'Tidak ada pesanan yang cocok' : 'Belum ada pesanan'}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {searchQuery || statusFilter !== 'all' 
-                ? 'Coba ubah filter atau kata kunci pencarian'
-                : 'Mulai berbelanja untuk melihat pesanan Anda di sini'
-              }
-            </p>
-            <Link
-              href="/shop"
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
-            >
-              Mulai Belanja
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {filteredOrders.map((order) => {
-              const statusConfig = getStatusConfig(order.status);
-              const StatusIcon = statusConfig.icon;
-              
-              return (
-                <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="p-6">
-                    {/* Order Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{order.orderNumber}</h3>
-                        <p className="text-sm text-gray-600">
-                          {new Date(order.date).toLocaleDateString('id-ID', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
+            {/* Mobile Orders List */}
+            {filteredOrders.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {searchQuery || statusFilter !== 'all' ? 'Tidak ada pesanan yang cocok' : 'Belum ada pesanan'}
+                </h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  {searchQuery || statusFilter !== 'all' 
+                    ? 'Coba ubah filter atau kata kunci pencarian'
+                    : 'Mulai berbelanja untuk melihat pesanan Anda di sini'
+                  }
+                </p>
+                <Link
+                  href="/shop"
+                  className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                >
+                  Mulai Belanja
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredOrders.map((order) => (
+                  <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="font-semibold text-gray-900 text-sm">{order.orderNumber}</p>
+                          <p className="text-xs text-gray-600">{order.date}</p>
+                        </div>
+                        <div className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusConfig(order.status).color}`}>
+                          {getStatusConfig(order.status).label}
+                        </div>
                       </div>
                       
-                      <div className="text-right">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusConfig.color}`}>
-                          <StatusIcon className="h-4 w-4 mr-1" />
-                          {statusConfig.label}
-                        </span>
-                        <p className="text-lg font-bold text-gray-900 mt-2">
-                          Rp {order.total.toLocaleString('id-ID')}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Products */}
-                    <div className="border-t border-gray-200 pt-4">
-                      <div className="space-y-3">
-                        {order.products.map((product, index) => (
-                          <div key={index} className="flex items-center space-x-4">
-                            <img
-                              src={product.image}
+                      <div className="space-y-2">
+                        {order.products.slice(0, 2).map((product, index) => (
+                          <div key={index} className="flex items-center gap-3">
+                            <img 
+                              src={product.image} 
                               alt={product.name}
-                              className="w-16 h-16 object-cover rounded-lg"
+                              className="w-12 h-12 rounded-lg object-cover"
                             />
                             <div className="flex-1">
-                              <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
-                              <p className="text-sm text-gray-600">
-                                {product.quantity} × Rp {product.price.toLocaleString('id-ID')}
-                              </p>
-                            </div>
-                            <div className="text-sm font-medium text-gray-900">
-                              Rp {(product.quantity * product.price).toLocaleString('id-ID')}
+                              <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                              <p className="text-xs text-gray-600">{product.quantity}x • Rp {product.price.toLocaleString('id-ID')}</p>
                             </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="border-t border-gray-200 pt-4 mt-4">
-                      <div className="flex items-center justify-between">
+                      
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                         <p className="text-sm text-gray-600">
                           {order.items} produk • Total Rp {order.total.toLocaleString('id-ID')}
                         </p>
@@ -316,11 +419,11 @@ export default function OrdersPage() {
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </MobileNavigation>
       </div>
 
       <Footer />

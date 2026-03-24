@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Sparkles, TrendingUp, Clock, Heart } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { RecommendationEngine } from '@/lib/recommendationEngine';
@@ -11,35 +11,36 @@ import { useCart } from '@/contexts/CartContext';
 export default function PersonalizedRecommendations() {
   const { state, trackProductView, addToWishlist, removeFromWishlist } = useUserPreferences();
   const { addItem } = useCart();
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
-  const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (state.isLoading) return;
-
+  // Memoize recommendations to prevent re-computation
+  const recommendations = useMemo(() => {
+    if (state.isLoading) return [];
+    
     // Generate personalized recommendations
-    const personalized = RecommendationEngine.generateRecommendations(
+    return RecommendationEngine.generateRecommendations(
       products,
       state.preferences,
       8
     );
-    setRecommendations(personalized);
+  }, [state.preferences, state.isLoading]);
 
-    // Get trending products
-    const trending = RecommendationEngine.getTrendingProducts(products, 8);
-    setTrendingProducts(trending);
+  // Memoize trending products
+  const trendingProducts = useMemo(() => {
+    return RecommendationEngine.getTrendingProducts(products, 8);
+  }, []);
 
-    // Get recently viewed products
+  // Memoize recently viewed products
+  const recentlyViewed = useMemo(() => {
     const recentlyViewedIds = state.preferences.viewedProducts.slice(0, 8);
-    const recentProducts = recentlyViewedIds
+    return recentlyViewedIds
       .map(id => products.find(p => p.id === id))
       .filter(Boolean);
-    setRecentlyViewed(recentProducts);
+  }, [state.preferences.viewedProducts]);
 
+  useEffect(() => {
     setIsLoading(false);
-  }, [state.preferences, state.isLoading]);
+  }, [state.isLoading]);
 
   const handleProductClick = (product: any) => {
     trackProductView(product.id);
@@ -108,9 +109,9 @@ export default function PersonalizedRecommendations() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {recommendations.map((product) => (
+              {recommendations.map((product, index) => (
                 <ProductCard
-                  key={product.id}
+                  key={`${product.id}-${index}`} // More stable key with index
                   product={product}
                   onClick={handleProductClick}
                   onAddToCart={handleAddToCart}
@@ -134,9 +135,9 @@ export default function PersonalizedRecommendations() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {trendingProducts.map((product) => (
+              {trendingProducts.map((product, index) => (
                 <ProductCard
-                  key={product.id}
+                  key={`${product.id}-trending-${index}`} // More stable key
                   product={product}
                   onClick={handleProductClick}
                   onAddToCart={handleAddToCart}
@@ -160,9 +161,9 @@ export default function PersonalizedRecommendations() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {recentlyViewed.map((product) => (
+              {recentlyViewed.map((product, index) => (
                 <ProductCard
-                  key={product.id}
+                  key={`${product.id}-recent-${index}`} // More stable key
                   product={product}
                   onClick={handleProductClick}
                   onAddToCart={handleAddToCart}

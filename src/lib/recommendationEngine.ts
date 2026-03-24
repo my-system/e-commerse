@@ -59,8 +59,8 @@ export class RecommendationEngine {
       score += 0.2;
     }
 
-    // Score based on viewed products (collaborative filtering)
-    score += this.getViewedProductsScore(product, userPreferences.viewedProducts);
+    // Score based on viewed products
+    score += this.getViewedProductsScore(product, userPreferences.viewedProducts, allProducts);
 
     // Score based on search history
     score += this.getSearchHistoryScore(product, userPreferences.searchHistory);
@@ -74,20 +74,28 @@ export class RecommendationEngine {
     // Score based on cart items
     score += this.getCartScore(product, userPreferences.cartItems, allProducts);
 
-    // Add some randomness for diversity
-    score += Math.random() * 0.1;
+    // Add small deterministic factor for diversity (based on product ID hash)
+    const idHash = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const diversityFactor = (idHash % 100) / 1000; // 0 to 0.099
+    score += diversityFactor;
 
     return Math.min(score, 1); // Cap at 1.0
   }
 
-  private static getViewedProductsScore(product: Product, viewedProducts: string[]): number {
+  private static getViewedProductsScore(product: Product, viewedProducts: string[], allProducts: Product[]): number {
     if (viewedProducts.length === 0) return 0;
 
     // Find similar products to viewed ones
     const similarProducts = viewedProducts.filter(viewedId => {
-      // This would normally use a similarity algorithm
-      // For demo purposes, we'll use simple category matching
-      return Math.random() > 0.5; // Simulate similarity
+      // Use deterministic category matching based on product ID
+      const viewedProduct = allProducts.find((p: Product) => p.id === viewedId);
+      if (!viewedProduct) return false;
+      
+      // Deterministic similarity based on product characteristics
+      const categoryMatch = product.category === viewedProduct.category;
+      const priceSimilarity = Math.abs(product.price - viewedProduct.price) < 100000;
+      
+      return categoryMatch && priceSimilarity;
     });
 
     return similarProducts.length > 0 ? this.WEIGHTS.VIEWED_PRODUCTS : 0;
@@ -183,10 +191,16 @@ export class RecommendationEngine {
 
   // Get trending products based on all user data (in real app, this would be from database)
   static getTrendingProducts(products: Product[], limit: number = 8): Product[] {
-    // Simulate trending by returning featured products with some randomness
+    // Use deterministic sorting instead of random
     return products
       .filter(p => p.featured)
-      .sort(() => Math.random() - 0.5)
+      .sort((a, b) => {
+        // Sort by price (descending) then by ID for stability
+        if (a.price !== b.price) {
+          return b.price - a.price;
+        }
+        return a.id.localeCompare(b.id);
+      })
       .slice(0, limit);
   }
 
@@ -196,10 +210,19 @@ export class RecommendationEngine {
     allProducts: Product[],
     limit: number = 4
   ): Product[] {
-    // Simulate "frequently bought together" by finding products in same category
+    // Use deterministic sorting for frequently bought together
     return allProducts
       .filter(p => p.category === currentProduct.category && p.id !== currentProduct.id)
-      .sort(() => Math.random() - 0.5)
+      .sort((a, b) => {
+        // Sort by price similarity then by ID for stability
+        const aPriceDiff = Math.abs(a.price - currentProduct.price);
+        const bPriceDiff = Math.abs(b.price - currentProduct.price);
+        
+        if (aPriceDiff !== bPriceDiff) {
+          return aPriceDiff - bPriceDiff;
+        }
+        return a.id.localeCompare(b.id);
+      })
       .slice(0, limit);
   }
 

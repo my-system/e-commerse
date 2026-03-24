@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -16,6 +16,7 @@ import { filterProducts, sortProducts, paginateProducts, getTotalPages, generate
 import { formatPrice } from '@/lib/utils';
 import { Filter, X, ShoppingCart, Eye } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -32,10 +33,10 @@ const initialFilters: FilterState = {
 export default function ShopPage() {
   const router = useRouter();
   const { addItem } = useCart();
+  const { isInWishlist } = useWishlist();
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
-  const [wishlist, setWishlist] = useState<string[]>([]);
   const [allProducts, setAllProducts] = useState(products);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
@@ -46,12 +47,47 @@ export default function ShopPage() {
     setAllProducts([...products, ...moreProducts]);
   }, []);
 
+  // Memoize handlers to prevent re-renders
+  const handleQuickView = useCallback((product: any) => {
+    setQuickViewProduct(product);
+  }, []);
+
+  const handleAddToCart = useCallback(async (product: any) => {
+    setAddingToCart(product.id);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      const cartItem = {
+        id: Date.now().toString(),
+        productId: product.id,
+        title: product.title,
+        price: product.price,
+        image: product.images[0],
+        quantity: 1
+      };
+      addItem(cartItem);
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+    } finally {
+      setAddingToCart(null);
+    }
+  }, [addItem]);
+
+  const handleProductClick = useCallback((product: any) => {
+    // Only navigate, don't track to prevent side effects
+    router.push(`/products/${product.id}`);
+  }, [router]);
+
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = filterProducts(allProducts, filters);
     let sorted = sortProducts(filtered, filters.sortBy);
+    
+    // Debug: Log product IDs to see if order changes
+    console.log('Product Order:', sorted.map(p => p.id).slice(0, 10));
+    
     return sorted;
-  }, [allProducts, filters]);
+  }, [allProducts, filters.sortBy]); // Hanya dependency yang benar-benar berubah
 
   // Paginate products
   const paginatedProducts = useMemo(() => {
@@ -86,45 +122,12 @@ export default function ShopPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleQuickView = (product: any) => {
-    setQuickViewProduct(product);
+  const handleCheckout = () => {
+    router.push('/checkout');
   };
 
   const closeQuickView = () => {
     setQuickViewProduct(null);
-  };
-
-  const handleProductClick = (product: any) => {
-    router.push(`/products/${product.id}`);
-  };
-
-  const handleAddToCart = async (product: any) => {
-    setAddingToCart(product.id);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
-      const cartItem = {
-        id: product.id,
-        productId: product.id,
-        title: product.title,
-        price: product.price,
-        image: product.images[0],
-        quantity: 1
-      };
-      addItem(cartItem);
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
-    } finally {
-      setAddingToCart(null);
-    }
-  };
-
-  const handleToggleWishlist = (product: any) => {
-    setWishlist(prev => 
-      prev.includes(product.id)
-        ? prev.filter(id => id !== product.id)
-        : [...prev, product.id]
-    );
   };
 
   const hasActiveFilters = filters.categories.length > 0 || 
@@ -253,14 +256,13 @@ export default function ShopPage() {
               {paginatedProducts.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {paginatedProducts.map((product) => (
+                    {paginatedProducts.map((product, index) => (
                       <ProductCard
-                        key={product.id}
+                        key={`${product.id}-${index}`} // More stable key
                         product={product}
                         onQuickView={handleQuickView}
                         onAddToCart={handleAddToCart}
-                        onToggleWishlist={handleToggleWishlist}
-                        isWishlisted={wishlist.includes(product.id)}
+                        isWishlisted={isInWishlist(product.id)}
                         onClick={handleProductClick}
                       />
                     ))}
@@ -393,14 +395,13 @@ export default function ShopPage() {
             {paginatedProducts.length > 0 ? (
               <>
                 <div className="grid grid-cols-2 gap-4">
-                  {paginatedProducts.map((product) => (
+                  {paginatedProducts.map((product, index) => (
                     <ProductCard
-                      key={product.id}
+                      key={`${product.id}-${index}`} // More stable key
                       product={product}
                       onQuickView={handleQuickView}
                       onAddToCart={handleAddToCart}
-                      onToggleWishlist={handleToggleWishlist}
-                      isWishlisted={wishlist.includes(product.id)}
+                      isWishlisted={isInWishlist(product.id)}
                       onClick={handleProductClick}
                     />
                   ))}
@@ -425,13 +426,13 @@ export default function ShopPage() {
 
       {/* Floating Checkout Button */}
       <div className="fixed bottom-6 right-6 z-40">
-        <a
-          href="/checkout"
+        <button
+          onClick={handleCheckout}
           className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 group"
         >
           <ShoppingCart className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
           <span>Checkout</span>
-        </a>
+        </button>
       </div>
 
       {/* Mobile Filter Drawer */}
@@ -508,14 +509,15 @@ export default function ShopPage() {
                       {addingToCart === quickViewProduct.id ? 'Menambahkan...' : 'Tambah ke Keranjang'}
                     </button>
                     <button 
-                      onClick={() => handleToggleWishlist(quickViewProduct)}
+                      onClick={() => {}}
+                      disabled={addingToCart === quickViewProduct.id}
                       className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                        wishlist.includes(quickViewProduct.id)
+                        isInWishlist(quickViewProduct?.id || '')
                           ? 'bg-red-500 text-white hover:bg-red-600'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      {wishlist.includes(quickViewProduct.id) ? '❤️ Di Wishlist' : '🤍 Tambah Wishlist'}
+                      {isInWishlist(quickViewProduct?.id || '') ? '❤️ Di Wishlist' : '🤍 Tambah ke Wishlist'}
                     </button>
                   </div>
                 </div>

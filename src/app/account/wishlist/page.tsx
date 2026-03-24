@@ -5,6 +5,7 @@ import { Heart, ArrowLeft, Trash2, ShoppingBag, Eye } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { MobileNavigation } from '@/components/MobileNavigation';
 
 interface WishlistItem {
   id: string;
@@ -118,137 +119,266 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/account"
-                className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Wishlist Saya</h1>
-                <p className="text-gray-600 mt-2">
-                  Produk yang Anda simpan untuk dibeli nanti
-                </p>
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
+        <Navbar />
+        
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/account"
+                  className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Link>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Wishlist Saya</h1>
+                  <p className="text-gray-600 mt-2">
+                    Produk yang Anda simpan untuk dibeli nanti
+                  </p>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm text-gray-600">
-                  {wishlist.length} produk • {inStockItems.length} tersedia
-                </p>
-                <p className="text-lg font-bold text-gray-900">
-                  Total: Rp {totalPrice.toLocaleString('id-ID')}
-                </p>
+              
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">
+                    {wishlist.length} produk • {inStockItems.length} tersedia
+                  </p>
+                  <p className="text-lg font-bold text-gray-900">
+                    Total: Rp {totalPrice.toLocaleString('id-ID')}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {wishlist.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-            <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Wishlist Kosong</h3>
-            <p className="text-gray-600 mb-6">
-              Mulai tambahkan produk ke wishlist untuk melihatnya di sini
-            </p>
-            <Link
-              href="/shop"
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
-            >
-              Mulai Belanja
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {wishlist.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group">
-                {/* Product Image */}
-                <div className="relative">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  
-                  {/* Remove Button */}
-                  <button
-                    onClick={() => handleRemoveItem(item.id)}
-                    disabled={removingItem === item.id}
-                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors duration-200 group"
-                  >
-                    <Trash2 className="h-4 w-4 text-gray-400 group-hover:text-red-600 transition-colors duration-200" />
-                  </button>
-                  
-                  {/* Stock Status */}
-                  {!item.inStock && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                      <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Habis
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Product Info */}
-                <div className="p-4">
-                  <div className="mb-2">
-                    <span className="text-xs text-gray-500 capitalize">{item.category}</span>
-                  </div>
-                  
-                  <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
-                    {item.name}
-                  </h3>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-lg font-bold text-gray-900">
-                      Rp {item.price.toLocaleString('id-ID')}
-                    </p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex space-x-2">
-                    <Link
-                      href={`/products/${item.id}`}
-                      className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Lihat
-                    </Link>
+        {/* Desktop Content */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {wishlist.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+              <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Wishlist Kosong</h3>
+              <p className="text-gray-600 mb-6">
+                Mulai tambahkan produk ke wishlist untuk melihatnya di sini
+              </p>
+              <Link
+                href="/shop"
+                className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              >
+                Mulai Belanja
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {wishlist.map((item) => (
+                <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group">
+                  {/* Product Image */}
+                  <div className="relative">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                     
-                    {item.inStock ? (
-                      <button
-                        onClick={() => handleAddToCart(item)}
-                        className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm"
-                      >
-                        <ShoppingBag className="h-4 w-4 mr-1" />
-                        + Keranjang
-                      </button>
-                    ) : (
-                      <button
-                        disabled
-                        className="flex-1 flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed text-sm"
-                      >
-                        <ShoppingBag className="h-4 w-4 mr-1" />
-                        Habis
-                      </button>
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => handleRemoveItem(item.id)}
+                      disabled={removingItem === item.id}
+                      className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors duration-200 group"
+                    >
+                      <Trash2 className="h-4 w-4 text-gray-400 group-hover:text-red-600 transition-colors duration-200" />
+                    </button>
+                    
+                    {/* Stock Status */}
+                    {!item.inStock && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          Habis
+                        </span>
+                      </div>
                     )}
                   </div>
+
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <div className="mb-2">
+                      <span className="text-xs text-gray-500 capitalize">{item.category}</span>
+                    </div>
+                    
+                    <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
+                      {item.name}
+                    </h3>
+                    
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-lg font-bold text-gray-900">
+                        Rp {item.price.toLocaleString('id-ID')}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex space-x-2">
+                      <Link
+                        href={`/products/${item.id}`}
+                        className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Lihat
+                      </Link>
+                      
+                      {item.inStock ? (
+                        <button
+                          onClick={() => handleAddToCart(item)}
+                          className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm"
+                        >
+                          <ShoppingBag className="h-4 w-4 mr-1" />
+                          + Keranjang
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          className="flex-1 flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed text-sm"
+                        >
+                          <ShoppingBag className="h-4 w-4 mr-1" />
+                          Habis
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Content */}
+      <div className="md:hidden">
+        <MobileNavigation>
+          <div className="px-4 py-6">
+            {/* Mobile Header */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Link href="/account" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                </Link>
+                <h1 className="text-lg font-bold text-gray-900">Wishlist Saya</h1>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">Produk yang Anda simpan untuk dibeli nanti</p>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">
+                    {wishlist.length} • {inStockItems.length} tersedia
+                  </p>
+                  <p className="text-sm font-bold text-gray-900">
+                    Rp {totalPrice.toLocaleString('id-ID')}
+                  </p>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Mobile Wishlist */}
+            {wishlist.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+                <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Wishlist Kosong</h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Mulai tambahkan produk ke wishlist untuk melihatnya di sini
+                </p>
+                <Link
+                  href="/shop"
+                  className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                >
+                  Mulai Belanja
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {wishlist.map((item) => (
+                  <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="flex gap-4 p-4">
+                      {/* Product Image */}
+                      <div className="relative flex-shrink-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-20 h-20 object-cover rounded-lg"
+                        />
+                        
+                        {/* Remove Button */}
+                        <button
+                          onClick={() => handleRemoveItem(item.id)}
+                          disabled={removingItem === item.id}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-700 transition-colors duration-200"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                        
+                        {/* Stock Status */}
+                        {!item.inStock && (
+                          <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                            <span className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                              Habis
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Product Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-1">
+                          <span className="text-xs text-gray-500 capitalize">{item.category}</span>
+                        </div>
+                        
+                        <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
+                          {item.name}
+                        </h3>
+                        
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-base font-bold text-gray-900">
+                            Rp {item.price.toLocaleString('id-ID')}
+                          </p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/products/${item.id}`}
+                            className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-xs"
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Lihat
+                          </Link>
+                          
+                          {item.inStock ? (
+                            <button
+                              onClick={() => handleAddToCart(item)}
+                              className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-xs"
+                            >
+                              <ShoppingBag className="h-3 w-3 mr-1" />
+                              + Keranjang
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="flex-1 flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed text-xs"
+                            >
+                              <ShoppingBag className="h-3 w-3 mr-1" />
+                              Habis
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </MobileNavigation>
       </div>
 
       <Footer />

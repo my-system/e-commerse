@@ -77,12 +77,12 @@ export default function FilterSidebar({
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <h3 className="text-lg font-semibold text-gray-900">Filter</h3>
+      <div className={`flex items-center justify-between p-4 border-b ${isMobile ? 'bg-blue-600' : 'bg-white'}`}>
+        <h3 className={`text-lg font-bold ${isMobile ? 'text-white' : 'text-gray-900'}`}>Filter</h3>
         <div className="flex items-center gap-2">
           <button
             onClick={onReset}
-            className="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+            className={`p-2 transition-colors duration-200 ${isMobile ? 'text-white hover:text-blue-100' : 'text-gray-500 hover:text-gray-700'}`}
             title="Reset Filter"
           >
             <RotateCcw className="h-4 w-4" />
@@ -90,7 +90,7 @@ export default function FilterSidebar({
           {isMobile && onClose && (
             <button
               onClick={onClose}
-              className="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+              className="p-2 text-white hover:text-blue-100 transition-colors duration-200"
             >
               <X className="h-4 w-4" />
             </button>
@@ -106,11 +106,11 @@ export default function FilterSidebar({
             onClick={() => toggleSection('categories')}
             className="flex items-center justify-between w-full mb-3 text-left"
           >
-            <h4 className="font-medium text-gray-900">Kategori</h4>
+            <h4 className={`font-semibold ${isMobile ? 'text-white' : 'text-gray-900'}`}>Kategori</h4>
             {expandedSections.categories ? (
-              <ChevronUp className="h-4 w-4 text-gray-500" />
+              <ChevronUp className={`h-4 w-4 ${isMobile ? 'text-white' : 'text-gray-500'}`} />
             ) : (
-              <ChevronDown className="h-4 w-4 text-gray-500" />
+              <ChevronDown className={`h-4 w-4 ${isMobile ? 'text-white' : 'text-gray-500'}`} />
             )}
           </button>
           
@@ -127,7 +127,7 @@ export default function FilterSidebar({
                     onChange={() => handleCategoryToggle(category.id)}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700">{category.name}</span>
+                  <span className={`text-sm ${isMobile ? 'text-white' : 'text-gray-700'}`}>{category.name}</span>
                 </label>
               ))}
             </div>
@@ -140,7 +140,7 @@ export default function FilterSidebar({
             onClick={() => toggleSection('price')}
             className="flex items-center justify-between w-full mb-3 text-left"
           >
-            <h4 className="font-medium text-gray-900">Harga</h4>
+            <h4 className={`font-semibold ${isMobile ? 'text-white' : 'text-gray-900'}`}>Harga</h4>
             {expandedSections.price ? (
               <ChevronUp className="h-4 w-4 text-gray-500" />
             ) : (
@@ -205,11 +205,11 @@ export default function FilterSidebar({
             onClick={() => toggleSection('rating')}
             className="flex items-center justify-between w-full mb-3 text-left"
           >
-            <h4 className="font-medium text-gray-900">Rating</h4>
+            <h4 className={`font-semibold ${isMobile ? 'text-white' : 'text-gray-900'}`}>Rating</h4>
             {expandedSections.rating ? (
-              <ChevronUp className="h-4 w-4 text-gray-500" />
+              <ChevronUp className={`h-4 w-4 ${isMobile ? 'text-white' : 'text-gray-500'}`} />
             ) : (
-              <ChevronDown className="h-4 w-4 text-gray-500" />
+              <ChevronDown className={`h-4 w-4 ${isMobile ? 'text-white' : 'text-gray-500'}`} />
             )}
           </button>
           
@@ -269,7 +269,7 @@ export default function FilterSidebar({
         />
         
         {/* Sidebar */}
-        <div className="relative bg-white w-80 h-full shadow-xl">
+        <div className="relative bg-blue-600 w-80 h-full shadow-xl">
           <SidebarContent />
         </div>
       </div>

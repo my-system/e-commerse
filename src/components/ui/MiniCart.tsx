@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { X, ShoppingCart, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import CartItem from './CartItem';
 import { formatPrice } from '@/lib/utils';
-import { X, ShoppingCart, ArrowRight } from 'lucide-react';
+import { useRef, useEffect } from 'react';
+import CartItem from './CartItem';
 
 export default function MiniCart() {
   const { state, closeCart, toggleCart } = useCart();
+  const router = useRouter();
   const cartRef = useRef<HTMLDivElement>(null);
 
   // Close cart when clicking outside
@@ -123,7 +125,7 @@ export default function MiniCart() {
                 <button
                   onClick={() => {
                     // Navigate to cart page
-                    window.location.href = '/cart';
+                    router.push('/cart');
                   }}
                   className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2"
                 >
@@ -134,7 +136,7 @@ export default function MiniCart() {
                 <button
                   onClick={() => {
                     // Navigate to checkout
-                    window.location.href = '/checkout';
+                    router.push('/checkout');
                   }}
                   className="w-full px-4 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors duration-200"
                 >

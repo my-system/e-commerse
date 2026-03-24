@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Product } from '@/data/products';
 import { formatPrice } from '@/lib/utils';
-import { ShoppingCart, Eye, Heart } from 'lucide-react';
+import { ShoppingCart, Eye, Heart, X, Check } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+import QuickViewModal from './QuickViewModal';
 
 interface ProductCardProps {
   product: Product;
@@ -25,10 +28,34 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'cart' | 'wishlist'; message: string } | null>(null);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const { trackProductView, addToCart, removeFromCart } = useUserPreferences();
+  const { addItem } = useCart();
+  const { isInWishlist, addItem: addToWishlist, removeItem: removeFromWishlistState } = useWishlist();
 
-  const handleCardClick = () => {
-    trackProductView(product.id);
+  const productInWishlist = isInWishlist(product.id);
+
+  const showNotification = (type: 'cart' | 'wishlist', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Prevent multiple clicks during loading
+    if (isLoading) return;
+    
+    // Temporarily disable tracking to test if it causes reordering
+    // try {
+    //   trackProductView(product.id);
+    // } catch (error) {
+    //   console.warn('Failed to track product view:', error);
+    // }
+    
+    // Let parent handle navigation if needed
     onClick?.(product);
   };
 
@@ -36,6 +63,19 @@ export default function ProductCard({
     e.preventDefault();
     e.stopPropagation();
     setIsLoading(true);
+    
+    // Optimistic UI update
+    showNotification('cart', 'Added to Cart');
+    
+    // Add to cart state
+    addItem({
+      id: Date.now().toString(), // Generate unique ID
+      productId: product.id,
+      title: product.title,
+      price: product.price,
+      image: product.images[0],
+      quantity: 1
+    });
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -48,62 +88,49 @@ export default function ProductCard({
   const handleQuickView = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsQuickViewOpen(true);
     onQuickView?.(product);
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (productInWishlist) {
+      removeFromWishlistState(product.id);
+      showNotification('wishlist', 'Removed from Wishlist');
+    } else {
+      addToWishlist({
+        id: Date.now().toString(),
+        productId: product.id,
+        title: product.title,
+        price: product.price,
+        image: product.images[0]
+      });
+      showNotification('wishlist', 'Added to Wishlist');
+    }
+    
     onToggleWishlist?.(product);
   };
 
   return (
     <div
-      className="group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={`group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer ${
+        isLoading ? 'pointer-events-none opacity-75' : ''
+      }`}
+      onMouseEnter={() => !isLoading && setIsHovered(true)}
+      onMouseLeave={() => !isLoading && setIsHovered(false)}
       onClick={handleCardClick}
+      style={{ transform: 'none' }}
     >
       {/* Product Image */}
       <div className="relative h-64 sm:h-80 overflow-hidden bg-gray-100">
         <img
           src={product.images[0]}
           alt={product.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          className="w-full h-full object-cover transition-transform duration-300"
         />
         
-        {/* Quick Actions Overlay */}
-        <div className={`absolute inset-0 bg-black/40 flex items-center justify-center gap-3 transition-all duration-300 ${
-          isHovered ? 'opacity-100' : 'opacity-0'
-        }`}>
-          <button
-            onClick={handleQuickView}
-            className="p-3 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
-            title="Quick View"
-          >
-            <Eye className="h-5 w-5 text-gray-800" />
-          </button>
-          <button
-            onClick={handleToggleWishlist}
-            className={`p-3 rounded-full transition-colors duration-200 transform hover:scale-110 ${
-              isWishlisted 
-                ? 'bg-red-500 hover:bg-red-600' 
-                : 'bg-white hover:bg-gray-100'
-            }`}
-            title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-          >
-            <Heart className={`h-5 w-5 ${isWishlisted ? 'text-white' : 'text-gray-800'}`} />
-          </button>
-          <button
-            onClick={handleAddToCart}
-            disabled={isLoading}
-            className="p-3 bg-blue-600 rounded-full hover:bg-blue-700 transition-colors duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Add to Cart"
-          >
-            <ShoppingCart className="h-5 w-5 text-white" />
-          </button>
-        </div>
-
         {/* Badge */}
         {product.featured && (
           <div className="absolute top-4 left-4">
@@ -120,6 +147,22 @@ export default function ProductCard({
           </div>
         )}
       </div>
+
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`absolute top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-300 ${
+          notification.type === 'cart' 
+            ? 'bg-blue-600 text-white' 
+            : 'bg-red-600 text-white'
+        }`}>
+          {notification.type === 'cart' ? (
+            <ShoppingCart className="h-4 w-4" />
+          ) : (
+            <Heart className="h-4 w-4" />
+          )}
+          <span className="text-sm font-medium">{notification.message}</span>
+        </div>
+      )}
 
       {/* Product Info */}
       <div className="p-4 sm:p-6">
@@ -147,6 +190,12 @@ export default function ProductCard({
         {/* Action Buttons */}
         <div className="flex gap-2">
           <button
+            onClick={handleQuickView}
+            className="px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+          <button
             onClick={handleAddToCart}
             disabled={isLoading}
             className="flex-1 px-3 sm:px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
@@ -154,13 +203,29 @@ export default function ProductCard({
             {isLoading ? 'Menambah...' : 'Tambah ke Keranjang'}
           </button>
           <button
-            onClick={handleQuickView}
-            className="px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+            onClick={handleToggleWishlist}
+            className={`px-3 sm:px-4 py-2 rounded-lg transition-colors duration-200 ${
+              productInWishlist 
+                ? 'bg-red-500 text-white hover:bg-red-600' 
+                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
           >
-            <Eye className="h-4 w-4" />
+            <Heart className={`h-4 w-4 ${productInWishlist ? 'fill-current' : ''}`} />
           </button>
         </div>
       </div>
+      
+      {/* Quick View Modal */}
+      <QuickViewModal 
+        product={product} 
+        isOpen={isQuickViewOpen} 
+        onClose={() => setIsQuickViewOpen(false)} 
+      />
     </div>
   );
-}
+};
+
+const ProductCardMemo = memo(ProductCard);
+ProductCardMemo.displayName = 'ProductCard';
+
+export { ProductCardMemo as ProductCard };
