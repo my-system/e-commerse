@@ -26,16 +26,26 @@ export interface Product {
   reviews?: number;
 }
 
+// Validasi dan sanitasi data produk
+const validateProduct = (product: any): Product => {
+  return {
+    ...product,
+    images: Array.isArray(product.images) && product.images.length > 0 
+      ? product.images 
+      : [`/api/placeholder/600/800/${product.title.toLowerCase().replace(/\s+/g, '-')}`]
+  };
+};
+
 export const products: Product[] = [
   {
     id: "1",
     title: "Classic White T-Shirt",
     price: 299900,
     images: [
-      "https://images.unsplash.com/photo-1523779917675-b690dc8e2920?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1523779917675-b690dc8e2920?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1523779917675-b690dc8e2920?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1523779917675-b690dc8e2920?w=600&h=800&fit=crop"
+      "/api/placeholder/600/800/tshirt",
+      "/api/placeholder/600/800/tshirt-2",
+      "/api/placeholder/600/800/tshirt-3",
+      "/api/placeholder/600/800/tshirt-4"
     ],
     category: "fashion",
     description: "Premium quality cotton t-shirt with perfect fit. Made from 100% organic cotton with a comfortable regular fit.",
@@ -71,9 +81,9 @@ export const products: Product[] = [
     title: "Denim Jacket",
     price: 899900,
     images: [
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=800&fit=crop"
+      "/api/placeholder/600/800/denim-jacket",
+      "/api/placeholder/600/800/denim-jacket-2",
+      "/api/placeholder/600/800/denim-jacket-3"
     ],
     category: "fashion",
     description: "Classic denim jacket with modern cut. Perfect layering piece for any season.",
@@ -107,9 +117,9 @@ export const products: Product[] = [
     title: "Leather Handbag",
     price: 1299000,
     images: [
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop"
+      "/api/placeholder/600/800/leather-bag",
+      "/api/placeholder/600/800/leather-bag-2",
+      "/api/placeholder/600/800/leather-bag-3"
     ],
     category: "accessories",
     description: "Genuine leather handbag with elegant design. Perfect for both casual and formal occasions.",
@@ -139,9 +149,9 @@ export const products: Product[] = [
     title: "Running Shoes",
     price: 799900,
     images: [
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop"
+      "/api/placeholder/600/800/running-shoes",
+      "/api/placeholder/600/800/running-shoes-2",
+      "/api/placeholder/600/800/running-shoes-3"
     ],
     category: "shoes",
     description: "Comfortable running shoes for all terrains. Advanced cushioning technology for maximum comfort.",
@@ -178,8 +188,8 @@ export const products: Product[] = [
     title: "Sunglasses",
     price: 499900,
     images: [
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop"
+      "/api/placeholder/600/800/sunglasses",
+      "/api/placeholder/600/800/sunglasses-2"
     ],
     category: "accessories",
     description: "UV protection sunglasses with stylish frame. 100% UV protection with polarized lenses.",
@@ -209,8 +219,8 @@ export const products: Product[] = [
     title: "Wool Sweater",
     price: 699900,
     images: [
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop"
+      "/api/placeholder/600/800/wool-sweater",
+      "/api/placeholder/600/800/wool-sweater-2"
     ],
     category: "fashion", 
     description: "Cozy wool sweater perfect for winter. Made from premium merino wool.",
@@ -245,8 +255,8 @@ export const products: Product[] = [
     title: "Canvas Backpack",
     price: 399900,
     images: [
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop"
+      "/api/placeholder/600/800/backpack",
+      "/api/placeholder/600/800/backpack-2"
     ],
     category: "accessories",
     description: "Durable canvas backpack for daily use. Multiple compartments for organization.",
@@ -276,8 +286,8 @@ export const products: Product[] = [
     title: "Sports Watch",
     price: 1599000,
     images: [
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop"
+      "/api/placeholder/600/800/sports-watch",
+      "/api/placeholder/600/800/sports-watch-2"
     ],
     category: "accessories",
     description: "Multi-function sports watch with heart rate monitor. Track your fitness goals.",
@@ -702,3 +712,8 @@ export const products: Product[] = [
     reviews: 156
   }
 ];
+
+// Export fungsi untuk mendapatkan produk yang valid
+export const getValidProducts = (): Product[] => {
+  return products.map(product => validateProduct(product));
+};

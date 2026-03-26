@@ -35,20 +35,25 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     setIsAdded(true)
+    
     // Add to cart logic here
+    console.log('Added to cart:', product.name)
+    
     setTimeout(() => setIsAdded(false), 2000)
+  }
+
+  const handleProductClick = () => {
+    // Navigate to product detail page
+    window.location.href = `/products/${product.id}`
   }
 
   return (
     <div 
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer group"
-      onClick={(e) => {
-        e.stopPropagation()
-        onClick?.(product)
-      }}
+      onClick={handleProductClick}
     >
       {/* Product Image - Mobile Optimized */}
-      <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden min-h-[200px]">
         {product.image ? (
           <OptimizedImage
             src={product.image}
@@ -57,13 +62,18 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
             priority={false}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             placeholder="blur"
+            fallback="/placeholder.jpg"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-gray-300 rounded-lg mx-auto mb-2"></div>
-              <p className="text-xs text-gray-500 px-3">No Image</p>
-            </div>
+            <OptimizedImage
+              src="/placeholder.jpg"
+              alt={product.name}
+              className="w-full h-full"
+              priority={true}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              fallback="/placeholder.jpg"
+            />
           </div>
         )}
 

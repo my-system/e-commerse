@@ -26,30 +26,54 @@ interface FeaturedProductsModernProps {
 function FeaturedProductCardModern({ product, onClick }: { product: Product; onClick?: () => void }) {
   const [isImageLoading, setIsImageLoading] = useState(true)
   const [isImageError, setIsImageError] = useState(false)
+  const [isAdded, setIsAdded] = useState(false)
 
   const discountPercentage = product.originalPrice && product.discount
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
 
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation()
+    setIsAdded(true)
+    
+    // Add to cart logic here
+    console.log('Added to cart:', product.name)
+    
+    setTimeout(() => setIsAdded(false), 2000)
+  }
+
+  const handleProductClick = () => {
+    // Navigate to product detail page
+    window.location.href = `/products/${product.id}`
+  }
+
   return (
     <div 
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer group"
-      onClick={onClick}
+      onClick={handleProductClick}
     >
       {/* Product Image - Mobile Optimized */}
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden min-h-[200px]">
         {product.image ? (
           <OptimizedImage
             src={product.image}
             alt={product.name}
             className="w-full h-full group-hover:scale-105 transition-transform duration-300"
             priority={false}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 33vw"
             placeholder="blur"
+            fallback="/placeholder.jpg"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <div className="w-12 h-12 bg-gray-300 rounded-full opacity-50"></div>
+            <OptimizedImage
+              src="/placeholder.jpg"
+              alt={product.name}
+              className="w-full h-full"
+              priority={true}
+              sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 33vw"
+              fallback="/placeholder.jpg"
+            />
           </div>
         )}
 

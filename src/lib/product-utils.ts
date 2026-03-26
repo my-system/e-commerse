@@ -1,5 +1,36 @@
 import { Product } from '@/data/products';
-import { FilterState } from '@/components/ui/FilterSidebar';
+
+// New Filter Interface
+export interface FilterState {
+  category: string;
+  priceMin: number;
+  priceMax: number;
+  rating: number | null; // null = no filter, 1-5 = range values
+}
+
+// Price preset options
+export const pricePresets = [
+  {
+    label: '< 50rb',
+    priceMin: 0,
+    priceMax: 49999,
+  },
+  {
+    label: '50rb – 1jt',
+    priceMin: 50000,
+    priceMax: 1000000,
+  },
+  {
+    label: '1jt – 2jt',
+    priceMin: 1000000,
+    priceMax: 2000000,
+  },
+  {
+    label: '> 2jt',
+    priceMin: 2000000,
+    priceMax: 999999999, // Large number for "infinity"
+  },
+];
 
 export interface SortConfig {
   field: keyof Product | 'rating';
@@ -16,28 +47,65 @@ export const sortOptions: Record<string, SortConfig> = {
 };
 
 export function filterProducts(products: Product[], filters: FilterState): Product[] {
+  console.log('Filtering products with:', filters);
+  
   return products.filter((product) => {
-    // Category filter
-    if (filters.categories.length > 0) {
-      if (!filters.categories.includes(product.category)) {
+    // Category filter - single category
+    if (filters.category) {
+      if (product.category !== filters.category) {
+        console.log(`Product ${product.title} category mismatch: ${product.category} !== ${filters.category}`);
         return false;
       }
     }
 
     // Price range filter
-    if (product.price < filters.priceRange.min || product.price > filters.priceRange.max) {
+    if (product.price < filters.priceMin || product.price > filters.priceMax) {
+      console.log(`Product ${product.title} price out of range: ${product.price} not in ${filters.priceMin}-${filters.priceMax}`);
       return false;
     }
 
-    // Rating filter (simulated - in real app, product would have rating)
-    if (filters.rating > 0) {
-      // Simulated rating - in real app, this would come from product data
-      const simulatedRating = 4.5; // Default rating for all products
-      if (simulatedRating < filters.rating) {
-        return false;
+    // Rating filter - range-based filtering
+    if (filters.rating !== null && filters.rating > 0) {
+      const productRating = product.rating || 0;
+      
+      // Range-based rating logic
+      switch (filters.rating) {
+        case 5: // ⭐⭐⭐⭐⭐ (5★ exactly)
+          if (productRating !== 5) {
+            console.log(`Product ${product.title} rating not 5: ${productRating} !== 5`);
+            return false;
+          }
+          break;
+        case 4: // ⭐⭐⭐⭐☆ (4.0 – 4.9)
+          if (productRating < 4 || productRating >= 5) {
+            console.log(`Product ${product.title} rating not in 4.0-4.9: ${productRating}`);
+            return false;
+          }
+          break;
+        case 3: // ⭐⭐⭐☆☆ (3.0 – 3.9)
+          if (productRating < 3 || productRating >= 4) {
+            console.log(`Product ${product.title} rating not in 3.0-3.9: ${productRating}`);
+            return false;
+          }
+          break;
+        case 2: // ⭐⭐☆☆☆ (2.0 – 2.9)
+          if (productRating < 2 || productRating >= 3) {
+            console.log(`Product ${product.title} rating not in 2.0-2.9: ${productRating}`);
+            return false;
+          }
+          break;
+        case 1: // ⭐☆☆☆☆ (1.0 – 1.9)
+          if (productRating < 1 || productRating >= 2) {
+            console.log(`Product ${product.title} rating not in 1.0-1.9: ${productRating}`);
+            return false;
+          }
+          break;
+        default:
+          return true;
       }
     }
 
+    console.log(`Product ${product.title} passed all filters`);
     return true;
   });
 }
@@ -56,10 +124,10 @@ export function sortProducts(products: Product[], sortBy: string): Product[] {
     let aValue: any = a[config.field as keyof Product];
     let bValue: any = b[config.field as keyof Product];
 
-    // Handle rating (simulated)
+    // Handle rating (use actual rating from product data)
     if (config.field === 'rating') {
-      aValue = 4.5; // Simulated rating
-      bValue = 4.5; // Simulated rating
+      aValue = aValue || 0; // Default to 0 if no rating
+      bValue = bValue || 0; // Default to 0 if no rating
     }
 
     // Handle boolean values

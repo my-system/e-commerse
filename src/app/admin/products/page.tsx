@@ -1,44 +1,28 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import Link from 'next/link';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
+import { products as initialProducts } from '@/data/products';
+import { Product as ProductType } from '@/data/products';
 
-const mockProducts = [
-  {
-    id: 1,
-    name: 'Premium Leather Jacket',
-    category: 'Clothing',
-    price: 299.99,
-    stock: 45,
-    status: 'active',
-    image: '/products/jacket.jpg',
-    sku: 'JKT-001'
-  },
-  {
-    id: 2,
-    name: 'Designer Sneakers',
-    category: 'Shoes',
-    price: 159.99,
-    stock: 128,
-    status: 'active',
-    image: '/products/sneakers.jpg',
-    sku: 'SNE-002'
-  },
-  {
-    id: 3,
-    name: 'Luxury Watch',
-    category: 'Accessories',
-    price: 599.99,
-    stock: 12,
-    status: 'low_stock',
-    image: '/products/watch.jpg',
-    sku: 'WCH-003'
-  }
-];
+interface Product extends ProductType {
+  // Additional fields for admin functionality
+  slug?: string;
+  originalPrice?: number;
+  stock?: number;
+  isHot?: boolean;
+  isNew?: boolean;
+  fullDescription?: string;
+  sizes?: Array<{ name: string; available: boolean }>;
+  colors?: string[];
+  fit?: string;
+  neckline?: string;
+  sleeve?: string;
+}
 
 export default function AdminProducts() {
   const { user, isLoggedIn } = useAuth();
@@ -46,10 +30,20 @@ export default function AdminProducts() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     if (!isLoggedIn || user?.role !== 'admin') {
       router.push('/');
+      return;
+    }
+
+    // Load products from localStorage or use initial products
+    const storedProducts = localStorage.getItem('products');
+    if (storedProducts) {
+      setProducts(JSON.parse(storedProducts));
+    } else {
+      setProducts(initialProducts);
     }
   }, [isLoggedIn, user, router]);
 
@@ -57,11 +51,25 @@ export default function AdminProducts() {
     return null;
   }
 
-  const filteredProducts = mockProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
+
+  const getStatusColor = (product: Product) => {
+    const stock = product.stock ?? (product.inStock ? 100 : 0); // Default to 100 if inStock, 0 if not
+    if (stock === 0) return 'bg-red-100 text-red-700';
+    if (stock <= 10) return 'bg-yellow-100 text-yellow-700';
+    return 'bg-green-100 text-green-700';
+  };
+
+  const getStatusText = (product: Product) => {
+    const stock = product.stock ?? (product.inStock ? 100 : 0); // Default to 100 if inStock, 0 if not
+    if (stock === 0) return 'Habis';
+    if (stock <= 10) return 'Terbatas';
+    return 'Tersedia';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -76,10 +84,13 @@ export default function AdminProducts() {
                 <h1 className="text-2xl font-bold text-gray-900">Products</h1>
                 <p className="text-sm text-gray-500 mt-1">Manage your product inventory</p>
               </div>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <Link
+                href="/admin/products/create"
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 <Plus className="w-4 h-4" />
-                <span>Add Product</span>
-              </button>
+                <span>Tambah Produk</span>
+              </Link>
             </div>
           </div>
 
@@ -107,79 +118,119 @@ export default function AdminProducts() {
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">All Categories</option>
-                    <option value="clothing">Clothing</option>
+                    <option value="fashion">Fashion</option>
                     <option value="shoes">Shoes</option>
-                    <option value="accessories">Accessories</option>
+                    <option value="elektronik">Elektronik</option>
+                    <option value="aksesoris">Aksesoris</option>
+                    <option value="olahraga">Olahraga</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            {/* Products Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-6 text-sm font-medium text-gray-500">Product</th>
-                      <th className="text-left py-3 px-6 text-sm font-medium text-gray-500">SKU</th>
-                      <th className="text-left py-3 px-6 text-sm font-medium text-gray-500">Category</th>
-                      <th className="text-left py-3 px-6 text-sm font-medium text-gray-500">Price</th>
-                      <th className="text-left py-3 px-6 text-sm font-medium text-gray-500">Stock</th>
-                      <th className="text-left py-3 px-6 text-sm font-medium text-gray-500">Status</th>
-                      <th className="text-left py-3 px-6 text-sm font-medium text-gray-500">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-6">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                              <Eye className="w-5 h-5 text-gray-400" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                              <p className="text-xs text-gray-500">ID: {product.id}</p>
-                            </div>
+            {/* Products Grid */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <div key={product.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                    {/* Product Image */}
+                    <div className="relative h-48 bg-gray-100">
+                      {product.images && product.images.length > 0 ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Eye className="w-12 h-12 text-gray-400" />
+                        </div>
+                      )}
+                      
+                      {/* Status Badges */}
+                      <div className="absolute top-2 left-2 flex flex-col gap-1">
+                        {product.isHot && (
+                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">HOT</span>
+                        )}
+                        {product.featured && (
+                          <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">Featured</span>
+                        )}
+                        {product.isNew && (
+                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">New</span>
+                        )}
+                      </div>
+                      
+                      {/* Stock Status */}
+                      <div className="absolute top-2 right-2">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(product)}`}>
+                          {getStatusText(product)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="p-4">
+                      <h3 className="font-medium text-gray-900 truncate">{product.title}</h3>
+                      <p className="text-sm text-gray-500 mt-1">{product.category}</p>
+                      
+                      <div className="flex items-center justify-between mt-2">
+                        <div>
+                          <p className="text-lg font-bold text-blue-600">
+                            Rp {product.price.toLocaleString('id-ID')}
+                          </p>
+                          {product.originalPrice && product.originalPrice > product.price && (
+                            <p className="text-sm text-gray-400 line-through">
+                              Rp {product.originalPrice.toLocaleString('id-ID')}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">Stok: {product.stock ?? (product.inStock ? 100 : 0)}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-yellow-400 text-sm">★</span>
+                            <span className="text-sm text-gray-600">{product.rating ?? 0}</span>
                           </div>
-                        </td>
-                        <td className="py-3 px-6 text-sm text-gray-600">{product.sku}</td>
-                        <td className="py-3 px-6 text-sm text-gray-600">{product.category}</td>
-                        <td className="py-3 px-6 text-sm font-medium text-gray-900">${product.price}</td>
-                        <td className="py-3 px-6">
-                          <span className={`text-sm font-medium ${
-                            product.stock <= 10 ? 'text-red-600' : 'text-gray-900'
-                          }`}>
-                            {product.stock}
-                          </span>
-                        </td>
-                        <td className="py-3 px-6">
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            product.status === 'active' 
-                              ? 'bg-green-100 text-green-700'
-                              : product.status === 'low_stock'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-red-100 text-red-700'
-                          }`}>
-                            {product.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="py-3 px-6">
-                          <div className="flex items-center space-x-2">
-                            <button className="p-1 text-gray-400 hover:text-blue-600 transition-colors">
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button className="p-1 text-gray-400 hover:text-red-600 transition-colors">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 mt-4">
+                        <Link
+                          href={`/product/${product.slug || product.id}`}
+                          className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-sm"
+                        >
+                          <Eye className="w-3 h-3" />
+                          Lihat
+                        </Link>
+                        <button className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors text-sm">
+                          <Edit className="w-3 h-3" />
+                          Edit
+                        </button>
+                        <button className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
+
+              {filteredProducts.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Eye className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                  <p className="text-gray-500 mb-4">Get started by adding a new product</p>
+                  <Link
+                    href="/admin/products/create"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Tambah Produk
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

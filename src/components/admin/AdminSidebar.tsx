@@ -13,12 +13,25 @@ import {
   X, 
   TrendingUp,
   Store,
-  ChevronRight
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 interface AdminSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+}
+
+interface MenuItem {
+  name: string;
+  href: string;
+  icon: any;
+  description: string;
+  submenu?: Array<{
+    name: string;
+    href: string;
+    description: string;
+  }>;
 }
 
 const menuItems = [
@@ -32,7 +45,19 @@ const menuItems = [
     name: 'Products',
     href: '/admin/products',
     icon: Package,
-    description: 'Manage products'
+    description: 'Manage products',
+    submenu: [
+      {
+        name: 'Daftar Produk',
+        href: '/admin/products',
+        description: 'View all products'
+      },
+      {
+        name: 'Tambah Produk',
+        href: '/admin/products/create',
+        description: 'Add new product'
+      }
+    ]
   },
   {
     name: 'Orders',
@@ -68,6 +93,19 @@ const menuItems = [
 
 export default function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps) {
   const pathname = usePathname();
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  const toggleSubmenu = (itemName: string) => {
+    setExpandedItems(prev => 
+      prev.includes(itemName) 
+        ? prev.filter(item => item !== itemName)
+        : [...prev, itemName]
+    );
+  };
+
+  const isSubmenuActive = (submenu: MenuItem['submenu']) => {
+    return submenu?.some(item => pathname === item.href) || false;
+  };
 
   return (
     <>
@@ -108,33 +146,73 @@ export default function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps) {
         <nav className="p-4 space-y-2">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
+            const hasSubmenu = item.submenu && item.submenu.length > 0;
+            const isExpanded = expandedItems.includes(item.name);
+            const hasActiveSubmenu = hasSubmenu && isSubmenuActive(item.submenu);
             const Icon = item.icon;
             
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  group flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200
-                  ${isActive 
-                    ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                  }
-                `}
-              >
-                <Icon className={`
-                  w-5 h-5 flex-shrink-0
-                  ${isActive ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-600'}
-                `} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{item.name}</div>
-                  <div className="text-xs text-gray-500 truncate">{item.description}</div>
-                </div>
-                <ChevronRight className={`
-                  w-4 h-4 flex-shrink-0
-                  ${isActive ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-600'}
-                `} />
-              </Link>
+              <div key={item.href}>
+                <button
+                  onClick={() => hasSubmenu ? toggleSubmenu(item.name) : null}
+                  className={`
+                    w-full group flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200
+                    ${isActive || hasActiveSubmenu
+                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700' 
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }
+                  `}
+                >
+                  <Icon className={`
+                    w-5 h-5 flex-shrink-0
+                    ${isActive || hasActiveSubmenu ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-600'}
+                  `} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{item.name}</div>
+                    <div className="text-xs text-gray-500 truncate">{item.description}</div>
+                  </div>
+                  {hasSubmenu ? (
+                    <ChevronDown className={`
+                      w-4 h-4 flex-shrink-0 transition-transform duration-200
+                      ${isExpanded ? 'rotate-180' : ''}
+                      ${isActive || hasActiveSubmenu ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-600'}
+                    `} />
+                  ) : (
+                    <ChevronRight className={`
+                      w-4 h-4 flex-shrink-0
+                      ${isActive || hasActiveSubmenu ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-600'}
+                    `} />
+                  )}
+                </button>
+                
+                {/* Submenu */}
+                {hasSubmenu && isExpanded && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    {item.submenu.map((subItem) => {
+                      const isSubActive = pathname === subItem.href;
+                      return (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          className={`
+                            block group flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200
+                            ${isSubActive
+                              ? 'bg-blue-50 text-blue-700 border-l-2 border-blue-700' 
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }
+                          `}
+                        >
+                          <div className="w-2 h-2 bg-gray-300 rounded-full group-hover:bg-gray-400" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">{subItem.name}</div>
+                            <div className="text-xs text-gray-400 truncate">{subItem.description}</div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>

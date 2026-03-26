@@ -1,23 +1,26 @@
 "use client";
 
-import { products } from '@/data/products';
+import { getValidProducts, Product } from '@/data/products';
 import { formatPrice } from '@/lib/utils';
 import { ShoppingCart, Eye, Heart, X } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
+import { Toast } from '@/components/ui/Toast';
 
 export default function FeaturedProducts() {
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const { addItem, openCart } = useCart();
 
-  const featuredProducts = products.filter(product => product.featured).slice(0, 8);
+  const validProducts = getValidProducts();
+  const featuredProducts = validProducts.filter((product: Product) => product.featured).slice(0, 8);
 
-  const handleAddToCart = async (product: any, e?: React.MouseEvent) => {
+  const handleAddToCart = async (product: Product, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setAddingToCart(product.id);
     
@@ -31,6 +34,14 @@ export default function FeaturedProducts() {
         image: product.images[0],
         quantity: 1
       });
+      
+      // Show success feedback
+      setToast({ message: `${product.title} ditambahkan ke keranjang!`, type: 'success' });
+      
+      // Optionally open cart after adding
+      setTimeout(() => {
+        openCart();
+      }, 300);
     } catch (error) {
       console.error('Failed to add to cart:', error);
     } finally {
@@ -42,20 +53,27 @@ export default function FeaturedProducts() {
     e?.stopPropagation();
     setWishlist(prev => {
       const newWishlist = new Set(prev);
+      const product = featuredProducts.find(p => p.id === productId);
+      
       if (newWishlist.has(productId)) {
         newWishlist.delete(productId);
-        console.log('Removed from wishlist:', productId);
+        setToast({ message: 'Dihapus dari wishlist', type: 'info' });
       } else {
         newWishlist.add(productId);
-        console.log('Added to wishlist:', productId);
+        setToast({ message: 'Ditambahkan ke wishlist!', type: 'success' });
       }
       return newWishlist;
     });
   };
 
-  const handleQuickView = (product: any, e?: React.MouseEvent) => {
+  const handleQuickView = (product: Product, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setQuickViewProduct(product);
+  };
+
+  const handleProductClick = (product: Product) => {
+    // Navigate to product detail page
+    window.location.href = `/products/${product.id}`;
   };
 
   const closeQuickView = () => {
@@ -80,19 +98,21 @@ export default function FeaturedProducts() {
           {featuredProducts.map((product) => (
             <div
               key={product.id}
-              className="group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
+              className="group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
               onMouseEnter={() => setHoveredProduct(product.id)}
               onMouseLeave={() => setHoveredProduct(null)}
+              onClick={() => handleProductClick(product)}
             >
               {/* Product Image */}
               <div className="relative h-80 overflow-hidden bg-gray-100">
                 <OptimizedImage
-                  src={product.images[0]}
+                  src={product.images?.[0] || '/placeholder.jpg'}
                   alt={product.title}
                   className="w-full h-full group-hover:scale-110 transition-transform duration-700"
                   priority={false}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   placeholder="blur"
+                  fallback="/placeholder.jpg"
                 />
                 
                 {/* Quick Actions Overlay */}
@@ -217,12 +237,13 @@ export default function FeaturedProducts() {
                 {/* Product Image */}
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                   <OptimizedImage
-                    src={quickViewProduct.images[0]}
+                    src={quickViewProduct.images?.[0] || '/placeholder.jpg'}
                     alt={quickViewProduct.title}
                     className="w-full h-full"
                     priority={true}
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     placeholder="blur"
+                    fallback="/placeholder.jpg"
                   />
                 </div>
 
@@ -272,11 +293,31 @@ export default function FeaturedProducts() {
                       {wishlist.has(quickViewProduct.id) ? '❤️ Di Wishlist' : '🤍 Tambah Wishlist'}
                     </button>
                   </div>
+
+                  {/* View Full Details Button */}
+                  <button 
+                    onClick={() => {
+                      closeQuickView();
+                      handleProductClick(quickViewProduct);
+                    }}
+                    className="w-full mt-4 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                  >
+                    Lihat Detail Produk
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </section>
   );

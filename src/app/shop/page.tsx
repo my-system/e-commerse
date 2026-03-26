@@ -6,10 +6,9 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { MobileNavigation } from '@/components/MobileNavigation';
 import ProductCard from '@/components/ui/ProductCard';
-import FilterSidebar, { FilterState } from '@/components/ui/FilterSidebar';
-import SortingControls from '@/components/ui/SortingControls';
-import Pagination from '@/components/ui/Pagination';
-import EmptyState from '@/components/ui/EmptyState';
+import FilterSidebarModern from '@/components/ui/FilterSidebarModern';
+import FilterButton from '@/components/mobile/FilterButton';
+import { FilterState, pricePresets } from '@/lib/product-utils';
 import { products } from '@/data/products';
 import { categories } from '@/data/categories';
 import { filterProducts, sortProducts, paginateProducts, getTotalPages, generateMoreProducts } from '@/lib/product-utils';
@@ -20,14 +19,11 @@ import { useWishlist } from '@/contexts/WishlistContext';
 
 const PRODUCTS_PER_PAGE = 12;
 
-const initialFilters: FilterState = {
-  categories: [],
-  priceRange: {
-    min: 0,
-    max: Infinity,
-  },
-  rating: 0,
-  sortBy: 'featured',
+const initialFilters = {
+  category: '',
+  priceMin: 0,
+  priceMax: 999999999,
+  rating: null,
 };
 
 export default function ShopPage() {
@@ -81,13 +77,14 @@ export default function ShopPage() {
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = filterProducts(allProducts, filters);
-    let sorted = sortProducts(filtered, filters.sortBy);
+    let sorted = sortProducts(filtered, 'featured'); // Fixed sortBy
     
     // Debug: Log product IDs to see if order changes
-    console.log('Product Order:', sorted.map(p => p.id).slice(0, 10));
+    console.log('Filtered products count:', filtered.length);
+    console.log('Active filters:', filters);
     
     return sorted;
-  }, [allProducts, filters.sortBy]); // Hanya dependency yang benar-benar berubah
+  }, [allProducts, filters]); // Include all filter dependencies
 
   // Paginate products
   const paginatedProducts = useMemo(() => {
@@ -113,10 +110,6 @@ export default function ShopPage() {
     setShowMobileFilter(false);
   };
 
-  const handleSortChange = (sortBy: string) => {
-    setFilters(prev => ({ ...prev, sortBy }));
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -130,10 +123,10 @@ export default function ShopPage() {
     setQuickViewProduct(null);
   };
 
-  const hasActiveFilters = filters.categories.length > 0 || 
-                          filters.priceRange.min > 0 || 
-                          filters.priceRange.max < Infinity || 
-                          filters.rating > 0;
+  const hasActiveFilters = filters.category !== '' || 
+                          filters.priceMin > 0 || 
+                          filters.priceMax < 999999999 || 
+                          filters.rating !== null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -170,10 +163,9 @@ export default function ShopPage() {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar - Desktop */}
             <div className="hidden lg:block w-80 flex-shrink-0">
-              <FilterSidebar
+              <FilterSidebarModern
                 filters={filters}
                 onFiltersChange={handleFilterChange}
-                onReset={handleFilterReset}
               />
             </div>
 
@@ -185,32 +177,11 @@ export default function ShopPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
                     
-                    {filters.categories.map((categoryId) => {
-                      const category = categories.find(c => c.id === categoryId);
-                      return category ? (
-                        <span key={categoryId} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                          {category.name}
-                          <button
-                            onClick={() => handleFilterChange({
-                              ...filters,
-                              categories: filters.categories.filter(id => id !== categoryId)
-                            })}
-                            className="hover:text-blue-900"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      ) : null;
-                    })}
-                    
-                    {(filters.priceRange.min > 0 || filters.priceRange.max < Infinity) && (
+                    {filters.category && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                        Rp {filters.priceRange.min.toLocaleString('id-ID')} - {filters.priceRange.max === Infinity ? '∞' : `Rp ${filters.priceRange.max.toLocaleString('id-ID')}`}
+                        {categories.find(c => c.slug === filters.category)?.name || filters.category}
                         <button
-                          onClick={() => handleFilterChange({
-                            ...filters,
-                            priceRange: { min: 0, max: Infinity }
-                          })}
+                          onClick={() => handleFilterChange({ ...filters, category: '' })}
                           className="hover:text-blue-900"
                         >
                           <X className="h-3 w-3" />
@@ -218,14 +189,31 @@ export default function ShopPage() {
                       </span>
                     )}
                     
-                    {filters.rating > 0 && (
+                    {(filters.priceMin > 0 || filters.priceMax < 999999999) && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                        {filters.rating}★ ke atas
+                        {(() => {
+                          const preset = pricePresets.find(p => p.priceMin === filters.priceMin && p.priceMax === filters.priceMax);
+                          if (preset) return preset.label;
+                          return `Rp ${filters.priceMin.toLocaleString('id-ID')} - ${filters.priceMax === 999999999 ? '∞' : `Rp ${filters.priceMax.toLocaleString('id-ID')}`}`;
+                        })()}
                         <button
-                          onClick={() => handleFilterChange({
-                            ...filters,
-                            rating: 0
-                          })}
+                          onClick={() => handleFilterChange({ ...filters, priceMin: 0, priceMax: 999999999 })}
+                          className="hover:text-blue-900"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    
+                    {filters.rating !== null && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                        {filters.rating === 5 && '5★'}
+                        {filters.rating === 4 && '4★'}
+                        {filters.rating === 3 && '3★'}
+                        {filters.rating === 2 && '2★'}
+                        {filters.rating === 1 && '1★'}
+                        <button
+                          onClick={() => handleFilterChange({ ...filters, rating: null })}
                           className="hover:text-blue-900"
                         >
                           <X className="h-3 w-3" />
@@ -243,43 +231,59 @@ export default function ShopPage() {
                 </div>
               )}
 
-              {/* Sorting Controls */}
-              <SortingControls
-                currentSort={filters.sortBy}
-                onSortChange={handleSortChange}
-                totalProducts={filteredAndSortedProducts.length}
-                currentPage={currentPage}
-                productsPerPage={PRODUCTS_PER_PAGE}
-              />
-
               {/* Products Grid */}
               {paginatedProducts.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {paginatedProducts.map((product, index) => (
-                      <ProductCard
-                        key={`${product.id}-${index}`} // More stable key
-                        product={product}
-                        onQuickView={handleQuickView}
-                        onAddToCart={handleAddToCart}
-                        isWishlisted={isInWishlist(product.id)}
-                        onClick={handleProductClick}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Pagination */}
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                </>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {paginatedProducts.map((product, index) => (
+                    <ProductCard
+                      key={`${product.id}-${index}`} // More stable key
+                      product={product}
+                      onQuickView={handleQuickView}
+                      onAddToCart={handleAddToCart}
+                      isWishlisted={isInWishlist(product.id)}
+                      onClick={handleProductClick}
+                    />
+                  ))}
+                </div>
               ) : (
-                <EmptyState
-                  type={hasActiveFilters ? 'filter-no-results' : 'no-products'}
-                  onReset={handleFilterReset}
-                />
+                <div className="text-center py-12">
+                  <p className="text-gray-500">Tidak ada produk yang ditemukan</p>
+                </div>
+              )}
+
+              {/* Simple Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-8">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => handlePageChange(i + 1)}
+                      className={`px-4 py-2 rounded-lg ${
+                        currentPage === i + 1
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -311,16 +315,11 @@ export default function ShopPage() {
                 </div>
                 
                 {/* Mobile Filter Button */}
-                <button
-                  onClick={() => setShowMobileFilter(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 sm:hidden"
-                >
-                  <Filter className="h-4 w-4" />
-                  Filter
-                  {hasActiveFilters && (
-                    <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
-                  )}
-                </button>
+                <FilterButton
+                  filters={filters}
+                  onFiltersChange={handleFilterChange}
+                  onReset={handleFilterReset}
+                />
               </div>
             </div>
           </div>
@@ -333,32 +332,11 @@ export default function ShopPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
                   
-                  {filters.categories.map((categoryId) => {
-                    const category = categories.find(c => c.id === categoryId);
-                    return category ? (
-                      <span key={categoryId} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                        {category.name}
-                        <button
-                          onClick={() => handleFilterChange({
-                            ...filters,
-                            categories: filters.categories.filter(id => id !== categoryId)
-                          })}
-                          className="hover:text-blue-900"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </span>
-                    ) : null;
-                  })}
-                  
-                  {(filters.priceRange.min > 0 || filters.priceRange.max < Infinity) && (
+                  {filters.category && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                      Rp {filters.priceRange.min.toLocaleString('id-ID')} - {filters.priceRange.max === Infinity ? '∞' : `Rp ${filters.priceRange.max.toLocaleString('id-ID')}`}
+                      {categories.find(c => c.slug === filters.category)?.name || filters.category}
                       <button
-                        onClick={() => handleFilterChange({
-                          ...filters,
-                          priceRange: { min: 0, max: Infinity }
-                        })}
+                        onClick={() => handleFilterChange({ ...filters, category: '' })}
                         className="hover:text-blue-900"
                       >
                         <X className="h-3 w-3" />
@@ -366,14 +344,31 @@ export default function ShopPage() {
                     </span>
                   )}
                   
-                  {filters.rating > 0 && (
+                  {(filters.priceMin > 0 || filters.priceMax < 999999999) && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                      {filters.rating}★ ke atas
+                      {(() => {
+                        const preset = pricePresets.find(p => p.priceMin === filters.priceMin && p.priceMax === filters.priceMax);
+                        if (preset) return preset.label;
+                        return `Rp ${filters.priceMin.toLocaleString('id-ID')} - ${filters.priceMax === 999999999 ? '∞' : `Rp ${filters.priceMax.toLocaleString('id-ID')}`}`;
+                      })()}
                       <button
-                        onClick={() => handleFilterChange({
-                          ...filters,
-                          rating: 0
-                        })}
+                        onClick={() => handleFilterChange({ ...filters, priceMin: 0, priceMax: 999999999 })}
+                        className="hover:text-blue-900"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  )}
+                  
+                  {filters.rating !== null && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                      {filters.rating === 5 && '5★'}
+                      {filters.rating === 4 && '4★'}
+                      {filters.rating === 3 && '3★'}
+                      {filters.rating === 2 && '2★'}
+                      {filters.rating === 1 && '1★'}
+                      <button
+                        onClick={() => handleFilterChange({ ...filters, rating: null })}
                         className="hover:text-blue-900"
                       >
                         <X className="h-3 w-3" />
@@ -393,32 +388,57 @@ export default function ShopPage() {
 
             {/* Products Grid */}
             {paginatedProducts.length > 0 ? (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  {paginatedProducts.map((product, index) => (
-                    <ProductCard
-                      key={`${product.id}-${index}`} // More stable key
-                      product={product}
-                      onQuickView={handleQuickView}
-                      onAddToCart={handleAddToCart}
-                      isWishlisted={isInWishlist(product.id)}
-                      onClick={handleProductClick}
-                    />
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </>
+              <div className="grid grid-cols-2 gap-4">
+                {paginatedProducts.map((product, index) => (
+                  <ProductCard
+                    key={`${product.id}-${index}`} // More stable key
+                    product={product}
+                    onQuickView={handleQuickView}
+                    onAddToCart={handleAddToCart}
+                    isWishlisted={isInWishlist(product.id)}
+                    onClick={handleProductClick}
+                  />
+                ))}
+              </div>
             ) : (
-              <EmptyState
-                type={hasActiveFilters ? 'filter-no-results' : 'no-products'}
-                onReset={handleFilterReset}
-              />
+              <div className="text-center py-12">
+                <p className="text-gray-500">Tidak ada produk yang ditemukan</p>
+              </div>
+            )}
+
+            {/* Simple Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => handlePageChange(i + 1)}
+                    className={`px-4 py-2 rounded-lg ${
+                      currentPage === i + 1
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
             )}
           </div>
         </MobileNavigation>
@@ -434,17 +454,6 @@ export default function ShopPage() {
           <span>Checkout</span>
         </button>
       </div>
-
-      {/* Mobile Filter Drawer */}
-      {showMobileFilter && (
-        <FilterSidebar
-          filters={filters}
-          onFiltersChange={handleFilterChange}
-          onReset={handleFilterReset}
-          isMobile
-          onClose={() => setShowMobileFilter(false)}
-        />
-      )}
 
       {/* Quick View Modal */}
       {quickViewProduct && (

@@ -17,6 +17,7 @@ import { ProductGridModern } from '@/components/mobile/ProductGridModern'
 import { CategoryGridModern } from '@/components/mobile/CategoryGridModern'
 import { FeaturedProductsModern } from '@/components/mobile/FeaturedProductsModern'
 import { MobileContainerModern, MobileSectionModern } from '@/components/mobile/MobileLayoutModern'
+import { categories } from '@/data/categories'
 
 export default function Home() {
   // Sample data for mobile components
@@ -59,14 +60,11 @@ export default function Home() {
     }
   ];
 
-  const categories = [
-    { name: 'Clothing', image: '/api/placeholder/300/300/clothing', count: 245 },
-    { name: 'Shoes', image: '/api/placeholder/300/300/shoes', count: 128 },
-    { name: 'Accessories', image: '/api/placeholder/300/300/accessories', count: 89 },
-    { name: 'Bags', image: '/api/placeholder/300/300/bags', count: 67 },
-    { name: 'Jewelry', image: '/api/placeholder/300/300/jewelry', count: 34 },
-    { name: 'Watches', image: '/api/placeholder/300/300/watches', count: 56 }
-  ];
+  const categoriesWithCount = categories.map(cat => ({
+    name: cat.name,
+    image: cat.image,
+    count: Math.floor(Math.random() * 200) + 50 // Random count for demo
+  }));
 
   return (
     <div className="min-h-screen">
@@ -111,7 +109,7 @@ export default function Home() {
               title="📂 Shop by Category"
               subtitle="Browse our collections"
             >
-              <CategoryGridModern categories={categories} />
+              <CategoryGridModern categories={categoriesWithCount} />
             </MobileSectionModern>
 
             {/* Mobile Trending Products */}

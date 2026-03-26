@@ -119,7 +119,7 @@ export default function FilterSidebar({
               {categories.map((category) => (
                 <label
                   key={category.id}
-                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors duration-200"
+                  className={`flex items-center gap-3 cursor-pointer ${isMobile ? 'hover:bg-blue-700' : 'hover:bg-gray-50'} p-2 rounded transition-colors duration-200`}
                 >
                   <input
                     type="checkbox"
@@ -153,7 +153,7 @@ export default function FilterSidebar({
               {priceRanges.map((range, index) => (
                 <label
                   key={index}
-                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors duration-200"
+                  className={`flex items-center gap-3 cursor-pointer ${isMobile ? 'hover:bg-blue-700' : 'hover:bg-gray-50'} p-2 rounded transition-colors duration-200`}
                 >
                   <input
                     type="radio"
@@ -165,12 +165,12 @@ export default function FilterSidebar({
                     onChange={() => handlePriceRangeChange(range.min, range.max)}
                     className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700">{range.label}</span>
+                  <span className={`text-sm ${isMobile ? 'text-white' : 'text-gray-700'}`}>{range.label}</span>
                 </label>
               ))}
               
               {/* Custom Price Range */}
-              <div className="pt-2 border-t">
+              <div className={`pt-2 ${isMobile ? 'border-blue-400' : 'border-t'}`}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -180,9 +180,9 @@ export default function FilterSidebar({
                       Number(e.target.value) || 0,
                       filters.priceRange.max
                     )}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className={`w-full px-3 py-2 border ${isMobile ? 'bg-blue-500 border-blue-400 text-white placeholder-blue-200 focus:ring-2 focus:ring-blue-300 focus:border-blue-300' : 'bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'} text-sm`}
                   />
-                  <span className="text-gray-500">-</span>
+                  <span className={isMobile ? 'text-blue-100' : 'text-gray-500'}>-</span>
                   <input
                     type="number"
                     placeholder="Max"
@@ -191,7 +191,7 @@ export default function FilterSidebar({
                       filters.priceRange.min,
                       Number(e.target.value) || Infinity
                     )}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className={`w-full px-3 py-2 border ${isMobile ? 'bg-blue-500 border-blue-400 text-white placeholder-blue-200 focus:ring-2 focus:ring-blue-300 focus:border-blue-300' : 'bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'} text-sm`}
                   />
                 </div>
               </div>
@@ -218,7 +218,7 @@ export default function FilterSidebar({
               {[4, 3, 2, 1].map((rating) => (
                 <label
                   key={rating}
-                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors duration-200"
+                  className={`flex items-center gap-3 cursor-pointer ${isMobile ? 'hover:bg-blue-700' : 'hover:bg-gray-50'} p-2 rounded transition-colors duration-200`}
                 >
                   <input
                     type="radio"
@@ -238,7 +238,7 @@ export default function FilterSidebar({
                         ★
                       </span>
                     ))}
-                    <span className="text-sm text-gray-600 ml-1">& ke atas</span>
+                    <span className={`text-sm ${isMobile ? 'text-white' : 'text-gray-700'}`}>& ke atas</span>
                   </div>
                 </label>
               ))}
