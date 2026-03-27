@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { MobileNavigation } from '@/components/MobileNavigation';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Package, 
@@ -159,11 +159,11 @@ export default function InventoryPage() {
         </div>
         
         <div className="md:hidden">
-          <MobileNavigation>
+          
             <div className="px-4 py-6">
               {/* Mobile Content */}
             </div>
-          </MobileNavigation>
+          
         </div>
 
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -184,7 +184,7 @@ export default function InventoryPage() {
       
       {/* Mobile Navigation */}
       <div className="md:hidden">
-        <MobileNavigation>
+        
           <div className="px-4 py-6 space-y-6">
             {/* Mobile Inventory Stats */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
@@ -305,7 +305,7 @@ export default function InventoryPage() {
               ))}
             </div>
           </div>
-        </MobileNavigation>
+        
       </div>
 
       {/* Desktop Version */}

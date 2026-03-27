@@ -5,6 +5,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,15 +97,17 @@ export default function RootLayout({
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
       <body className="min-h-full flex flex-col">
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <UserPreferencesProvider>
-                {children}
-              </UserPreferencesProvider>
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+        <SidebarProvider>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <UserPreferencesProvider>
+                  {children}
+                </UserPreferencesProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </SidebarProvider>
       </body>
     </html>
   );
