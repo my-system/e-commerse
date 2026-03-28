@@ -31,6 +31,19 @@ export default function OptimizedImage({
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  // Timeout untuk fallback jika gambar terlalu lama load
+  useEffect(() => {
+    if (!isInView || isLoaded || hasError) return;
+
+    const timeout = setTimeout(() => {
+      if (!isLoaded && !hasError) {
+        setHasError(true);
+      }
+    }, 10000); // 10 detik timeout
+
+    return () => clearTimeout(timeout);
+  }, [isInView, isLoaded, hasError]);
+
   // Intersection Observer untuk lazy loading
   useEffect(() => {
     if (priority) return;
@@ -87,28 +100,44 @@ export default function OptimizedImage({
     </div>
   );
 
-  // Error fallback
-  const ErrorFallback = () => (
-    <div 
-      className={cn(
-        'bg-gray-100 flex items-center justify-center',
-        className
-      )}
-      style={{
-        width: width || '100%',
-        height: height || 'auto',
-      }}
-    >
-      <div className="text-center p-4">
-        <div className="w-12 h-12 bg-gray-300 rounded-full mx-auto mb-2 flex items-center justify-center">
-          <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586 1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <p className="text-xs text-gray-500">Gambar tidak tersedia</p>
+  // Error fallback dengan SVG placeholder
+  const ErrorFallback = () => {
+    const svgWidth = width || 400;
+    const svgHeight = height || 300;
+    
+    return (
+      <div 
+        className={cn(
+          'bg-gray-100 flex items-center justify-center',
+          className
+        )}
+        style={{
+          width: width || '100%',
+          height: height || 'auto',
+        }}
+      >
+        <svg 
+          width={svgWidth} 
+          height={svgHeight} 
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full"
+        >
+          <rect width="100%" height="100%" fill="#f3f4f6"/>
+          <text 
+            x="50%" 
+            y="50%" 
+            textAnchor="middle" 
+            dy=".3em" 
+            fontFamily="Arial, sans-serif" 
+            fontSize="14" 
+            fill="#9ca3af"
+          >
+            {svgWidth}x{svgHeight}
+          </text>
+        </svg>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Jika ada error
   if (hasError) {

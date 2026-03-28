@@ -24,9 +24,6 @@ interface FeaturedProductsModernProps {
 }
 
 function FeaturedProductCardModern({ product, onClick }: { product: Product; onClick?: () => void }) {
-  const [isImageLoading, setIsImageLoading] = useState(true)
-  const [isImageError, setIsImageError] = useState(false)
-
   const discountPercentage = product.originalPrice && product.discount
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
@@ -74,16 +71,12 @@ function FeaturedProductCardModern({ product, onClick }: { product: Product; onC
               e.stopPropagation()
               // Add to wishlist
             }}
-            className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
+            className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white hover:scale-110 transition-all duration-200 relative"
           >
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
             <Heart className="w-5 h-5 text-gray-600" />
           </button>
         </div>
-
-        {/* Loading Skeleton */}
-        {isImageLoading && !isImageError && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-        )}
       </div>
 
       {/* Product Info - Mobile Optimized */}

@@ -32,7 +32,7 @@ export default function Home() {
       reviews: 128,
       isNew: true,
       category: 'clothing',
-      image: '/api/placeholder/400/300/leather-jacket'
+      image: '/images/placeholder-1.jpg'
     },
     {
       id: '2',
@@ -44,7 +44,7 @@ export default function Home() {
       rating: 4.3,
       reviews: 89,
       category: 'shoes',
-      image: '/api/placeholder/400/300/sneakers'
+      image: '/images/placeholder-2.jpg'
     },
     {
       id: '3',
@@ -55,17 +55,17 @@ export default function Home() {
       reviews: 45,
       isNew: true,
       category: 'accessories',
-      image: '/api/placeholder/400/300/luxury-watch'
+      image: '/images/placeholder-3.jpg'
     }
   ];
 
   const categories = [
-    { name: 'Clothing', image: '/api/placeholder/300/300/clothing', count: 245 },
-    { name: 'Shoes', image: '/api/placeholder/300/300/shoes', count: 128 },
-    { name: 'Accessories', image: '/api/placeholder/300/300/accessories', count: 89 },
-    { name: 'Bags', image: '/api/placeholder/300/300/bags', count: 67 },
-    { name: 'Jewelry', image: '/api/placeholder/300/300/jewelry', count: 34 },
-    { name: 'Watches', image: '/api/placeholder/300/300/watches', count: 56 }
+    { name: 'Clothing', image: '/images/placeholder-1.jpg', count: 245 },
+    { name: 'Shoes', image: '/images/placeholder-2.jpg', count: 128 },
+    { name: 'Accessories', image: '/images/placeholder-3.jpg', count: 89 },
+    { name: 'Bags', image: '/images/placeholder-1.jpg', count: 67 },
+    { name: 'Jewelry', image: '/images/placeholder-2.jpg', count: 34 },
+    { name: 'Watches', image: '/images/placeholder-3.jpg', count: 56 }
   ];
 
   return (

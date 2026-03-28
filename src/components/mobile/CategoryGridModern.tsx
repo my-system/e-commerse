@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import OptimizedImage from '@/components/ui/OptimizedImage'
 
@@ -16,8 +15,6 @@ interface CategoryGridModernProps {
 }
 
 function CategoryCardModern({ category, onClick }: { category: Category; onClick?: () => void }) {
-  const [isImageLoading, setIsImageLoading] = useState(true)
-  const [isImageError, setIsImageError] = useState(false)
 
   return (
     <div 
@@ -50,11 +47,6 @@ function CategoryCardModern({ category, onClick }: { category: Category; onClick
 
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
-
-        {/* Loading Skeleton */}
-        {isImageLoading && !isImageError && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-        )}
       </div>
 
       {/* Category Info - Mobile Optimized */}
