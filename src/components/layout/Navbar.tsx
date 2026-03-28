@@ -118,10 +118,8 @@ export default function Navbar() {
       <MiniCart />
       <AIChatbot />
       
-      {/* Global Sidebar - Mobile Only */}
-      <div className="lg:hidden">
-        <GlobalSidebar />
-      </div>
+      {/* Global Sidebar - Always Available */}
+      <GlobalSidebar />
     </>
   );
 }
