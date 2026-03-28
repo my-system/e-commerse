@@ -12,11 +12,7 @@ import Footer from '@/components/layout/Footer';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
 import { PWAInstallPrompt, NetworkStatus } from '@/components/PWAComponents';
 import { ServiceWorkerDebugDraggable } from '@/components/ServiceWorkerDebugDraggable';
-import { MobileNavigation, MobileGrid } from '@/components/MobileNavigation';
-import { ProductGridModern } from '@/components/mobile/ProductGridModern'
-import { CategoryGridModern } from '@/components/mobile/CategoryGridModern'
-import { FeaturedProductsModern } from '@/components/mobile/FeaturedProductsModern'
-import { MobileContainerModern, MobileSectionModern } from '@/components/mobile/MobileLayoutModern'
+import { categories } from '@/data/categories';
 
 export default function Home() {
   // Sample data for mobile components
@@ -67,6 +63,17 @@ export default function Home() {
     { name: 'Jewelry', image: '/images/placeholder-2.jpg', count: 34 },
     { name: 'Watches', image: '/images/placeholder-3.jpg', count: 56 }
   ];
+=======
+      category: 'accessories'
+    }
+  ];
+
+  const categoriesWithCount = categories.map((cat: any) => ({
+    name: cat.name,
+    image: cat.image,
+    count: Math.floor(Math.random() * 200) + 50 // Random count for demo
+  }));
+>>>>>>> 354ceaf6b301b5b0ba933ea5d295c0c3ebe091f8
 
   return (
     <div className="min-h-screen">
@@ -85,92 +92,24 @@ export default function Home() {
         <Footer />
       </div>
 
-      {/* Mobile Version - Modern Design */}
+      {/* Mobile Version - Simplified */}
       <div className="md:hidden">
-        <MobileNavigation>
-          <MobileContainerModern>
-            {/* Mobile Hero Section */}
-            <MobileSectionModern 
-              title="Welcome to DEMO WEB"
-              subtitle="Discover amazing products"
-            >
-              <HeroSection />
-            </MobileSectionModern>
-
-            {/* Mobile Featured Products */}
-            <MobileSectionModern 
-              title="⭐ Featured Products"
-              subtitle="Handpicked for you"
-              action={{ label: "See All", href: "/featured" }}
-            >
-              <FeaturedProductsModern products={sampleProducts} />
-            </MobileSectionModern>
-            
-            {/* Mobile Categories */}
-            <MobileSectionModern 
-              title="📂 Shop by Category"
-              subtitle="Browse our collections"
-            >
-              <CategoryGridModern categories={categories} />
-            </MobileSectionModern>
-
-            {/* Mobile Trending Products */}
-            <MobileSectionModern 
-              title="🔥 Trending Now"
-              subtitle="Most popular items this week"
-              action={{ label: "View More", href: "/trending" }}
-            >
-              <ProductGridModern products={sampleProducts} columns={2} />
-            </MobileSectionModern>
-
-            {/* Mobile Flash Sales */}
-            <MobileSectionModern 
-              title="⚡ Flash Deals"
-              subtitle="Limited time offers"
-            >
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-red-600 font-bold text-sm">⏰ Ends in:</span>
-                  <span className="text-red-600 font-bold">2:45:30</span>
-                </div>
-                <ProductGridModern products={sampleProducts.slice(0, 2)} columns={1} />
-              </div>
-            </MobileSectionModern>
-
-            {/* Mobile Bundle Deals */}
-            <MobileSectionModern 
-              title="🎁 Bundle Deals"
-              subtitle="Save more together"
-              action={{ label: "View All", href: "/bundles" }}
-            >
-              <BundleDeals />
-            </MobileSectionModern>
-
-            {/* Mobile Promo Banner */}
-            <MobileSectionModern>
-              <PromoBanner />
-            </MobileSectionModern>
-
-            {/* Mobile Testimonials */}
-            <MobileSectionModern 
-              title="💬 Customer Reviews"
-              subtitle="What our customers say"
-            >
-              <Testimonials />
-            </MobileSectionModern>
-          </MobileContainerModern>
-        </MobileNavigation>
+        <Navbar />
+        <HeroSection />
+        <ProductCategories />
+        <FlashSales />
+        <BundleDeals />
+        <FeaturedProducts />
+        <PromoBanner />
+        <Testimonials />
+        <Footer />
       </div>
-      
-      {/* Debug Components - Only visible in development */}
-      <ServiceWorkerDebugDraggable />
+
+      {/* PWA Components */}
+      <PushNotificationManager />
       <PWAInstallPrompt />
       <NetworkStatus />
-      
-      {/* Push Notification Manager - Fixed Position */}
-      <div className="fixed bottom-20 right-4 z-50 md:hidden">
-        <PushNotificationManager />
-      </div>
+      <ServiceWorkerDebugDraggable />
     </div>
   );
 }

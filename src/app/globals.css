@@ -84,6 +84,20 @@
   animation-name: slide-in-from-top;
 }
 
+/* Bottom sheet slide-up animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
 /* Mobile-specific optimizations */
 @media (max-width: 640px) {
   /* Mobile touch targets */
@@ -153,6 +167,64 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+
+  /* Custom scrollbar for mobile filter */
+  .filter-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .filter-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  .filter-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+
+  .filter-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Ensure proper scroll behavior */
+  .filter-scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+  }
+
+  /* Desktop filter scroll optimization */
+  .filter-desktop-container {
+    height: 600px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Mobile filter scroll optimization */
+  .filter-mobile-container {
+    max-height: 75vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Custom checkbox and radio styling */
+  input[type="checkbox"] {
+    accent-color: #3b82f6;
+    border-color: #d1d5db;
+  }
+
+  input[type="radio"] {
+    accent-color: #3b82f6;
+    border-color: #d1d5db;
+  }
+
+  /* Ensure proper checkbox/radio visibility */
+  input[type="checkbox"]:checked,
+  input[type="radio"]:checked {
+    accent-color: #3b82f6;
   }
 }
 

@@ -4,12 +4,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { MobileNavigation } from '@/components/MobileNavigation';
 import ProductCard from '@/components/ui/ProductCard';
-import FilterSidebar, { FilterState } from '@/components/ui/FilterSidebar';
-import SortingControls from '@/components/ui/SortingControls';
-import Pagination from '@/components/ui/Pagination';
-import EmptyState from '@/components/ui/EmptyState';
+import FilterButton from '@/components/mobile/FilterButton';
+import { FilterState, pricePresets } from '@/lib/product-utils';
 import { products } from '@/data/products';
 import { categories } from '@/data/categories';
 import { filterProducts, sortProducts, paginateProducts, getTotalPages, generateMoreProducts } from '@/lib/product-utils';
@@ -20,14 +17,11 @@ import { useWishlist } from '@/contexts/WishlistContext';
 
 const PRODUCTS_PER_PAGE = 12;
 
-const initialFilters: FilterState = {
-  categories: [],
-  priceRange: {
-    min: 0,
-    max: Infinity,
-  },
-  rating: 0,
-  sortBy: 'featured',
+const initialFilters = {
+  category: '',
+  priceMin: 0,
+  priceMax: 999999999,
+  rating: null,
 };
 
 export default function ShopPage() {
@@ -81,13 +75,14 @@ export default function ShopPage() {
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = filterProducts(allProducts, filters);
-    let sorted = sortProducts(filtered, filters.sortBy);
+    let sorted = sortProducts(filtered, 'featured'); // Fixed sortBy
     
     // Debug: Log product IDs to see if order changes
-    console.log('Product Order:', sorted.map(p => p.id).slice(0, 10));
+    console.log('Filtered products count:', filtered.length);
+    console.log('Active filters:', filters);
     
     return sorted;
-  }, [allProducts, filters.sortBy]); // Hanya dependency yang benar-benar berubah
+  }, [allProducts, filters]); // Include all filter dependencies
 
   // Paginate products
   const paginatedProducts = useMemo(() => {
@@ -113,10 +108,6 @@ export default function ShopPage() {
     setShowMobileFilter(false);
   };
 
-  const handleSortChange = (sortBy: string) => {
-    setFilters(prev => ({ ...prev, sortBy }));
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -130,10 +121,10 @@ export default function ShopPage() {
     setQuickViewProduct(null);
   };
 
-  const hasActiveFilters = filters.categories.length > 0 || 
-                          filters.priceRange.min > 0 || 
-                          filters.priceRange.max < Infinity || 
-                          filters.rating > 0;
+  const hasActiveFilters = filters.category !== '' || 
+                          filters.priceMin > 0 || 
+                          filters.priceMax < 999999999 || 
+                          filters.rating !== null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -170,11 +161,72 @@ export default function ShopPage() {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar - Desktop */}
             <div className="hidden lg:block w-80 flex-shrink-0">
-              <FilterSidebar
-                filters={filters}
-                onFiltersChange={handleFilterChange}
-                onReset={handleFilterReset}
-              />
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Filter Produk</h3>
+                <div className="space-y-4">
+                  {/* Categories */}
+                  <div>
+                    <h4 className="font-medium mb-2">Kategori</h4>
+                    <div className="space-y-2">
+                      {categories.map((category) => (
+                        <label key={category.id} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={filters.category === category.id}
+                            onChange={() => handleFilterChange({ ...filters, category: category.id })}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-sm">{category.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Price Range */}
+                  <div>
+                    <h4 className="font-medium mb-2">Rentang Harga</h4>
+                    <div className="space-y-2">
+                      {pricePresets.map((preset) => (
+                        <button
+                          key={preset.label}
+                          onClick={() => handleFilterChange({ 
+                            ...filters, 
+                            priceMin: preset.priceMin, 
+                            priceMax: preset.priceMax 
+                          })}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            filters.priceMin === preset.priceMin && filters.priceMax === preset.priceMax
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sort */}
+                  <div>
+                    <h4 className="font-medium mb-2">Urutkan</h4>
+                    <select
+                      value={filters.rating || 'featured'}
+                      onChange={(e) => handleFilterChange({ 
+                        ...filters, 
+                        rating: e.target.value === 'featured' ? null : parseFloat(e.target.value) 
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500"
+                    >
+                      <option value="featured">Featured</option>
+                      <option value="1">Rating 1+</option>
+                      <option value="2">Rating 2+</option>
+                      <option value="3">Rating 3+</option>
+                      <option value="4">Rating 4+</option>
+                      <option value="5">Rating 5</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Products Section */}
@@ -185,32 +237,11 @@ export default function ShopPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
                     
-                    {filters.categories.map((categoryId) => {
-                      const category = categories.find(c => c.id === categoryId);
-                      return category ? (
-                        <span key={categoryId} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                          {category.name}
-                          <button
-                            onClick={() => handleFilterChange({
-                              ...filters,
-                              categories: filters.categories.filter(id => id !== categoryId)
-                            })}
-                            className="hover:text-blue-900"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      ) : null;
-                    })}
-                    
-                    {(filters.priceRange.min > 0 || filters.priceRange.max < Infinity) && (
+                    {filters.category && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                        Rp {filters.priceRange.min.toLocaleString('id-ID')} - {filters.priceRange.max === Infinity ? '∞' : `Rp ${filters.priceRange.max.toLocaleString('id-ID')}`}
+                        {categories.find(c => c.slug === filters.category)?.name || filters.category}
                         <button
-                          onClick={() => handleFilterChange({
-                            ...filters,
-                            priceRange: { min: 0, max: Infinity }
-                          })}
+                          onClick={() => handleFilterChange({ ...filters, category: '' })}
                           className="hover:text-blue-900"
                         >
                           <X className="h-3 w-3" />
@@ -218,14 +249,31 @@ export default function ShopPage() {
                       </span>
                     )}
                     
-                    {filters.rating > 0 && (
+                    {(filters.priceMin > 0 || filters.priceMax < 999999999) && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                        {filters.rating}★ ke atas
+                        {(() => {
+                          const preset = pricePresets.find(p => p.priceMin === filters.priceMin && p.priceMax === filters.priceMax);
+                          if (preset) return preset.label;
+                          return `Rp ${filters.priceMin.toLocaleString('id-ID')} - ${filters.priceMax === 999999999 ? '∞' : `Rp ${filters.priceMax.toLocaleString('id-ID')}`}`;
+                        })()}
                         <button
-                          onClick={() => handleFilterChange({
-                            ...filters,
-                            rating: 0
-                          })}
+                          onClick={() => handleFilterChange({ ...filters, priceMin: 0, priceMax: 999999999 })}
+                          className="hover:text-blue-900"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    
+                    {filters.rating !== null && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                        {filters.rating === 5 && '5★'}
+                        {filters.rating === 4 && '4★'}
+                        {filters.rating === 3 && '3★'}
+                        {filters.rating === 2 && '2★'}
+                        {filters.rating === 1 && '1★'}
+                        <button
+                          onClick={() => handleFilterChange({ ...filters, rating: null })}
                           className="hover:text-blue-900"
                         >
                           <X className="h-3 w-3" />
@@ -243,158 +291,9 @@ export default function ShopPage() {
                 </div>
               )}
 
-              {/* Sorting Controls */}
-              <SortingControls
-                currentSort={filters.sortBy}
-                onSortChange={handleSortChange}
-                totalProducts={filteredAndSortedProducts.length}
-                currentPage={currentPage}
-                productsPerPage={PRODUCTS_PER_PAGE}
-              />
-
               {/* Products Grid */}
               {paginatedProducts.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {paginatedProducts.map((product, index) => (
-                      <ProductCard
-                        key={`${product.id}-${index}`} // More stable key
-                        product={product}
-                        onQuickView={handleQuickView}
-                        onAddToCart={handleAddToCart}
-                        isWishlisted={isInWishlist(product.id)}
-                        onClick={handleProductClick}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Pagination */}
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                </>
-              ) : (
-                <EmptyState
-                  type={hasActiveFilters ? 'filter-no-results' : 'no-products'}
-                  onReset={handleFilterReset}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Version */}
-      <div className="md:hidden">
-        <MobileNavigation>
-          {/* Page Header */}
-          <div className="bg-white border-b">
-            <div className="px-4 py-6">
-              {/* Breadcrumb */}
-              <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
-                <a href="/" className="hover:text-gray-700 transition-colors duration-200">
-                  Home
-                </a>
-                <span>/</span>
-                <span className="text-gray-900 font-medium">Shop</span>
-              </nav>
-              
-              {/* Page Title */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Semua Produk</h1>
-                  <p className="text-gray-600 mt-1">
-                    Temukan produk berkualitas dengan harga terbaik
-                  </p>
-                </div>
-                
-                {/* Mobile Filter Button */}
-                <button
-                  onClick={() => setShowMobileFilter(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 sm:hidden"
-                >
-                  <Filter className="h-4 w-4" />
-                  Filter
-                  {hasActiveFilters && (
-                    <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content - Mobile */}
-          <div className="px-4 py-8">
-            {/* Active Filters */}
-            {hasActiveFilters && (
-              <div className="mb-6 p-4 bg-white rounded-lg border">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
-                  
-                  {filters.categories.map((categoryId) => {
-                    const category = categories.find(c => c.id === categoryId);
-                    return category ? (
-                      <span key={categoryId} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                        {category.name}
-                        <button
-                          onClick={() => handleFilterChange({
-                            ...filters,
-                            categories: filters.categories.filter(id => id !== categoryId)
-                          })}
-                          className="hover:text-blue-900"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </span>
-                    ) : null;
-                  })}
-                  
-                  {(filters.priceRange.min > 0 || filters.priceRange.max < Infinity) && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                      Rp {filters.priceRange.min.toLocaleString('id-ID')} - {filters.priceRange.max === Infinity ? '∞' : `Rp ${filters.priceRange.max.toLocaleString('id-ID')}`}
-                      <button
-                        onClick={() => handleFilterChange({
-                          ...filters,
-                          priceRange: { min: 0, max: Infinity }
-                        })}
-                        className="hover:text-blue-900"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  )}
-                  
-                  {filters.rating > 0 && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                      {filters.rating}★ ke atas
-                      <button
-                        onClick={() => handleFilterChange({
-                          ...filters,
-                          rating: 0
-                        })}
-                        className="hover:text-blue-900"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  )}
-                  
-                  <button
-                    onClick={handleFilterReset}
-                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                  >
-                    Reset semua
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Products Grid */}
-            {paginatedProducts.length > 0 ? (
-              <>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {paginatedProducts.map((product, index) => (
                     <ProductCard
                       key={`${product.id}-${index}`} // More stable key
@@ -406,22 +305,188 @@ export default function ShopPage() {
                     />
                   ))}
                 </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">Tidak ada produk yang ditemukan</p>
+                </div>
+              )}
 
-                {/* Pagination */}
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </>
-            ) : (
-              <EmptyState
-                type={hasActiveFilters ? 'filter-no-results' : 'no-products'}
-                onReset={handleFilterReset}
-              />
-            )}
+              {/* Simple Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-8">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => handlePageChange(i + 1)}
+                      className={`px-4 py-2 rounded-lg ${
+                        currentPage === i + 1
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </MobileNavigation>
+        </div>
+      </div>
+
+      {/* Mobile Version */}
+      <div className="md:hidden">
+        <Navbar />
+        
+        {/* Page Header */}
+        <div className="bg-white border-b">
+          <div className="px-4 py-6">
+            {/* Breadcrumb */}
+            <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+              <a href="/" className="hover:text-gray-700 transition-colors duration-200">
+                Home
+              </a>
+              <span>/</span>
+              <span className="text-gray-900 font-medium">Shop</span>
+            </nav>
+            
+            {/* Page Title */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Semua Produk</h1>
+                <p className="text-gray-600 mt-1">
+                  Temukan produk berkualitas dengan harga terbaik
+                </p>
+              </div>
+              
+              {/* Mobile Filter Button */}
+              <FilterButton
+                filters={filters}
+                onFiltersChange={handleFilterChange}
+                onReset={() => handleFilterChange({ category: '', priceMin: 0, priceMax: 10000000, rating: null })}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Active Filters - Mobile */}
+        {hasActiveFilters && (
+          <div className="bg-white border-b px-4 py-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
+              
+              {filters.category && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                  <span>{categories.find(c => c.id === filters.category)?.name}</span>
+                  <button
+                    onClick={() => handleFilterChange({ ...filters, category: '' })}
+                    className="ml-1 text-blue-500 hover:text-blue-700"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              
+              {(filters.priceMin > 0 || filters.priceMax < 10000000) && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                  <span>
+                    {formatPrice(filters.priceMin)} - {formatPrice(filters.priceMax)}
+                  </span>
+                  <button
+                    onClick={() => handleFilterChange({ ...filters, priceMin: 0, priceMax: 10000000 })}
+                    className="ml-1 text-blue-500 hover:text-blue-700"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              
+              {filters.rating && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                  <span>Rating {filters.rating}+</span>
+                  <button
+                    onClick={() => handleFilterChange({ ...filters, rating: null })}
+                    className="ml-1 text-blue-500 hover:text-blue-700"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              
+              <button
+                onClick={() => handleFilterChange({ category: '', priceMin: 0, priceMax: 10000000, rating: null })}
+                className="text-xs text-red-600 hover:text-red-700 font-medium"
+              >
+                Hapus semua
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Products Grid - Mobile */}
+        <div className="px-4 py-6">
+          <div className="grid grid-cols-2 gap-4">
+            {paginatedProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={handleAddToCart}
+                onQuickView={handleQuickView}
+              />
+            ))}
+          </div>
+
+          {/* Pagination - Mobile */}
+          {totalPages > 1 && (
+            <div className="flex flex-wrap justify-center gap-2 mt-8">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => handlePageChange(i + 1)}
+                  className={`px-4 py-2 rounded-lg ${
+                    currentPage === i + 1
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Floating Checkout Button */}
@@ -434,17 +499,6 @@ export default function ShopPage() {
           <span>Checkout</span>
         </button>
       </div>
-
-      {/* Mobile Filter Drawer */}
-      {showMobileFilter && (
-        <FilterSidebar
-          filters={filters}
-          onFiltersChange={handleFilterChange}
-          onReset={handleFilterReset}
-          isMobile
-          onClose={() => setShowMobileFilter(false)}
-        />
-      )}
 
       {/* Quick View Modal */}
       {quickViewProduct && (

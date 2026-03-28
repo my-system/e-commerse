@@ -5,7 +5,7 @@ import { Package, ArrowLeft, Search, Filter, Calendar, Truck, CheckCircle, Clock
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { MobileNavigation } from '@/components/MobileNavigation';
+
 
 interface Order {
   id: string;
@@ -332,7 +332,7 @@ export default function OrdersPage() {
 
       {/* Mobile Content */}
       <div className="md:hidden">
-        <MobileNavigation>
+        
           <div className="px-4 py-6">
             {/* Mobile Header */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
@@ -423,7 +423,7 @@ export default function OrdersPage() {
               </div>
             )}
           </div>
-        </MobileNavigation>
+        
       </div>
 
       <Footer />

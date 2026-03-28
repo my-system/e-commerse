@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { MobileNavigation } from '@/components/MobileNavigation';
+
 import { User, Lock, Mail, ArrowLeft, Eye, EyeOff, UserPlus } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -58,11 +58,11 @@ export default function RegisterPage() {
       
       {/* Mobile Navigation */}
       <div className="md:hidden">
-        <MobileNavigation>
+        
           <div className="px-4 py-6">
             {/* Mobile Content */}
           </div>
-        </MobileNavigation>
+        
       </div>
 
       {/* Main Content */}

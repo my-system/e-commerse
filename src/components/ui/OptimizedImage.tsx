@@ -29,7 +29,11 @@ export default function OptimizedImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const [hasError, setHasError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(src);
+  const [retryCount, setRetryCount] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Timeout untuk fallback jika gambar terlalu lama load
   useEffect(() => {
@@ -46,7 +50,16 @@ export default function OptimizedImage({
 
   // Intersection Observer untuk lazy loading
   useEffect(() => {
-    if (priority) return;
+    if (priority) {
+      setIsInView(true);
+      return;
+    }
+
+    // Untuk mobile, langsung set in view untuk menghindari masalah
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsInView(true);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -56,31 +69,110 @@ export default function OptimizedImage({
         }
       },
       {
-        threshold: 0.1, // Mulai load saat 10% terlihat
-        rootMargin: '50px' // Mulai load 50px sebelum masuk viewport
+        threshold: 0.1,
+        rootMargin: '50px'
       }
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    // Observe container instead of img
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
-    return () => observer.disconnect();
-  }, []);
+    // Fallback timeout jika observer gagal
+    const fallbackTimeout = setTimeout(() => {
+      if (!isInView) {
+        console.log('IntersectionObserver fallback triggered');
+        setIsInView(true);
+      }
+    }, 2000); // Reduced timeout for mobile
 
-  // Optimized src untuk mobile
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallbackTimeout);
+    };
+  }, [priority, isInView]);
+
+  // Loading timeout fallback
+  useEffect(() => {
+    if (isInView && !isLoaded && !hasError) {
+      loadingTimeoutRef.current = setTimeout(() => {
+        console.log('Loading timeout triggered, using fallback');
+        setHasError(true);
+      }, 3000); // Reduced timeout for mobile
+    }
+
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+    };
+  }, [isInView, isLoaded, hasError]);
+
+  // Optimized src dengan fallback
   const getOptimizedSrc = (originalSrc: string) => {
-    // Jika sudah optimized (dari API placeholder), gunakan langsung
+    console.log('Loading image:', originalSrc);
+    
+    // Validasi src
+    if (!originalSrc || typeof originalSrc !== 'string') {
+      console.log('Invalid src, using fallback:', fallback);
+      return fallback;
+    }
+
+    // Jika sudah fallback, gunakan langsung
+    if (originalSrc === fallback) {
+      return originalSrc;
+    }
+
+    // API placeholder
     if (originalSrc.includes('/api/placeholder/')) {
       return originalSrc;
     }
 
-    // Untuk gambar eksternal, kita bisa tambahkan parameter optimasi
-    // Ini tergantung pada layanan gambar yang digunakan
+    // Unsplash images - tambahkan parameter untuk reliability
+    if (originalSrc.includes('unsplash.com')) {
+      return originalSrc;
+    }
+
+    // Local images
+    if (originalSrc.startsWith('/')) {
+      return originalSrc;
+    }
+
     return originalSrc;
   };
 
-  const optimizedSrc = getOptimizedSrc(src);
+  const optimizedSrc = getOptimizedSrc(currentSrc);
+
+  // Handle image load success
+  const handleLoad = () => {
+    console.log('Image loaded successfully:', optimizedSrc);
+    setIsLoaded(true);
+    setHasError(false);
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
+  };
+
+  // Handle image load error dengan retry
+  const handleError = () => {
+    console.log('Image failed to load:', optimizedSrc);
+    
+    // Jika ini adalah fallback yang gagal, jangan retry lagi
+    if (currentSrc === fallback || retryCount >= 2) {
+      console.log('Using fallback image');
+      setCurrentSrc(fallback);
+      setHasError(true);
+      return;
+    }
+
+    // Retry dengan fallback
+    if (retryCount < 2) {
+      console.log(`Retrying with fallback (${retryCount + 1}/2)`);
+      setRetryCount(prev => prev + 1);
+      setCurrentSrc(fallback);
+    }
+  };
 
   // Skeleton loading component
   const Skeleton = () => (
@@ -150,7 +242,7 @@ export default function OptimizedImage({
   }
 
   return (
-    <div className={cn('relative overflow-hidden', className)}>
+    <div ref={containerRef} className={cn('relative overflow-hidden', className)}>
       {/* Actual image */}
       <img
         ref={imgRef}
@@ -161,20 +253,21 @@ export default function OptimizedImage({
         sizes={sizes}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
-        onLoad={() => setIsLoaded(true)}
-        onError={() => setHasError(true)}
+        onLoad={handleLoad}
+        onError={handleError}
         className={cn(
           'w-full h-full object-cover transition-all duration-300',
           isLoaded ? 'opacity-100' : 'opacity-0'
         )}
         style={{
           width: width || '100%',
-          height: height || 'auto',
+          height: height || '100%',
+          minHeight: '200px', // Ensure minimum height for mobile
         }}
       />
       
-      {/* Loading indicator untuk mobile */}
-      {!isLoaded && (
+      {/* Loading indicator */}
+      {!isLoaded && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
           <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>

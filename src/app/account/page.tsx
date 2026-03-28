@@ -5,7 +5,7 @@ import { User, Package, Heart, ShoppingBag, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { MobileNavigation } from '@/components/MobileNavigation';
+
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AccountDashboard() {
@@ -113,7 +113,7 @@ export default function AccountDashboard() {
       
       {/* Mobile Content */}
       <div className="md:hidden">
-        <MobileNavigation>
+        
           <div className="px-4 py-6">
             {/* Mobile Header */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
@@ -207,7 +207,7 @@ export default function AccountDashboard() {
               </div>
             </div>
           </div>
-        </MobileNavigation>
+        
       </div>
 
       {/* Desktop Version */}

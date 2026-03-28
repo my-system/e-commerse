@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Star, Award, Truck, Shield, Mail, MapPin, Phone, Users, Package, TrendingUp, Heart } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { MobileNavigation } from '@/components/MobileNavigation';
+
 
 interface Stat {
   value: string;
@@ -305,7 +305,7 @@ export default function AboutPage() {
 
       {/* Mobile Version */}
       <div className="md:hidden">
-        <MobileNavigation>
+        
           {/* Hero Section */}
           <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 py-16 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
@@ -489,7 +489,7 @@ export default function AboutPage() {
               </div>
             </div>
           </section>
-        </MobileNavigation>
+        
       </div>
     </div>
   );

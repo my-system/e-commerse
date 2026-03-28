@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { User, LogOut, Package, Heart, Settings, ChevronRight, Shield, X, Store, BarChart3, PackageOpen } from 'lucide-react';
 import Link from 'next/link';
-import AuthMenu from './AuthMenu';
 
 interface User {
   name: string;
@@ -115,7 +114,103 @@ export default function AccountDropdown({ user, isLoggedIn, onLogin, onLogout }:
         >
           <User className="h-5 w-5" />
         </button>
-        <AuthMenu isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
+
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
+            
+            {/* Dropdown */}
+            <div className="absolute right-0 top-12 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+              {/* Blue Header */}
+              <div className="bg-blue-600 text-white p-4 border-b border-blue-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Akun Saya</h3>
+                    <p className="text-xs text-blue-100">Kelola akun dan preferensi</p>
+                  </div>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1 text-blue-100 hover:text-white rounded hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="p-2">
+                <Link
+                  href="/account/profile"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                >
+                  <User className="w-4 h-4 text-gray-400" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Profil Saya</div>
+                    <div className="text-xs text-gray-500">Kelola informasi profil</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </Link>
+
+                <Link
+                  href="/account/orders"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                >
+                  <Package className="w-4 h-4 text-gray-400" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Pesanan Saya</div>
+                    <div className="text-xs text-gray-500">Lihat riwayat pesanan</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </Link>
+
+                <Link
+                  href="/account/wishlist"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                >
+                  <Heart className="w-4 h-4 text-gray-400" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Wishlist</div>
+                    <div className="text-xs text-gray-500">Produk yang disimpan</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </Link>
+
+                <Link
+                  href="/account/settings"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                >
+                  <Settings className="w-4 h-4 text-gray-400" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Pengaturan</div>
+                    <div className="text-xs text-gray-500">Pengaturan akun dan privasi</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </Link>
+
+                <div className="border-t border-gray-200 mt-2 pt-2">
+                  <button
+                    onClick={() => {
+                      onLogout();
+                      setIsOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">Logout</div>
+                      <div className="text-xs text-red-500">Keluar dari sistem</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     );
   }
