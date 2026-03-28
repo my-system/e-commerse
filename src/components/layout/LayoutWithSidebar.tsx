@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import DesktopSidebar from '@/components/ui/DesktopSidebar';
 import Navbar from '@/components/layout/Navbar';
+import GlobalSidebar from '@/components/ui/GlobalSidebar';
 
 interface LayoutWithSidebarProps {
   children: ReactNode;
@@ -24,14 +25,14 @@ export default function LayoutWithSidebar({ children }: LayoutWithSidebarProps) 
         </div>
         
         {/* Page Content */}
-        <main className="flex-1">
+        <main className="flex-1 p-6 lg:p-8">
           {children}
         </main>
       </div>
       
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar (Overlay) */}
       <div className="lg:hidden">
-        <Navbar />
+        <GlobalSidebar />
       </div>
     </div>
   );

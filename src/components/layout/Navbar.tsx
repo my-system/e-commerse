@@ -32,6 +32,7 @@ export default function Navbar() {
   const navItems = [
     { name: 'Home', href: '/' },
     { name: 'Tentang', href: '/tentang' },
+    { name: 'Dashboard', href: '/dashboard' },
   ];
 
   return (
