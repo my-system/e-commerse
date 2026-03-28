@@ -1,4 +1,4 @@
-import Navbar from '@/components/layout/Navbar';
+import AppLayout from '@/components/layout/AppLayout';
 import HeroSection from '@/components/sections/HeroSection';
 import ProductCategories from '@/components/sections/ProductCategories';
 import PersonalizedRecommendations from '@/components/sections/PersonalizedRecommendations';
@@ -8,7 +8,6 @@ import BundleDeals from '@/components/sections/BundleDeals';
 import FeaturedProducts from '@/components/sections/FeaturedProducts';
 import PromoBanner from '@/components/sections/PromoBanner';
 import Testimonials from '@/components/sections/Testimonials';
-import Footer from '@/components/layout/Footer';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
 import { PWAInstallPrompt, NetworkStatus } from '@/components/PWAComponents';
 import { ServiceWorkerDebugDraggable } from '@/components/ServiceWorkerDebugDraggable';
@@ -71,40 +70,41 @@ export default function Home() {
   }));
 
   return (
-    <div className="min-h-screen">
-      {/* Desktop Version */}
-      <div className="hidden md:block">
-        <Navbar />
+    <AppLayout showSidebar={true} showFooter={true}>
+      <div className="space-y-0">
+        {/* Hero Section */}
         <HeroSection />
+
+        {/* Product Categories */}
         <ProductCategories />
+
+        {/* Personalized Recommendations */}
         <PersonalizedRecommendations />
+
+        {/* Advanced Recommendations */}
         <AdvancedRecommendations />
-        <FlashSales />
-        <BundleDeals />
-        <FeaturedProducts />
-        <PromoBanner />
-        <Testimonials />
-        <Footer />
-      </div>
 
-      {/* Mobile Version - Simplified */}
-      <div className="md:hidden">
-        <Navbar />
-        <HeroSection />
-        <ProductCategories />
+        {/* Flash Sales */}
         <FlashSales />
-        <BundleDeals />
-        <FeaturedProducts />
-        <PromoBanner />
-        <Testimonials />
-        <Footer />
-      </div>
 
-      {/* PWA Components */}
-      <PushNotificationManager />
-      <PWAInstallPrompt />
-      <NetworkStatus />
-      <ServiceWorkerDebugDraggable />
-    </div>
+        {/* Bundle Deals */}
+        <BundleDeals />
+
+        {/* Featured Products */}
+        <FeaturedProducts />
+
+        {/* Promo Banner */}
+        <PromoBanner />
+
+        {/* Testimonials */}
+        <Testimonials />
+
+        {/* PWA Components */}
+        <PushNotificationManager />
+        <PWAInstallPrompt />
+        <NetworkStatus />
+        <ServiceWorkerDebugDraggable />
+      </div>
+    </AppLayout>
   );
 }
