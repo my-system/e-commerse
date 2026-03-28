@@ -63,17 +63,12 @@ export default function Home() {
     { name: 'Jewelry', image: '/images/placeholder-2.jpg', count: 34 },
     { name: 'Watches', image: '/images/placeholder-3.jpg', count: 56 }
   ];
-=======
-      category: 'accessories'
-    }
-  ];
 
   const categoriesWithCount = categories.map((cat: any) => ({
     name: cat.name,
     image: cat.image,
     count: Math.floor(Math.random() * 200) + 50 // Random count for demo
   }));
->>>>>>> 354ceaf6b301b5b0ba933ea5d295c0c3ebe091f8
 
   return (
     <div className="min-h-screen">
