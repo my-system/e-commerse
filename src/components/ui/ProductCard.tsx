@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, memo } from 'react';
+import Link from 'next/link';
 import { Product } from '@/data/products';
 import { formatPrice } from '@/lib/utils';
 import { ShoppingCart, Eye, Heart, X, Check } from 'lucide-react';
@@ -36,6 +37,14 @@ export default function ProductCard({
   const { isInWishlist, addItem: addToWishlist, removeItem: removeFromWishlistState } = useWishlist();
 
   const productInWishlist = isInWishlist(product.id);
+  
+  // Parse images if it's a string or use single image for real products
+  const parsedImages = product.image 
+    ? [product.image] 
+    : typeof product.images === 'string' 
+      ? JSON.parse(product.images || '[]') 
+      : product.images;
+  const firstImage = parsedImages[0] || '/placeholder.jpg';
 
   const showNotification = (type: 'cart' | 'wishlist', message: string) => {
     setNotification({ type, message });
@@ -72,9 +81,9 @@ export default function ProductCard({
     addItem({
       id: Date.now().toString(), // Generate unique ID
       productId: product.id,
-      title: product.title,
+      title: product.name || product.title,
       price: product.price,
-      image: product.images[0],
+      image: firstImage,
       quantity: 1
     });
     
@@ -116,41 +125,42 @@ export default function ProductCard({
 
   return (
     <div
-      className={`group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer ${
+      className={`group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-out ${
         isLoading ? 'pointer-events-none opacity-75' : ''
       }`}
       onMouseEnter={() => !isLoading && setIsHovered(true)}
       onMouseLeave={() => !isLoading && setIsHovered(false)}
-      onClick={handleCardClick}
       style={{ transform: 'none' }}
     >
-      {/* Product Image */}
-      <div className="relative h-64 sm:h-80 overflow-hidden bg-gray-100">
-        <OptimizedImage
-          src={product.images[0]}
-          alt={product.title}
-          className="w-full h-full"
-          priority={false}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          placeholder="blur"
-        />
-        
-        {/* Badge */}
-        {product.featured && (
-          <div className="absolute top-4 left-4">
-            <span className="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">
-              HOT
-            </span>
-          </div>
-        )}
+      {/* Product Image - Clickable */}
+      <Link href={product.isRealProduct ? `/product/${product.id}` : `/products/${product.id}`}>
+        <div className="relative h-64 sm:h-80 overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity duration-200">
+          <OptimizedImage
+            src={firstImage}
+            alt={product.name || product.title}
+            className="w-full h-full hover:scale-105 transition-transform duration-300"
+            priority={false}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            placeholder="blur"
+          />
+          
+          {/* Badge */}
+          {product.featured && (
+            <div className="absolute top-2 left-2">
+              <span className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg">
+                HOT
+              </span>
+            </div>
+          )}
 
-        {/* Loading Overlay */}
-        {isLoading && (
-          <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        )}
-      </div>
+          {/* Loading Overlay */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          )}
+        </div>
+      </Link>
 
       {/* Notification Toast */}
       {notification && (
@@ -169,16 +179,18 @@ export default function ProductCard({
       )}
 
       {/* Product Info */}
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 flex flex-col h-full">
         {/* Category */}
         <div className="text-sm text-gray-500 mb-2 capitalize">
           {product.category}
         </div>
         
-        {/* Product Name */}
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
-          {product.title}
-        </h3>
+        {/* Product Name - Clickable */}
+        <Link href={product.isRealProduct ? `/product/${product.id}` : `/products/${product.id}`}>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors duration-200">
+            {product.name || product.title}
+          </h3>
+        </Link>
         
         {/* Price & Rating */}
         <div className="flex items-center justify-between mb-4">
@@ -187,9 +199,12 @@ export default function ProductCard({
           </span>
           <div className="flex items-center gap-1">
             <span className="text-yellow-400">★</span>
-            <span className="text-sm text-gray-600">4.8</span>
+            <span className="text-sm text-gray-600">{product.rating || '4.8'}</span>
           </div>
         </div>
+
+        {/* Spacer untuk push action buttons ke bawah */}
+        <div className="flex-grow"></div>
 
         {/* Action Buttons */}
         <div className="flex gap-2">

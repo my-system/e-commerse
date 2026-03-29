@@ -133,7 +133,7 @@ export default function MegaMenu({ categories, isOpen, onClose }: MegaMenuProps)
               </div>
               <div className="space-y-3">
                 <Link
-                  href="/shop?sort=featured"
+                  href="/marketplace?sort=featured"
                   onClick={onClose}
                   className="block text-gray-600 hover:text-blue-600 hover:translate-x-1 transition-all duration-200 ease-in-out text-base leading-relaxed cursor-pointer group font-medium"
                 >
@@ -143,7 +143,7 @@ export default function MegaMenu({ categories, isOpen, onClose }: MegaMenuProps)
                   </span>
                 </Link>
                 <Link
-                  href="/shop?sort=newest"
+                  href="/marketplace?sort=newest"
                   onClick={onClose}
                   className="block text-gray-600 hover:text-blue-600 hover:translate-x-1 transition-all duration-200 ease-in-out text-base leading-relaxed cursor-pointer group font-medium"
                 >
@@ -153,7 +153,7 @@ export default function MegaMenu({ categories, isOpen, onClose }: MegaMenuProps)
                   </span>
                 </Link>
                 <Link
-                  href="/shop?sort=rating"
+                  href="/marketplace?sort=rating"
                   onClick={onClose}
                   className="block text-gray-600 hover:text-blue-600 hover:translate-x-1 transition-all duration-200 ease-in-out text-base leading-relaxed cursor-pointer group font-medium"
                 >

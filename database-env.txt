@@ -1,0 +1,9 @@
+# Database Connection String
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ecommercedb"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key-here"
+
+# Other environment variables
+NODE_ENV="development"

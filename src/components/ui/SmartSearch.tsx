@@ -226,7 +226,7 @@ export default function SmartSearch({
     setIsOpen(false);
     
     // Navigate to search results page
-    router.push(`/shop?q=${encodeURIComponent(query)}`);
+    router.push(`/marketplace?q=${encodeURIComponent(query)}`);
   };
 
   // Close dropdown when clicking outside

@@ -27,9 +27,9 @@ interface SidebarProviderProps {
   userRole?: 'user' | 'seller' | 'admin';
 }
 
-export function SidebarProvider({ children, userRole = 'user' }: SidebarProviderProps) {
+export function SidebarProvider({ children, userRole = 'admin' }: SidebarProviderProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentUserRole, setCurrentUserRole] = useState(userRole);
+  const [currentUserRole, setCurrentUserRole] = useState('admin'); // Always admin for development
   const pathname = usePathname();
 
   // Auto-close sidebar when route changes
@@ -41,18 +41,8 @@ export function SidebarProvider({ children, userRole = 'user' }: SidebarProvider
   const closeSidebar = () => setIsSidebarOpen(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const setUserRole = (role: 'user' | 'seller' | 'admin') => {
-    setCurrentUserRole(role);
-    localStorage.setItem('userRole', role);
-    console.log('User role changed to:', role);
+    setCurrentUserRole('admin'); // Always set to admin for development
   };
-
-  // Load saved role on mount
-  useEffect(() => {
-    const savedRole = localStorage.getItem('userRole') as 'user' | 'seller' | 'admin' | null;
-    if (savedRole) {
-      setCurrentUserRole(savedRole);
-    }
-  }, []);
 
   const value: SidebarContextType = {
     isSidebarOpen,

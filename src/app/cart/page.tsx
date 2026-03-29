@@ -18,7 +18,7 @@ export default function CartPage() {
   };
 
   const handleContinueShopping = () => {
-    router.push('/shop');
+    router.push('/marketplace');
   };
 
   const shippingCost = state.totalPrice >= 500000 ? 0 : 15000;

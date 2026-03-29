@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import Navbar from "@/components/layout/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,13 +97,16 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#3b82f6" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full">
         <SidebarProvider>
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
                 <UserPreferencesProvider>
-                  {children}
+                  <Navbar />
+                  <main className="min-h-screen pt-16">
+                    {children}
+                  </main>
                 </UserPreferencesProvider>
               </WishlistProvider>
             </CartProvider>

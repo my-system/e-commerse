@@ -208,7 +208,7 @@ export default function FeaturedProducts() {
         {/* View All Button */}
         <div className="text-center mt-12">
           <Link 
-            href="/shop"
+            href="/marketplace"
             className="inline-block px-8 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors duration-300"
           >
             Lihat Semua Produk

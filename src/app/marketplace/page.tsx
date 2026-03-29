@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import LayoutWithSidebar from '@/components/layout/LayoutWithSidebar';
+import AppLayout from '@/components/layout/AppLayout';
 import ProductCard from '@/components/ui/ProductCard';
-import FilterButton from '@/components/mobile/FilterButton';
-import { FilterState, pricePresets } from '@/lib/product-utils';
+import MarketplaceFilter from '@/components/filters/MarketplaceFilter';
 import { products } from '@/data/products';
 import { categories } from '@/data/categories';
 import { filterProducts, sortProducts, paginateProducts, getTotalPages, generateMoreProducts } from '@/lib/product-utils';
@@ -16,11 +15,27 @@ import { useWishlist } from '@/contexts/WishlistContext';
 
 const PRODUCTS_PER_PAGE = 12;
 
-const initialFilters = {
-  category: '',
-  priceMin: 0,
-  priceMax: 999999999,
+// Interface untuk filter baru
+interface FilterState {
+  categories: string[];
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  rating: number | null;
+  inStockOnly: boolean;
+  sortBy: string;
+}
+
+const initialFilters: FilterState = {
+  categories: [],
+  priceRange: {
+    min: 0,
+    max: 999999999,
+  },
   rating: null,
+  inStockOnly: false,
+  sortBy: 'featured',
 };
 
 export default function MarketplacePage() {
@@ -34,10 +49,45 @@ export default function MarketplacePage() {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
 
-  // Generate more products for demo
+  // Generate more products for demo and add real products
   useEffect(() => {
     const moreProducts = generateMoreProducts(products, 40);
-    setAllProducts([...products, ...moreProducts]);
+    
+    // Fetch real products from marketplace API
+    const fetchRealProducts = async () => {
+      try {
+        const response = await fetch('/api/marketplace-products');
+        const result = await response.json();
+        
+        if (result.success && result.products) {
+          // Convert real products to match dummy product structure
+          const realProducts = result.products.map((product: any) => ({
+            id: product.id,
+            name: product.title,
+            price: product.price,
+            image: product.images ? JSON.parse(product.images)[0] : '/placeholder.jpg',
+            category: product.category,
+            description: product.description || '',
+            rating: product.rating,
+            reviews: product.reviews,
+            inStock: product.inStock,
+            featured: product.featured,
+            sellerId: product.sellerId,
+            isRealProduct: true // Flag to identify real products
+          }));
+          
+          // Combine dummy and real products
+          setAllProducts([...products, ...moreProducts, ...realProducts]);
+        } else {
+          setAllProducts([...products, ...moreProducts]);
+        }
+      } catch (error) {
+        console.error('Error fetching real products:', error);
+        setAllProducts([...products, ...moreProducts]);
+      }
+    };
+    
+    fetchRealProducts();
   }, []);
 
   // Memoize handlers to prevent re-renders
@@ -49,11 +99,11 @@ export default function MarketplacePage() {
     setAddingToCart(product.id);
     try {
       await addItem({
-        id: product.id,
+        id: Date.now().toString(),
         productId: product.id,
-        title: product.name,
+        title: product.name || product.title,
         price: product.price,
-        image: product.image,
+        image: product.image || product.images[0],
         quantity: 1,
       });
     } catch (error) {
@@ -79,12 +129,60 @@ export default function MarketplacePage() {
 
   // Memoized filtered and sorted products
   const filteredProducts = useMemo(() => {
-    return filterProducts(allProducts, filters);
+    let filtered = allProducts;
+    
+    // Filter by categories
+    if (filters.categories.length > 0) {
+      filtered = filtered.filter(product => 
+        filters.categories.includes(product.category)
+      );
+    }
+    
+    // Filter by price range
+    filtered = filtered.filter(product => 
+      product.price >= filters.priceRange.min && product.price <= filters.priceRange.max
+    );
+    
+    // Filter by rating
+    if (filters.rating) {
+      filtered = filtered.filter(product => 
+        (product.rating || 0) >= filters.rating!
+      );
+    }
+    
+    // Filter by stock
+    if (filters.inStockOnly) {
+      filtered = filtered.filter(product => product.inStock !== false);
+    }
+    
+    return filtered;
   }, [allProducts, filters]);
 
   const sortedProducts = useMemo(() => {
-    return sortProducts(filteredProducts, 'featured');
-  }, [filteredProducts]);
+    let sorted = [...filteredProducts];
+    
+    switch (filters.sortBy) {
+      case 'price-low':
+        sorted.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        sorted.sort((a, b) => b.price - a.price);
+        break;
+      case 'rating':
+        sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'newest':
+        sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        break;
+      case 'featured':
+      default:
+        // Keep original order with featured first
+        sorted.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+        break;
+    }
+    
+    return sorted;
+  }, [filteredProducts, filters.sortBy]);
 
   const paginatedProducts = useMemo(() => {
     return paginateProducts(sortedProducts, currentPage, PRODUCTS_PER_PAGE);
@@ -95,11 +193,15 @@ export default function MarketplacePage() {
   }, [sortedProducts.length]);
 
   const hasActiveFilters = useMemo(() => {
-    return filters.category !== '' || filters.priceMin > 0 || filters.priceMax < 999999999 || filters.rating !== null;
+    return filters.categories.length > 0 || 
+           filters.priceRange.min > 0 || 
+           filters.priceRange.max < 999999999 || 
+           filters.rating !== null || 
+           filters.inStockOnly;
   }, [filters]);
 
   return (
-    <LayoutWithSidebar>
+    <AppLayout showSidebar={true} showFooter={true}>
       {/* Desktop Version */}
       <div className="hidden md:block">
         {/* Page Header */}
@@ -131,153 +233,111 @@ export default function MarketplacePage() {
           </div>
         </div>
 
-        {/* Active Filters */}
-        {hasActiveFilters && (
-          <div className="bg-white border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
-                
-                {filters.category && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                    <span>{categories.find(c => c.id === filters.category)?.name}</span>
-                    <button
-                      onClick={() => handleFilterChange({ ...filters, category: '' })}
-                      className="ml-1 text-blue-500 hover:text-blue-700"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-                
-                {(filters.priceMin > 0 || filters.priceMax < 999999999) && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                    <span>
-                      {formatPrice(filters.priceMin)} - {formatPrice(filters.priceMax)}
-                    </span>
-                    <button
-                      onClick={() => handleFilterChange({ ...filters, priceMin: 0, priceMax: 999999999 })}
-                      className="ml-1 text-blue-500 hover:text-blue-700"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-                
-                {filters.rating && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                    <span>Rating {filters.rating}+</span>
-                    <button
-                      onClick={() => handleFilterChange({ ...filters, rating: null })}
-                      className="ml-1 text-blue-500 hover:text-blue-700"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-                
-                <button
-                  onClick={() => handleFilterChange(initialFilters)}
-                  className="text-xs text-red-600 hover:text-red-700 font-medium"
-                >
-                  Hapus semua
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar - Desktop */}
-            <div className="hidden lg:block w-80 flex-shrink-0">
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Filter Produk</h3>
-                <div className="space-y-4">
-                  {/* Categories */}
-                  <div>
-                    <h4 className="font-medium mb-2">Kategori</h4>
-                    <div className="space-y-2">
-                      {categories.map((category) => (
-                        <label key={category.id} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={filters.category === category.id}
-                            onChange={() => handleFilterChange({ ...filters, category: category.id })}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                          <span className="text-sm">{category.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Price Range */}
-                  <div>
-                    <h4 className="font-medium mb-2">Rentang Harga</h4>
-                    <div className="space-y-2">
-                      {pricePresets.map((preset) => (
-                        <button
-                          key={preset.label}
-                          onClick={() => handleFilterChange({ 
-                            ...filters, 
-                            priceMin: preset.priceMin, 
-                            priceMax: preset.priceMax 
-                          })}
-                          className={`w-full text-left px-3 py-2 rounded ${
-                            filters.priceMin === preset.priceMin && filters.priceMax === preset.priceMax
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Sort */}
-                  <div>
-                    <h4 className="font-medium mb-2">Urutkan</h4>
-                    <select
-                      value={filters.rating || 'featured'}
-                      onChange={(e) => handleFilterChange({ 
-                        ...filters, 
-                        rating: e.target.value === 'featured' ? null : parseFloat(e.target.value) 
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500"
-                    >
-                      <option value="featured">Featured</option>
-                      <option value="1">Rating 1+</option>
-                      <option value="2">Rating 2+</option>
-                      <option value="3">Rating 3+</option>
-                      <option value="4">Rating 4+</option>
-                      <option value="5">Rating 5</option>
-                    </select>
-                  </div>
-                </div>
+          <div className="grid grid-cols-[280px_1fr] gap-8">
+            {/* Sidebar Filter */}
+            <div className="relative z-30">
+              <div className="sticky top-24 z-40">
+                <MarketplaceFilter
+                  filters={filters}
+                  onFiltersChange={handleFilterChange}
+                  onReset={() => handleFilterChange(initialFilters)}
+                />
               </div>
             </div>
 
-            {/* Products Section */}
-            <div className="flex-1">
+            {/* Products Grid */}
+            <div className="relative z-20">
+              {/* Active Filters */}
+              {hasActiveFilters && (
+                <div className="bg-white border rounded-lg p-4 mb-6">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
+                    
+                    {filters.categories.map((category) => (
+                      <div key={category} className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                        <span>{categories.find(c => c.id === category)?.name}</span>
+                        <button
+                          onClick={() => handleFilterChange({
+                            ...filters,
+                            categories: filters.categories.filter(c => c !== category)
+                          })}
+                          className="ml-1 text-blue-500 hover:text-blue-700"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {(filters.priceRange.min > 0 || filters.priceRange.max < 999999999) && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                        <span>
+                          {formatPrice(filters.priceRange.min)} - {formatPrice(filters.priceRange.max)}
+                        </span>
+                        <button
+                          onClick={() => handleFilterChange({
+                            ...filters,
+                            priceRange: { min: 0, max: 999999999 }
+                          })}
+                          className="ml-1 text-blue-500 hover:text-blue-700"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {filters.rating && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                        <span>Rating {filters.rating}+</span>
+                        <button
+                          onClick={() => handleFilterChange({ ...filters, rating: null })}
+                          className="ml-1 text-blue-500 hover:text-blue-700"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {filters.inStockOnly && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                        <span>In Stock Only</span>
+                        <button
+                          onClick={() => handleFilterChange({ ...filters, inStockOnly: false })}
+                          className="ml-1 text-blue-500 hover:text-blue-700"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => handleFilterChange(initialFilters)}
+                      className="text-xs text-red-600 hover:text-red-700 font-medium"
+                    >
+                      Hapus semua
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Products Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAddToCart={handleAddToCart}
-                    onQuickView={handleQuickView}
-                    isWishlisted={isInWishlist(product.id)}
-                  />
+                  <div key={product.id} className="h-full">
+                    <ProductCard
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                      onQuickView={handleQuickView}
+                      isWishlisted={isInWishlist(product.id)}
+                    />
+                  </div>
                 ))}
               </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center space-x-2">
+                <div className="flex flex-wrap justify-center gap-2 mt-8">
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
@@ -285,7 +345,7 @@ export default function MarketplacePage() {
                   >
                     Previous
                   </button>
-                  
+
                   {Array.from({ length: totalPages }, (_, i) => (
                     <button
                       key={i + 1}
@@ -299,7 +359,7 @@ export default function MarketplacePage() {
                       {i + 1}
                     </button>
                   ))}
-                  
+
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
@@ -317,33 +377,28 @@ export default function MarketplacePage() {
       {/* Mobile Version */}
       <div className="md:hidden">
         {/* Page Header */}
-        <div className="bg-white border-b">
-          <div className="px-4 py-6">
-            {/* Breadcrumb */}
-            <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
-              <a href="/" className="hover:text-gray-700 transition-colors duration-200">
-                Home
-              </a>
-              <span>/</span>
-              <span className="text-gray-900 font-medium">Marketplace</span>
-            </nav>
-            
-            {/* Page Title */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Marketplace</h1>
-                <p className="text-gray-600 mt-1">
-                  Temukan produk berkualitas dari berbagai penjual
-                </p>
-              </div>
-              
-              {/* Mobile Filter Button */}
-              <FilterButton
-                filters={filters}
-                onFiltersChange={handleFilterChange}
-                onReset={() => handleFilterChange(initialFilters)}
-              />
+        <div className="bg-white border-b px-4 py-6">
+          <div className="flex flex-col gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Marketplace</h1>
+              <p className="text-gray-600 mt-1">
+                Temukan produk berkualitas dari berbagai penjual
+              </p>
             </div>
+            
+            {/* Results Count */}
+            <div className="text-sm text-gray-500">
+              Menampilkan {paginatedProducts.length} dari {sortedProducts.length} produk
+            </div>
+
+            {/* Mobile Filter Button */}
+            <button
+              onClick={() => setShowMobileFilter(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+            </button>
           </div>
         </div>
 
@@ -353,25 +408,31 @@ export default function MarketplacePage() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-medium text-gray-700">Filter aktif:</span>
               
-              {filters.category && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                  <span>{categories.find(c => c.id === filters.category)?.name}</span>
+              {filters.categories.map((category) => (
+                <div key={category} className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                  <span>{categories.find(c => c.id === category)?.name}</span>
                   <button
-                    onClick={() => handleFilterChange({ ...filters, category: '' })}
+                    onClick={() => handleFilterChange({
+                      ...filters,
+                      categories: filters.categories.filter(c => c !== category)
+                    })}
                     className="ml-1 text-blue-500 hover:text-blue-700"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 </div>
-              )}
+              ))}
               
-              {(filters.priceMin > 0 || filters.priceMax < 999999999) && (
+              {(filters.priceRange.min > 0 || filters.priceRange.max < 999999999) && (
                 <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
                   <span>
-                    {formatPrice(filters.priceMin)} - {formatPrice(filters.priceMax)}
+                    {formatPrice(filters.priceRange.min)} - {formatPrice(filters.priceRange.max)}
                   </span>
                   <button
-                    onClick={() => handleFilterChange({ ...filters, priceMin: 0, priceMax: 999999999 })}
+                    onClick={() => handleFilterChange({
+                      ...filters,
+                      priceRange: { min: 0, max: 999999999 }
+                    })}
                     className="ml-1 text-blue-500 hover:text-blue-700"
                   >
                     <X className="w-3 h-3" />
@@ -390,7 +451,7 @@ export default function MarketplacePage() {
                   </button>
                 </div>
               )}
-              
+
               <button
                 onClick={() => handleFilterChange(initialFilters)}
                 className="text-xs text-red-600 hover:text-red-700 font-medium"
@@ -425,7 +486,7 @@ export default function MarketplacePage() {
               >
                 Previous
               </button>
-              
+
               {Array.from({ length: totalPages }, (_, i) => (
                 <button
                   key={i + 1}
@@ -439,7 +500,7 @@ export default function MarketplacePage() {
                   {i + 1}
                 </button>
               ))}
-              
+
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
@@ -451,6 +512,40 @@ export default function MarketplacePage() {
           )}
         </div>
       </div>
+
+      {/* Mobile Filter Modal */}
+      {showMobileFilter && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden">
+          <div className="bg-white h-full overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Filter</h2>
+                <button
+                  onClick={() => setShowMobileFilter(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-4">
+              <MarketplaceFilter
+                filters={filters}
+                onFiltersChange={handleFilterChange}
+                onReset={() => handleFilterChange(initialFilters)}
+              />
+              
+              <button
+                onClick={() => setShowMobileFilter(false)}
+                className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Terapkan Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Checkout Button */}
       <div className="fixed bottom-6 right-6 z-40">
@@ -477,7 +572,7 @@ export default function MarketplacePage() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <img
@@ -486,7 +581,7 @@ export default function MarketplacePage() {
                     className="w-full h-64 object-cover rounded-lg"
                   />
                 </div>
-                
+
                 <div>
                   <div className="mb-4">
                     <p className="text-2xl font-bold text-gray-900">
@@ -494,7 +589,7 @@ export default function MarketplacePage() {
                     </p>
                     <p className="text-gray-600">{quickViewProduct.description}</p>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <button
                       onClick={() => handleAddToCart(quickViewProduct)}
@@ -503,7 +598,7 @@ export default function MarketplacePage() {
                     >
                       {addingToCart === quickViewProduct.id ? 'Menambahkan...' : 'Tambah ke Keranjang'}
                     </button>
-                    
+
                     <button
                       onClick={() => setQuickViewProduct(null)}
                       className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
@@ -517,6 +612,6 @@ export default function MarketplacePage() {
           </div>
         </div>
       )}
-    </LayoutWithSidebar>
+    </AppLayout>
   );
 }

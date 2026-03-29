@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { User, Package, Heart, ShoppingBag, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import LayoutWithSidebar from '@/components/layout/LayoutWithSidebar';
 import Footer from '@/components/layout/Footer';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -105,7 +104,6 @@ export default function AccountDashboard() {
   }
 
   return (
-    <LayoutWithSidebar>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
@@ -209,6 +207,5 @@ export default function AccountDashboard() {
           </div>
         </div>
       </div>
-    </LayoutWithSidebar>
   );
 }

@@ -32,7 +32,7 @@ export default function CategoryPage() {
     const foundCategory = categories.find(cat => cat.slug === slug);
     
     if (!foundCategory) {
-      router.push('/shop');
+      router.push('/marketplace');
       return;
     }
     
@@ -132,7 +132,7 @@ export default function CategoryPage() {
               Home
             </a>
             <span>/</span>
-            <a href="/shop" className="hover:text-gray-700 transition-colors duration-200">
+            <a href="/marketplace" className="hover:text-gray-700 transition-colors duration-200">
               Shop
             </a>
             <span>/</span>
@@ -208,7 +208,7 @@ export default function CategoryPage() {
         ) : (
           <EmptyState
             type="no-products"
-            onReset={() => router.push('/shop')}
+            onReset={() => router.push('/marketplace')}
           />
         )}
       </div>

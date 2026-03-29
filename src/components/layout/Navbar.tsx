@@ -31,8 +31,8 @@ export default function Navbar() {
 
   const navItems = [
     { name: 'Home', href: '/' },
-    { name: 'Tentang', href: '/tentang' },
-    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Marketplace', href: '/marketplace' },
+    { name: 'About', href: '/about' },
   ];
 
   return (
@@ -55,7 +55,7 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-8">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -68,7 +68,7 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Actions */}
-            <div className="hidden lg:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4">
               <SmartSearchNew className="w-80" />
               
               {/* Login Button when not logged in */}
@@ -99,10 +99,19 @@ export default function Navbar() {
                   </span>
                 )}
               </button>
+              
+              {/* Hamburger Menu - Desktop */}
+              <button
+                onClick={toggleSidebar}
+                className="p-2 text-gray-700 hover:text-black transition-colors duration-200"
+                aria-label="Buka menu"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
             </div>
 
             {/* Mobile menu button */}
-            <div className="lg:hidden">
+            <div className="md:hidden">
               <button
                 onClick={toggleSidebar}
                 className="p-2 text-gray-700 hover:text-black transition-colors duration-200"

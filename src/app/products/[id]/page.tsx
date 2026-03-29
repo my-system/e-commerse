@@ -25,22 +25,91 @@ export default function ProductDetailPage() {
 
   // Find product and related products
   useEffect(() => {
-    const foundProduct = products.find(p => p.id === productId);
+    const fetchProduct = async () => {
+      try {
+        // Try to fetch from API first
+        const response = await fetch('/api/test-seller-products');
+        if (response.ok) {
+          const data = await response.json();
+          const foundProduct = data.products.find((p: any) => p.id === productId);
+          
+          if (foundProduct) {
+            // Convert API product to Product interface format
+            const convertedProduct: Product = {
+              id: foundProduct.id,
+              title: foundProduct.title,
+              price: foundProduct.price,
+              category: foundProduct.category,
+              description: foundProduct.description || '',
+              featured: foundProduct.featured,
+              inStock: foundProduct.inStock,
+              rating: foundProduct.rating,
+              reviews: foundProduct.reviews,
+              images: typeof foundProduct.images === 'string' ? JSON.parse(foundProduct.images || '[]') : foundProduct.images,
+              material: foundProduct.material || '',
+              care: foundProduct.care || '',
+              variants: {
+                sizes: foundProduct.sizes || [],
+                colors: foundProduct.colors || []
+              },
+              specifications: foundProduct.specifications || {}
+            };
+            
+            setProduct(convertedProduct);
+            
+            // Find related products from API data
+            const related = data.products
+              .filter((p: any) => p.category === foundProduct.category && p.id !== productId)
+              .slice(0, 4)
+              .map((p: any) => ({
+                id: p.id,
+                title: p.title,
+                price: p.price,
+                category: p.category,
+                description: p.description || '',
+                featured: p.featured,
+                inStock: p.inStock,
+                rating: p.rating,
+                reviews: p.reviews,
+                images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : p.images,
+                material: p.material || '',
+                care: p.care || '',
+                variants: {
+                  sizes: p.sizes || [],
+                  colors: p.colors || []
+                },
+                specifications: p.specifications || {}
+              }));
+            
+            setRelatedProducts(related);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching product from API:', error);
+      }
+      
+      // Fallback to static data
+      const foundProduct = products.find(p => p.id === productId);
+      
+      if (!foundProduct) {
+        router.push('/marketplace');
+        return;
+      }
+      
+      setProduct(foundProduct);
+      
+      // Find related products (same category, exclude current product)
+      const related = products
+        .filter(p => p.category === foundProduct.category && p.id !== productId)
+        .slice(0, 4);
+      
+      setRelatedProducts(related);
+      setIsLoading(false);
+    };
     
-    if (!foundProduct) {
-      router.push('/shop');
-      return;
-    }
-    
-    setProduct(foundProduct);
-    
-    // Find related products (same category, exclude current product)
-    const related = products
-      .filter(p => p.category === foundProduct.category && p.id !== productId)
-      .slice(0, 4);
-    
-    setRelatedProducts(related);
-    setIsLoading(false);
+    fetchProduct();
   }, [productId, router]);
 
   const handleAddToCart = async (variant: { size?: ProductVariant; color?: ProductVariant; quantity: number }) => {
@@ -140,7 +209,7 @@ export default function ProductDetailPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Produk Tidak Ditemukan</h1>
             <p className="text-gray-600 mb-8">Maaf, produk yang Anda cari tidak tersedia.</p>
             <button
-              onClick={() => router.push('/shop')}
+              onClick={() => router.push('/marketplace')}
               className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
             >
               Kembali ke Shop
@@ -164,7 +233,7 @@ export default function ProductDetailPage() {
               Home
             </a>
             <span>/</span>
-            <a href="/shop" className="hover:text-gray-700 transition-colors duration-200">
+            <a href="/marketplace" className="hover:text-gray-700 transition-colors duration-200">
               Shop
             </a>
             <span>/</span>

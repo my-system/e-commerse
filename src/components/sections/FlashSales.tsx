@@ -34,24 +34,30 @@ export default function FlashSales({ className = "" }: FlashSalesProps) {
   const { trackProductView, addToWishlist, removeFromWishlist } = useUserPreferences();
 
   // Flash sale data
-  const flashSale: FlashSale = useMemo(() => ({
-    id: "flash-1",
-    title: "MEGA FLASH SALE",
-    description: "Diskon hingga 70% untuk produk pilihan!",
-    discount: 70,
-    endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
-    products: products.filter(p => p.featured).slice(0, 8).map(p => p.id),
-    maxQuantity: 1000,
-    soldCount: 743,
-  }), []);
+  const [flashSale, setFlashSale] = useState<FlashSale | null>(null);
+
+  useEffect(() => {
+    setFlashSale({
+      id: "flash-1",
+      title: "MEGA FLASH SALE",
+      description: "Diskon hingga 70% untuk produk pilihan!",
+      discount: 70,
+      endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+      products: products.filter(p => p.featured).slice(0, 8).map(p => p.id),
+      maxQuantity: 1000,
+      soldCount: 743,
+    });
+  }, []);
 
   // Get flash sale products
-  const flashSaleProducts = products.filter(product => 
-    flashSale.products.includes(product.id)
-  );
+  const flashSaleProducts = useMemo(() => products.filter(product => 
+    flashSale?.products.includes(product.id)
+  ), [flashSale]);
 
   // Calculate time left
   useEffect(() => {
+    if (!flashSale) return;
+    
     const calculateTimeLeft = () => {
       const difference = flashSale.endTime.getTime() - new Date().getTime();
       
@@ -73,7 +79,12 @@ export default function FlashSales({ className = "" }: FlashSalesProps) {
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, [flashSale.endTime]);
+  }, [flashSale?.endTime]);
+
+  // Early return if flashSale is not ready
+  if (!flashSale) {
+    return <div className={className}></div>;
+  }
 
   const formatNumber = (num: number) => {
     return num.toString().padStart(2, '0');

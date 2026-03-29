@@ -9,8 +9,10 @@ export interface ProductVariant {
 export interface Product {
   id: string;
   title: string;
+  name?: string; // For real products compatibility
   price: number;
   images: string[];
+  image?: string; // For real products compatibility
   category: string;
   description?: string;
   featured?: boolean;
@@ -24,6 +26,10 @@ export interface Product {
   inStock?: boolean;
   rating?: number;
   reviews?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  isRealProduct?: boolean; // Flag to identify real products
+  sellerId?: string; // For real products
 }
 
 // Validasi dan sanitasi data produk

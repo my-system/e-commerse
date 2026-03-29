@@ -1,8 +1,5 @@
-import LayoutWithSidebar from '@/components/layout/LayoutWithSidebar';
-
 export default function DashboardPage() {
   return (
-    <LayoutWithSidebar>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -94,6 +91,5 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </LayoutWithSidebar>
   );
 }

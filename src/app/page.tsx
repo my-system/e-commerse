@@ -63,11 +63,14 @@ export default function Home() {
     { name: 'Watches', image: '/images/placeholder-3.jpg', count: 56 }
   ];
 
-  const categoriesWithCount = categories.map((cat: any) => ({
-    name: cat.name,
-    image: cat.image,
-    count: Math.floor(Math.random() * 200) + 50 // Random count for demo
-  }));
+  const categoriesWithCount = [
+    { name: 'Clothing', image: '/images/placeholder-1.jpg', count: 245 },
+    { name: 'Shoes', image: '/images/placeholder-2.jpg', count: 128 },
+    { name: 'Accessories', image: '/images/placeholder-3.jpg', count: 89 },
+    { name: 'Bags', image: '/images/placeholder-1.jpg', count: 67 },
+    { name: 'Jewelry', image: '/images/placeholder-2.jpg', count: 34 },
+    { name: 'Watches', image: '/images/placeholder-3.jpg', count: 56 }
+  ];
 
   return (
     <AppLayout showSidebar={true} showFooter={true}>

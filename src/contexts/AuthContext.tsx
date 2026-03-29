@@ -36,110 +36,29 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: { children: ReactNode }) {
+  // Disable auth for development - always logged in as admin
   const [state, setState] = useState<AuthState>({
-    user: null,
-    isLoggedIn: false,
-    isLoading: true
+    user: {
+      name: 'Admin User',
+      email: 'admin@admin.com',
+      phone: '08123456789',
+      role: 'admin'
+    },
+    isLoggedIn: true,
+    isLoading: false
   });
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const checkAuth = () => {
-      const savedUser = localStorage.getItem('user');
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      
-      if (savedUser && isLoggedIn) {
-        try {
-          const user = JSON.parse(savedUser);
-          setState({
-            user,
-            isLoggedIn: true,
-            isLoading: false
-          });
-        } catch (error) {
-          console.error('Error parsing saved user:', error);
-          localStorage.removeItem('user');
-          localStorage.removeItem('isLoggedIn');
-          setState({
-            user: null,
-            isLoggedIn: false,
-            isLoading: false
-          });
-        }
-      } else {
-        setState({
-          user: null,
-          isLoggedIn: false,
-          isLoading: false
-        });
-      }
-    };
-
-    checkAuth();
-  }, []);
-
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock authentication - determine role based on email
-    const isAdmin = email === 'admin@admin.com' || email.includes('admin');
-    
-    const mockUser: User = {
-      name: isAdmin ? 'Admin User' : 'John Doe',
-      email: email,
-      phone: '08123456789',
-      role: isAdmin ? 'admin' : 'user'
-    };
-    
-    // Save to localStorage
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('isLoggedIn', 'true');
-    
-    setState({
-      user: mockUser,
-      isLoggedIn: true,
-      isLoading: false
-    });
+    // No-op - always logged in
   };
 
   const logout = () => {
-    console.log('Logout function called - clearing user data');
-    // Clear localStorage
-    localStorage.removeItem('user');
-    localStorage.removeItem('isLoggedIn');
-    
-    setState({
-      user: null,
-      isLoggedIn: false,
-      isLoading: false
-    });
+    // No-op - keep logged in
   };
 
   const register = async (userData: { name: string; email: string; password: string }) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock registration - auto-login after registration
-    const isAdmin = userData.email.includes('admin');
-    
-    const mockUser: User = {
-      name: userData.name,
-      email: userData.email,
-      phone: '08123456789',
-      role: isAdmin ? 'admin' : 'user'
-    };
-    
-    // Save to localStorage
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('isLoggedIn', 'true');
-    
-    setState({
-      user: mockUser,
-      isLoggedIn: true,
-      isLoading: false
-    });
+    // No-op - always logged in
   };
 
   const value: AuthContextType = {

@@ -34,7 +34,7 @@ export default function AdminProducts() {
 
   useEffect(() => {
     if (!isLoggedIn || user?.role !== 'admin') {
-      router.push('/');
+      // Don't redirect, show access denied message
       return;
     }
 

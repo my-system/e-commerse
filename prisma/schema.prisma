@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  title       String
+  price       Float
+  category    String
+  description String?
+  featured    Boolean  @default(false)
+  inStock     Boolean  @default(true)
+  rating      Float    @default(0)
+  reviews     Int      @default(0)
+  images      String   // JSON string of image URLs
+  material    String?
+  care        String?
+  status      String   @default("pending") // pending | approved | rejected
+  badges      String   @default("[]") // JSON array of badges
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sizes       ProductSize[]
+  colors      ProductColor[]
+  specs       ProductSpec[]
+  seller      Seller   @relation(fields: [sellerId], references: [id])
+
+  sellerId    String
+
+  @@map("products")
+}
+
+model ProductSize {
+  id        String @id @default(cuid())
+  name      String
+  value     String
+  inStock   Boolean @default(true)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  productId String
+
+  @@map("product_sizes")
+}
+
+model ProductColor {
+  id        String @id @default(cuid())
+  name      String
+  value     String // hex color
+  inStock   Boolean @default(true)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  productId String
+
+  @@map("product_colors")
+}
+
+model ProductSpec {
+  id        String @id @default(cuid())
+  key       String
+  value     String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  productId String
+
+  @@map("product_specs")
+}
+
+model Seller {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String
+  role        String   @default("seller")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  products    Product[]
+
+  @@map("sellers")
+}

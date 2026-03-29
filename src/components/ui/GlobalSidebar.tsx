@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,7 +25,8 @@ import {
   LogOut,
   ChevronRight,
   X,
-  UserCircle
+  UserCircle,
+  Database
 } from 'lucide-react';
 
 interface MenuItem {
@@ -46,6 +48,7 @@ export default function GlobalSidebar() {
   const { isSidebarOpen, closeSidebar, userRole, setUserRole } = useSidebar();
   const { user, isLoggedIn, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isActive = (href: string) => {
@@ -172,7 +175,7 @@ export default function GlobalSidebar() {
           {
             icon: Plus,
             label: 'Tambah Produk',
-            href: '/seller/products/create',
+            href: '/seller/addproduct',
             description: 'Form upload produk',
             badge: 'WAJIB'
           },
@@ -247,7 +250,7 @@ export default function GlobalSidebar() {
           {
             icon: Plus,
             label: 'Tambah Produk',
-            href: '/seller/products/create',
+            href: '/seller/addproduct',
             description: 'Form upload produk',
             badge: 'WAJIB'
           },
@@ -304,6 +307,12 @@ export default function GlobalSidebar() {
             label: 'Kontrol Marketplace',
             href: '/admin/marketplace',
             description: 'Pengaturan marketplace'
+          },
+          {
+            icon: Database,
+            label: 'Database',
+            href: '/admin/database',
+            description: 'Manajemen basis data sistem'
           }
         ]
       }
@@ -424,55 +433,50 @@ export default function GlobalSidebar() {
             onClick={closeSidebar}
           />
           
-          {/* Sidebar */}
+          {/* Dropdown Menu */}
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-screen w-[320px] bg-white/95 backdrop-blur-xl shadow-2xl z-50 flex flex-col border-l border-gray-100"
-            style={{
-              backdropFilter: 'blur(20px)',
-            }}
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ duration: 0.15 }}
+            className="fixed right-4 top-16 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-[80vh] overflow-hidden"
           >
-            {/* Header */}
-            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white p-6 flex items-center justify-between shadow-lg">
+            {/* Header - Compact */}
+            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white p-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold tracking-tight">DEMO WEB E-COMMERCE</h2>
-                <p className="text-xs text-blue-100 mt-1 opacity-90">by yusuf</p>
+                <h2 className="text-lg font-bold tracking-tight">DEMO WEB E-COMMERCE</h2>
+                <p className="text-xs text-blue-100 opacity-90">by yusuf</p>
               </div>
               <button
                 onClick={closeSidebar}
-                className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-105"
+                className="p-2 hover:bg-white/10 rounded-lg transition-all duration-200"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* User Profile Section */}
-            <div className="p-6 border-b border-gray-100/60 bg-gradient-to-br from-gray-50 to-white">
-              <div className="flex items-center gap-4">
-                <div className="relative group">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-white/50 group-hover:shadow-xl transition-all duration-300">
+            {/* User Profile Section - Compact */}
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
                     {user?.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="w-full h-full rounded-2xl object-cover" />
+                      <img src={user.avatar} alt={user.name} className="w-full h-full rounded-xl object-cover" />
                     ) : (
-                      <UserCircle className="w-9 h-9 text-white" />
+                      <UserCircle className="w-7 h-7 text-white" />
                     )}
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 text-lg leading-tight">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-gray-900 text-sm truncate">
                     {user?.name || 'John Doe'}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-0.5">
+                  <p className="text-xs text-gray-600 truncate">
                     {user?.email || 'demo@example.com'}
                   </p>
-                  <div className="flex items-center gap-2 mt-3">
-                    <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs rounded-full font-semibold border border-blue-200/50">
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="px-2 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs rounded-full font-semibold border border-blue-200/50">
                       {userRole.toUpperCase()}
                     </span>
                   </div>
@@ -480,11 +484,11 @@ export default function GlobalSidebar() {
               </div>
             </div>
 
-            {/* Navigation Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8">
-              {/* Role Switcher - Modern Design */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200/60 rounded-2xl p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
+            {/* Navigation Content - Scrollable */}
+            <div className="overflow-y-auto max-h-[50vh]">
+              {/* Role Switcher - Compact */}
+              <div className="p-4 border-b border-gray-100">
+                <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Current Role</span>
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 </div>
@@ -498,7 +502,7 @@ export default function GlobalSidebar() {
                       key={role.id}
                       onClick={() => setUserRole(role.id)}
                       className={`
-                        px-3 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 border
+                        px-2 py-2 text-xs font-bold rounded-lg transition-all duration-300 border
                         ${userRole === role.id
                           ? `bg-gradient-to-br from-${role.color}-500 to-${role.color}-600 text-white shadow-md border-${role.color}-400/30 transform scale-105`
                           : `bg-white text-gray-600 hover:bg-gray-50 border-gray-200 hover:border-gray-300 hover:shadow-sm`
@@ -511,41 +515,120 @@ export default function GlobalSidebar() {
                 </div>
               </div>
 
-              {/* Navigasi Utama */}
-              <div>
-                <div className="px-6 pb-3">
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    Navigasi Utama
-                  </h3>
+              {/* Menu Items - Compact */}
+              <div className="p-2">
+                {/* Main Navigation */}
+                <div className="mb-2">
+                  {mainNavigation.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={closeSidebar}
+                        className={`
+                          flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200
+                          ${active 
+                            ? 'bg-blue-50 text-blue-700 font-medium border border-blue-200' 
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                          }
+                        `}
+                      >
+                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="flex-1">{item.label}</span>
+                        {active && (
+                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
-                <div className="space-y-1.5 px-3">
-                  {mainNavigation.map(renderMenuItem)}
+
+                {/* Role-based Menus */}
+                {roleBasedMenus[userRole]?.map((section) => (
+                  <div key={section.title} className="mb-3">
+                    <div className="px-3 py-2">
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        {section.title}
+                      </h3>
+                    </div>
+                    <div className="space-y-1">
+                      {section.items.map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                          <a
+                            key={item.href}
+                            href={item.href}
+                            onClick={closeSidebar}
+                            className={`
+                              flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200
+                              ${active 
+                                ? 'bg-blue-50 text-blue-700 font-medium border border-blue-200' 
+                                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                              }
+                            `}
+                          >
+                            <item.icon className="w-4 h-4 flex-shrink-0" />
+                            <span className="flex-1">{item.label}</span>
+                            {item.badge && (
+                              <span className="px-2 py-0.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full font-medium shadow-sm">
+                                {item.badge}
+                              </span>
+                            )}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Information */}
+                <div className="mb-2">
+                  <div className="px-3 py-2">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      INFORMASI
+                    </h3>
+                  </div>
+                  {infoSection.items.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={closeSidebar}
+                        className={`
+                          flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200
+                          ${active 
+                            ? 'bg-blue-50 text-blue-700 font-medium border border-blue-200' 
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                          }
+                        `}
+                      >
+                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="flex-1">{item.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
-
-              {/* Role-based Menus */}
-              {roleBasedMenus[userRole]?.map(renderMenuSection)}
-
-              {/* Informasi */}
-              {renderMenuSection(infoSection)}
             </div>
 
-            {/* Logout Section */}
-            <div className="p-6 border-t border-gray-100/60 bg-gradient-to-br from-gray-50 to-white">
+            {/* Logout Section - Compact */}
+            <div className="p-4 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="w-full flex items-center justify-center gap-3 px-5 py-3.5 bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-600 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group border border-red-200/50"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-600 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium border border-red-200/50"
               >
                 {isLoggingOut ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="font-semibold">Logging out...</span>
+                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Logging out...</span>
                   </>
                 ) : (
                   <>
-                    <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="font-bold">Logout</span>
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
                   </>
                 )}
               </button>
