@@ -49,7 +49,7 @@ export function SidebarProvider({ children, userRole = 'admin' }: SidebarProvide
     openSidebar,
     closeSidebar,
     toggleSidebar,
-    userRole: currentUserRole,
+    userRole: currentUserRole as 'user' | 'seller' | 'admin',
     setUserRole,
   };
 

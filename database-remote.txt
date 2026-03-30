@@ -1,0 +1,21 @@
+# Database Connection String untuk Remote Database
+# Ganti dengan informasi database rumah Anda
+
+# Format: postgresql://username:password@host:port/database_name
+DATABASE_URL="postgresql://username:password@YOUR_HOME_IP:5432/your_database_name"
+
+# Contoh jika database di komputer rumah:
+# DATABASE_URL="postgresql://postgres:password123@192.168.1.100:5432/ecommercedb"
+
+# Cara cek IP komputer rumah:
+# 1. Di komputer rumah, buka cmd
+# 2. Ketik: ipconfig
+# 3. Cari "IPv4 Address"
+# 4. Gunakan IP tersebut di atas
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key-here"
+
+# Environment
+NODE_ENV="development"

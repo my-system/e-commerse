@@ -117,8 +117,16 @@ export default function ProductDetailPage() {
     }
   };
 
-  // Parse images
-  const images = product.images ? JSON.parse(product.images) : ['/placeholder.jpg'];
+  // Parse images with better error handling
+  let images = ['/placeholder.jpg'];
+  if (product.images) {
+    try {
+      images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+    } catch (error) {
+      console.warn('Failed to parse images:', error, 'Using fallback');
+      images = Array.isArray(product.images) ? product.images : ['/placeholder.jpg'];
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -143,7 +151,7 @@ export default function ProductDetailPage() {
               />
             </div>
             <div className="flex space-x-2">
-              {images.map((image, index) => (
+              {images.map((image: string, index: number) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}

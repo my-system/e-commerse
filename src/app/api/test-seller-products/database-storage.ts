@@ -204,7 +204,7 @@ export async function deleteProduct(id: string): Promise<boolean> {
     const result = await client.query('DELETE FROM products WHERE id = $1', [id]);
     client.release();
     
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   } catch (error) {
     console.error('Error deleting product:', error);
     return false;

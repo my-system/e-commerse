@@ -21,8 +21,8 @@ export default function AppLayout({
       {/* Navbar untuk semua device */}
       <Navbar />
       
-      {/* Page Content */}
-      <main className="pt-16">
+      {/* Page Content - No extra padding */}
+      <main>
         {children}
       </main>
       

@@ -4,10 +4,11 @@ import { PendingDatabaseService, MarketplaceDatabaseService } from '@/lib/multi-
 // POST - Approve product and move to marketplace
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id;
+    const resolvedParams = await params;
+    const productId = resolvedParams.id;
     
     // Get product from pending database
     const pendingProducts = await PendingDatabaseService.getPendingProducts();
@@ -45,10 +46,11 @@ export async function POST(
 // DELETE - Reject product
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id;
+    const resolvedParams = await params;
+    const productId = resolvedParams.id;
     
     // Update status to rejected
     const success = await PendingDatabaseService.updateProductStatus(productId, 'rejected');

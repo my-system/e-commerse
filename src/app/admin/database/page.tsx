@@ -186,15 +186,14 @@ export default function AdminDatabase() {
   };
 
   const getCategoryName = (categoryId: string) => {
-    // Since we're now saving category names directly, return as-is
-    // But keep mapping for backward compatibility with old data
+    // Direct mapping from category ID to name
     const categoryMap: Record<string, string> = {
-      '1': 'Fashion',
-      '2': 'Shoes',
-      '3': 'Accessories', 
-      '4': 'Bags',
-      '5': 'Jewelry',
-      '6': 'Electronics'
+      'fashion': 'Fashion',
+      'shoes': 'Shoes', 
+      'accessories': 'Accessories',
+      'bags': 'Bags',
+      'jewelry': 'Jewelry',
+      'electronics': 'Electronics'
     };
     
     // If it's an ID, map it. If it's already a name, return it with proper casing
@@ -202,8 +201,15 @@ export default function AdminDatabase() {
       return categoryMap[categoryId];
     }
     
-    // Return proper casing for category names
-    return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
+    // Return proper casing for category names (handle legacy data)
+    const categoryLower = categoryId.toLowerCase();
+    const categoryNames = ['fashion', 'shoes', 'accessories', 'bags', 'jewelry', 'electronics'];
+    if (categoryNames.includes(categoryLower)) {
+      return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
+    }
+    
+    // Return as-is for unknown categories
+    return categoryId;
   };
 
   const stats = {

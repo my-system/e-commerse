@@ -253,7 +253,7 @@ export default function EditProductPage() {
               <div>
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Product Images</h2>
                 <div className="space-y-4">
-                  {images.map((image, index) => (
+                  {images.map((image: string, index: number) => (
                     <div key={index} className="relative">
                       <img
                         src={image}

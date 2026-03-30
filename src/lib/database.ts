@@ -241,7 +241,7 @@ export const productDb = {
     const client = await pool.connect();
     try {
       const result = await client.query('DELETE FROM products WHERE id = $1', [id]);
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } finally {
       client.release();
     }

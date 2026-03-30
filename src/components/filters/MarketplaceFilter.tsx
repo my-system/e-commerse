@@ -68,21 +68,21 @@ function AccordionSection({ title, children, defaultOpen = true }: AccordionSect
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-gray-100 last:border-b-0">
+    <div className="border-t border-gray-100 last:border-b-0 my-6 first:mt-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-5 text-left hover:bg-gray-50 transition-all duration-300 px-8 -mx-8 rounded-lg group"
+        className="w-full flex items-center justify-between py-4 text-left hover:bg-gray-50 transition-all duration-300 px-6 -mx-6 rounded-lg group"
       >
-        <h3 className="text-base font-semibold text-gray-700 group-hover:text-gray-900 transition-colors duration-300">{title}</h3>
+        <h3 className="text-lg font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-300 font-sans">{title}</h3>
         <div className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
           <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
         </div>
       </button>
       
       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-        isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
       }`}>
-        <div className="pb-6 px-8">
+        <div className="pb-6 px-6">
           {children}
         </div>
       </div>
@@ -287,9 +287,9 @@ export default function MarketplaceFilter({
 
   // Desktop Sidebar
   const DesktopSidebar = () => (
-    <div className={`w-80 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${className}`}>
+    <div className={`w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Filter className="w-5 h-5 text-blue-500" />
@@ -308,38 +308,45 @@ export default function MarketplaceFilter({
       {/* Scrollable Content */}
       <div 
         ref={scrollRef}
-        className="max-h-[60vh] overflow-y-auto px-2"
+        className="overflow-y-auto"
       >
         {/* Category Filter */}
         <AccordionSection title="Categories">
-          <div className="space-y-4">
+          <div className="space-y-3">
             {categories.map((category) => {
               const isSelected = filters.categories.includes(category.id);
               return (
                 <label
                   key={category.id}
                   className={`
-                    flex items-center justify-between p-5 rounded-xl cursor-pointer transition-all duration-300 group border
+                    flex items-center justify-between py-3 px-4 rounded-md cursor-pointer transition-all duration-300 group border
                     ${isSelected 
-                      ? 'bg-blue-50 border-blue-200 hover:bg-blue-100 shadow-sm' 
-                      : 'border-transparent hover:border-gray-200 hover:bg-gray-50 hover:shadow-sm'
+                      ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
+                      : 'border-transparent hover:bg-gray-50 hover:border-gray-100'
                     }
                   `}
                 >
                   <div className="flex items-center gap-4">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleCategoryToggle(category.id)}
-                      className="w-5 h-5 text-blue-500 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:scale-105"
-                    />
-                    <span className={`text-sm font-medium transition-all duration-300 ${
-                      isSelected ? 'text-blue-700' : 'text-gray-600 group-hover:text-gray-800'
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleCategoryToggle(category.id)}
+                        className="w-5 h-5 text-blue-500 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:scale-105 appearance-none"
+                      />
+                      {isSelected && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <span className={`text-sm font-medium transition-all duration-300 font-sans ${
+                      isSelected ? 'text-blue-700' : 'text-gray-700 group-hover:text-gray-800'
                     }`}>
                       {category.name}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded-full">
+                  <span className="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded-full">
                     {category.count}
                   </span>
                 </label>
@@ -350,7 +357,7 @@ export default function MarketplaceFilter({
 
         {/* Price Range */}
         <AccordionSection title="Price Range">
-          <div className="px-2">
+          <div className="px-4">
             {/* Price Presets */}
             <div className="space-y-3 mb-6">
               {[
@@ -397,21 +404,21 @@ export default function MarketplaceFilter({
                     type="text"
                     value={formatCurrency(filters.priceRange.min)}
                     onChange={(e) => handleManualPriceChange('min', e.target.value)}
+                    className="w-full pl-8 pr-2 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Min"
-                    className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                   />
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
-                    Rp
-                  </span>
                   <input
                     type="text"
                     value={formatCurrency(filters.priceRange.max)}
                     onChange={(e) => handleManualPriceChange('max', e.target.value)}
+                    className="w-full px-2 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Max"
-                    className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                   />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                    Rp
+                  </span>
                 </div>
               </div>
             </div>
@@ -419,47 +426,42 @@ export default function MarketplaceFilter({
         </AccordionSection>
 
         {/* Rating Filter */}
-        <AccordionSection title="Customer Rating">
-          <div className="space-y-2">
+        <AccordionSection title="Rating">
+          <div className="space-y-3 px-4">
             {ratingOptions.map((option) => {
               const isSelected = filters.rating === option.value;
               return (
-                <button
+                <label
                   key={option.value}
-                  onClick={() => handleRatingSelect(option.value)}
-                  className={`
-                    w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200
-                    ${isSelected
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'hover:bg-gray-50 border border-transparent'
-                    }
-                  `}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 group"
                 >
-                  <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="rating"
+                    checked={isSelected}
+                    onChange={() => handleRatingSelect(option.value)}
+                    className="w-5 h-5 text-blue-500 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  />
+                  <div className="flex items-center gap-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`
-                            w-4 h-4 transition-colors duration-200
-                            ${i < option.stars
-                              ? 'fill-yellow-400 text-yellow-400'
+                          className={`w-4 h-4 ${
+                            i < option.stars
+                              ? 'text-yellow-400 fill-current'
                               : 'text-gray-300'
-                            }
-                          `}
+                          }`}
                         />
                       ))}
                     </div>
-                    <span className={`text-sm ${
-                      isSelected ? 'text-blue-700 font-medium' : 'text-gray-700'
+                    <span className={`text-sm font-medium transition-colors duration-200 ${
+                      isSelected ? 'text-blue-700' : 'text-gray-700 group-hover:text-gray-900'
                     }`}>
                       {option.label}
                     </span>
                   </div>
-                  {isSelected && (
-                    <Check className="w-4 h-4 text-blue-600" />
-                  )}
-                </button>
+                </label>
               );
             })}
           </div>
@@ -467,118 +469,91 @@ export default function MarketplaceFilter({
 
         {/* Sort By */}
         <AccordionSection title="Sort By">
-          <div className="space-y-3">
+          <div className="space-y-3 px-4">
             {sortOptions.map((option) => {
               const isSelected = filters.sortBy === option.value;
               return (
                 <label
                   key={option.value}
-                  className={`
-                    flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all duration-200 group border
-                    ${isSelected 
-                      ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
-                      : 'border-transparent hover:border-gray-200 hover:bg-gray-50'
-                    }
-                  `}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="sortBy"
-                      value={option.value}
-                      checked={isSelected}
-                      onChange={() => handleSortSelect(option.value)}
-                      className="w-5 h-5 text-blue-500 border-2 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    />
-                    <span className={`text-sm font-medium transition-colors duration-200 ${
-                      isSelected ? 'text-blue-700' : 'text-gray-700 group-hover:text-gray-900'
-                    }`}>
-                      {option.label}
-                    </span>
-                  </div>
-                  {isSelected && (
-                    <Check className="w-4 h-4 text-blue-500" />
-                  )}
+                  <input
+                    type="radio"
+                    name="sortBy"
+                    checked={isSelected}
+                    onChange={() => handleSortSelect(option.value)}
+                    className="w-5 h-5 text-blue-500 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  />
+                  <span className={`text-sm font-medium transition-colors duration-200 ${
+                    isSelected ? 'text-blue-700' : 'text-gray-700 group-hover:text-gray-900'
+                  }`}>
+                    {option.label}
+                  </span>
                 </label>
               );
             })}
           </div>
         </AccordionSection>
-      </div>
 
-      {/* Apply Button */}
-      <div className="p-6 border-t border-gray-100">
-        <button
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-all duration-200 transform hover:scale-105"
-          onClick={() => setIsMobileOpen(false)}
-        >
-          Terapkan Filter
-        </button>
+        {/* Apply Button */}
+        <div className="px-4 pb-6 mt-8">
+          <button
+            onClick={() => setIsMobileOpen(false)}
+            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm font-sans"
+          >
+            Terapkan Filter
+          </button>
+        </div>
       </div>
     </div>
   );
 
-  // Mobile Filter Button & Drawer
-  const MobileFilter = () => (
-    <>
-      {/* Filter Button */}
+  // Mobile Version
+  const MobileVersion = () => (
+    <div className="md:hidden">
+      {/* Mobile Filter Button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200"
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
       >
-        <Filter className="w-4 h-4" />
-        <span>Filter</span>
+        <Filter className="w-5 h-5" />
+        Filters
         {hasActiveFilters && (
-          <span className="w-5 h-5 bg-white text-blue-500 rounded-full text-xs flex items-center justify-center font-medium">
-            {(filters.categories.length + (filters.rating ? 1 : 0) + (filters.inStockOnly ? 1 : 0))}
+          <span className="ml-2 px-2 py-1 bg-blue-700 rounded-full text-xs">
+            Active
           </span>
         )}
       </button>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Filter Modal */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50"
-            onClick={() => setIsMobileOpen(false)}
-          />
-          
-          {/* Drawer */}
-          <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <Filter className="w-5 h-5 text-blue-500" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
+          <div className="bg-white w-full max-h-[80vh] overflow-y-auto rounded-t-2xl">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10">
+              <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-gray-900">Filters</h2>
+                <button
+                  onClick={() => setIsMobileOpen(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-              <button
-                onClick={() => setIsMobileOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
             </div>
             
-            <div className="h-[calc(100vh-80px)] overflow-y-auto">
+            <div className="p-4">
               <DesktopSidebar />
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 
   return (
-    <>
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <DesktopSidebar />
-      </div>
-      
-      {/* Mobile Filter */}
-      <div className="md:hidden">
-        <MobileFilter />
-      </div>
-    </>
+    <div>
+      <DesktopSidebar />
+      <MobileVersion />
+    </div>
   );
 }

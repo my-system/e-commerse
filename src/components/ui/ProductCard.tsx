@@ -133,7 +133,7 @@ export default function ProductCard({
       style={{ transform: 'none' }}
     >
       {/* Product Image - Clickable */}
-      <Link href={product.isRealProduct ? `/product/${product.id}` : `/products/${product.id}`}>
+      <Link href={`/product/${product.id}`}>
         <div className="relative h-64 sm:h-80 overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity duration-200">
           <OptimizedImage
             src={firstImage}
@@ -186,7 +186,7 @@ export default function ProductCard({
         </div>
         
         {/* Product Name - Clickable */}
-        <Link href={product.isRealProduct ? `/product/${product.id}` : `/products/${product.id}`}>
+        <Link href={`/product/${product.id}`}>
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors duration-200">
             {product.name || product.title}
           </h3>
@@ -208,16 +208,16 @@ export default function ProductCard({
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <button
-            onClick={handleQuickView}
-            className="px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+          <Link 
+            href={`/product/${product.id}`}
+            className="flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
           >
             <Eye className="h-4 w-4" />
-          </button>
+          </Link>
           <button
             onClick={handleAddToCart}
             disabled={isLoading}
-            className="flex-1 px-3 sm:px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="flex-1 px-3 sm:px-4 py-2 bg-blue-600 text-white font-medium tracking-wide text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Menambah...' : 'Tambah ke Keranjang'}
           </button>

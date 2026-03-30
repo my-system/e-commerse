@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateProduct } from '../database-storage';
+import { updateProduct } from '../../database-storage';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id;
+    const resolvedParams = await params;
+    const productId = resolvedParams.id;
     
     // Update product status using database function
     const updatedProduct = await updateProduct(productId, {
