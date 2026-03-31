@@ -139,7 +139,8 @@ export default function ProductCard({
             src={firstImage}
             alt={product.name || product.title}
             className="w-full h-full hover:scale-105 transition-transform duration-300"
-            priority={false}
+            priority={true}
+            disableIntersectionObserver={true}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             placeholder="blur"
           />

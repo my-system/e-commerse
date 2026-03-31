@@ -97,14 +97,14 @@ export default function FeaturedProducts() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {featuredProducts.map((product) => (
             <div
-              key={product.id}
+              key={`featured-${product.id}`} // Pastikan key unik dan stabil
               className="group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
               onMouseEnter={() => setHoveredProduct(product.id)}
               onMouseLeave={() => setHoveredProduct(null)}
               onClick={() => handleProductClick(product)}
             >
               {/* Product Image */}
-              <div className="relative h-80 overflow-hidden bg-gray-100">
+              <div className="relative aspect-square bg-gray-200 overflow-hidden">
                 <OptimizedImage
                   src={product.images?.[0] || '/placeholder.jpg'}
                   alt={product.title}
@@ -121,14 +121,14 @@ export default function FeaturedProducts() {
                 }`}>
                   <button 
                     onClick={(e) => handleQuickView(product, e)}
-                    className="p-3 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
+                    className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110 shadow-lg"
                     title="Quick View"
                   >
                     <Eye className="h-5 w-5 text-gray-800" />
                   </button>
                   <button 
                     onClick={(e) => handleToggleWishlist(product.id, e)}
-                    className={`p-3 rounded-full transition-colors duration-200 transform hover:scale-110 ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-200 transform hover:scale-110 shadow-lg ${
                       wishlist.has(product.id) 
                         ? 'bg-red-500 hover:bg-red-600' 
                         : 'bg-white hover:bg-gray-100'
@@ -142,7 +142,7 @@ export default function FeaturedProducts() {
                   <button 
                     onClick={(e) => handleAddToCart(product, e)}
                     disabled={addingToCart === product.id}
-                    className="p-3 bg-blue-600 rounded-full hover:bg-blue-700 transition-colors duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                     title="Add to Cart"
                   >
                     {addingToCart === product.id ? (
@@ -164,23 +164,23 @@ export default function FeaturedProducts() {
               {/* Product Info */}
               <div className="p-6">
                 {/* Category */}
-                <div className="text-sm text-gray-500 mb-2 capitalize">
+                <div className="text-sm text-gray-500 mb-2 capitalize font-['Inter']">
                   {product.category}
                 </div>
                 
                 {/* Product Name */}
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200 font-['Inter']">
                   {product.title}
                 </h3>
                 
                 {/* Price */}
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-2xl font-bold text-gray-900 font-['Inter']">
                     {formatPrice(product.price)}
                   </span>
                   <div className="flex items-center gap-1">
                     <span className="text-yellow-400">★</span>
-                    <span className="text-sm text-gray-600">4.8</span>
+                    <span className="text-sm text-gray-600 font-['Inter']">4.8</span>
                   </div>
                 </div>
 
@@ -189,13 +189,13 @@ export default function FeaturedProducts() {
                   <button 
                     onClick={(e) => handleAddToCart(product, e)}
                     disabled={addingToCart === product.id}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-['Inter']"
                   >
                     {addingToCart === product.id ? 'Menambahkan...' : 'Tambah ke Keranjang'}
                   </button>
                   <button 
                     onClick={(e) => handleQuickView(product, e)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-['Inter']"
                   >
                     <Eye className="h-4 w-4" />
                   </button>

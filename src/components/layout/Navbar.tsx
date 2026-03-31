@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, ShoppingCart, User, Search as SearchIcon, ChevronDown } from 'lucide-react';
+import { Menu, ShoppingCart, User, Search as SearchIcon, ChevronDown, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
@@ -110,8 +110,40 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
+            {/* Mobile Actions */}
+            <div className="md:hidden flex items-center space-x-2">
+              {/* Search Icon - Mobile */}
+              <button 
+                className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
+                onClick={() => {
+                  // Trigger search modal or navigate to search page
+                  const searchModal = document.getElementById('mobile-search-modal');
+                  if (searchModal) {
+                    searchModal.classList.remove('hidden');
+                  } else {
+                    // Fallback: navigate to search page or open search in sidebar
+                    window.location.href = '/search';
+                  }
+                }}
+                aria-label="Cari produk"
+              >
+                <SearchIcon className="h-5 w-5" />
+              </button>
+              
+              {/* Cart Icon - Mobile */}
+              <button 
+                className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
+                onClick={openCart}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartState.totalItems > 0 && (
+                  <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartState.totalItems > 99 ? '99+' : cartState.totalItems}
+                  </span>
+                )}
+              </button>
+              
+              {/* Mobile menu button */}
               <button
                 onClick={toggleSidebar}
                 className="p-2 text-gray-700 hover:text-black transition-colors duration-200"
@@ -127,6 +159,32 @@ export default function Navbar() {
       {/* Components */}
       <MiniCart />
       <AIChatbot />
+      
+      {/* Mobile Search Modal */}
+      <div 
+        id="mobile-search-modal" 
+        className="hidden fixed inset-0 bg-black/50 z-50 md:hidden"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            e.currentTarget.classList.add('hidden');
+          }
+        }}
+      >
+        <div className="absolute top-20 left-4 right-4 bg-white rounded-lg shadow-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Cari Produk</h3>
+            <button
+              onClick={() => {
+                document.getElementById('mobile-search-modal')?.classList.add('hidden');
+              }}
+              className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <SmartSearchNew className="w-full" />
+        </div>
+      </div>
       
       {/* Global Sidebar - Always Available */}
       <GlobalSidebar />

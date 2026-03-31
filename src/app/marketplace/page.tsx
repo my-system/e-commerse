@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import ProductCard from '@/components/ui/ProductCard';
+import { ProductCardModern } from '@/components/mobile/ProductCardModern';
 import MarketplaceFilter from '@/components/filters/ModernSidebarFilter';
 import { products } from '@/data/products';
 import { categories } from '@/data/categories';
@@ -101,7 +102,7 @@ export default function MarketplacePage() {
     };
     
     fetchRealProducts();
-  }, []);
+  }, []); // Hanya dijalankan sekali pada mount
 
   // Memoize handlers to prevent re-renders
   const handleAddToCart = useCallback(async (product: any) => {
@@ -381,28 +382,42 @@ export default function MarketplacePage() {
       {/* Mobile Version */}
       <div className="md:hidden">
         {/* Page Header - Mobile Compact */}
-        <div className="bg-white border-b px-4 py-2">
+        <div className="bg-white border-b px-4 py-3">
           <div className="flex flex-col gap-2">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Marketplace</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-2xl font-bold text-gray-900 font-['Inter']">Marketplace</h1>
+              <p className="text-gray-600 mt-1 font-['Inter'] text-sm">
                 Temukan produk berkualitas dari berbagai penjual
               </p>
             </div>
             
             {/* Results Count */}
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 font-['Inter']">
               Menampilkan {paginatedProducts.length} dari {sortedProducts.length} produk
             </div>
 
             {/* Mobile Filter Button */}
-            <button
-              onClick={() => setShowMobileFilter(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Filter className="w-4 h-4" />
-              Filter
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowMobileFilter(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-['Inter'] text-sm"
+              >
+                <Filter className="w-4 h-4" />
+                Filter
+                {hasActiveFilters && (
+                  <span className="bg-white/20 text-xs px-2 py-0.5 rounded-full">
+                    {Object.keys(filters).filter(key => {
+                      if (key === 'categories') return filters.categories.length > 0
+                      if (key === 'priceRange') return filters.priceRange.min > 0 || filters.priceRange.max < 999999999
+                      if (key === 'rating') return filters.rating !== null
+                      if (key === 'inStockOnly') return filters.inStockOnly
+                      if (key === 'sortBy') return filters.sortBy !== 'featured'
+                      return false
+                    }).length}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -479,48 +494,79 @@ export default function MarketplacePage() {
         )}
 
         {/* Products Grid - Mobile */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-4 pb-20">
           <div className="grid grid-cols-2 gap-3">
             {paginatedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={handleAddToCart}
-                isWishlisted={isInWishlist(product.id)}
+              <ProductCardModern
+                key={`product-${product.id}`} // Pastikan key unik dan stabil
+                product={{
+                  id: product.id,
+                  name: product.name || product.title || 'Unknown Product',
+                  title: product.title || product.name,
+                  description: product.description || '',
+                  price: product.price,
+                  originalPrice: (product as any).originalPrice,
+                  discount: (product as any).discount,
+                  rating: product.rating,
+                  reviews: product.reviews,
+                  image: product.image || (product as any).images?.[0],
+                  images: (product as any).images,
+                  isNew: (product as any).isNew,
+                  category: product.category
+                }}
               />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Mobile Filter Modal */}
+      {/* Mobile Filter Modal - Bottom Sheet */}
       {showMobileFilter && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden">
-          <div className="bg-white h-full overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b p-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden">
+            {/* Handle Bar */}
+            <div className="flex justify-center py-2">
+              <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
+            </div>
+            
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b px-4 py-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Filter</h2>
+                <h2 className="text-lg font-semibold font-['Inter']">Filter Produk</h2>
                 <button
                   onClick={() => setShowMobileFilter(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
             </div>
             
-            <div className="p-4">
+            {/* Filter Content */}
+            <div className="p-4 overflow-y-auto max-h-[60vh]">
               <MarketplaceFilter
                 filters={filters}
                 onFiltersChange={handleFilterChange}
                 onReset={() => handleFilterChange(initialFilters)}
               />
-              
+            </div>
+            
+            {/* Footer Actions */}
+            <div className="sticky bottom-0 bg-white border-t px-4 py-3 space-y-2">
               <button
                 onClick={() => setShowMobileFilter(false)}
-                className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
               >
                 Terapkan Filter
+              </button>
+              <button
+                onClick={() => {
+                  handleFilterChange(initialFilters)
+                  setShowMobileFilter(false)
+                }}
+                className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+              >
+                Reset Filter
               </button>
             </div>
           </div>
