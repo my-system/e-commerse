@@ -23,6 +23,7 @@ import {
   Shield, 
   HelpCircle, 
   LogOut,
+  LogIn,
   ChevronRight,
   X,
   UserCircle,
@@ -58,15 +59,16 @@ export default function GlobalSidebar() {
     return pathname.startsWith(href);
   };
 
-  const handleLogout = () => {
-    setIsLoggingOut(true);
-    setTimeout(() => {
-      setIsLoggingOut(false);
+  const handleAuthAction = () => {
+    if (isLoggedIn) {
+      // If logged in, go to account page
       closeSidebar();
-      logout();
-      // Force page reload to ensure UI updates properly
-      window.location.href = '/';
-    }, 1000);
+      router.push('/account');
+    } else {
+      // If not logged in, go to login page
+      closeSidebar();
+      router.push('/login');
+    }
   };
 
   // Navigasi Utama (selalu tampil untuk semua role)
@@ -457,63 +459,75 @@ export default function GlobalSidebar() {
 
             {/* User Profile Section - Compact */}
             <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
-                    {user?.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="w-full h-full rounded-xl object-cover" />
-                    ) : (
-                      <UserCircle className="w-7 h-7 text-white" />
-                    )}
+              {isLoggedIn ? (
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+                      {user?.avatar ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-xl object-cover" />
+                      ) : (
+                        <UserCircle className="w-7 h-7 text-white" />
+                      )}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 text-sm truncate">
-                    {user?.name || 'John Doe'}
-                  </h3>
-                  <p className="text-xs text-gray-600 truncate">
-                    {user?.email || 'demo@example.com'}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="px-2 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs rounded-full font-semibold border border-blue-200/50">
-                      {userRole.toUpperCase()}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 text-sm truncate">
+                      {user?.name || 'John Doe'}
+                    </h3>
+                    <p className="text-xs text-gray-600 truncate">
+                      {user?.email || 'demo@example.com'}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="px-2 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs rounded-full font-semibold border border-blue-200/50">
+                        {userRole.toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="text-center py-2">
+                  <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center shadow-md mx-auto mb-3">
+                    <UserCircle className="w-7 h-7 text-white" />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-sm mb-1">Guest User</h3>
+                  <p className="text-xs text-gray-600">Login to access all features</p>
+                </div>
+              )}
             </div>
 
             {/* Navigation Content - Scrollable */}
             <div className="overflow-y-auto max-h-[50vh]">
-              {/* Role Switcher - Compact */}
-              <div className="p-4 border-b border-gray-100">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Current Role</span>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              {/* Role Switcher - Compact - Only show if logged in */}
+              {isLoggedIn && (
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Current Role</span>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'user' as const, label: 'User', color: 'blue' },
+                      { id: 'seller' as const, label: 'Seller', color: 'green' },
+                      { id: 'admin' as const, label: 'Admin', color: 'red' }
+                    ].map((role) => (
+                      <button
+                        key={role.id}
+                        onClick={() => setUserRole(role.id)}
+                        className={`
+                          px-2 py-2 text-xs font-bold rounded-lg transition-all duration-300 border
+                          ${userRole === role.id
+                            ? `bg-gradient-to-br from-${role.color}-500 to-${role.color}-600 text-white shadow-md border-${role.color}-400/30 transform scale-105`
+                            : `bg-white text-gray-600 hover:bg-gray-50 border-gray-200 hover:border-gray-300 hover:shadow-sm`
+                          }
+                        `}
+                      >
+                        {role.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'user' as const, label: 'User', color: 'blue' },
-                    { id: 'seller' as const, label: 'Seller', color: 'green' },
-                    { id: 'admin' as const, label: 'Admin', color: 'red' }
-                  ].map((role) => (
-                    <button
-                      key={role.id}
-                      onClick={() => setUserRole(role.id)}
-                      className={`
-                        px-2 py-2 text-xs font-bold rounded-lg transition-all duration-300 border
-                        ${userRole === role.id
-                          ? `bg-gradient-to-br from-${role.color}-500 to-${role.color}-600 text-white shadow-md border-${role.color}-400/30 transform scale-105`
-                          : `bg-white text-gray-600 hover:bg-gray-50 border-gray-200 hover:border-gray-300 hover:shadow-sm`
-                        }
-                      `}
-                    >
-                      {role.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Menu Items - Compact */}
               <div className="p-2">
@@ -544,8 +558,8 @@ export default function GlobalSidebar() {
                   })}
                 </div>
 
-                {/* Role-based Menus */}
-                {roleBasedMenus[userRole]?.map((section) => (
+                {/* Role-based Menus - Only show if logged in */}
+                {isLoggedIn && roleBasedMenus[userRole]?.map((section) => (
                   <div key={section.title} className="mb-3">
                     <div className="px-3 py-2">
                       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -582,6 +596,38 @@ export default function GlobalSidebar() {
                   </div>
                 ))}
 
+                {/* Guest User Info - Only show if not logged in */}
+                {!isLoggedIn && (
+                  <div className="mb-3">
+                    <div className="px-3 py-2">
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        AKUN TAMU
+                      </h3>
+                    </div>
+                    <div className="px-3 py-2 text-center">
+                      <p className="text-xs text-gray-600 mb-2">Login untuk mengakses fitur lengkap</p>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500">
+                          <User className="w-4 h-4 flex-shrink-0" />
+                          <span>Profil Pengguna</span>
+                        </div>
+                        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500">
+                          <Package className="w-4 h-4 flex-shrink-0" />
+                          <span>Pesanan Saya</span>
+                        </div>
+                        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500">
+                          <Heart className="w-4 h-4 flex-shrink-0" />
+                          <span>Wishlist</span>
+                        </div>
+                        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500">
+                          <Store className="w-4 h-4 flex-shrink-0" />
+                          <span>Dashboard Toko</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Information */}
                 <div className="mb-2">
                   <div className="px-3 py-2">
@@ -613,24 +659,19 @@ export default function GlobalSidebar() {
               </div>
             </div>
 
-            {/* Logout Section - Compact */}
+            {/* Auth Section - Compact */}
             <div className="p-4 border-t border-gray-100 bg-gray-50">
               <button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-600 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium border border-red-200/50"
+                onClick={handleAuthAction}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium border ${
+                  isLoggedIn 
+                    ? 'bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-600 border-blue-200/50'
+                    : 'bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 text-green-600 border-green-200/50'
+                }`}
               >
-                {isLoggingOut ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Logging out...</span>
-                  </>
-                ) : (
-                  <>
-                    <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
-                  </>
-                )}
+                {isLoggedIn ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
+                <span>{isLoggedIn ? 'Account' : 'Login'}</span>
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </motion.div>

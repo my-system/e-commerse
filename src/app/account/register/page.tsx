@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,117 +8,59 @@ import {
   User, 
   Lock, 
   Mail, 
-  ArrowLeft, 
   Eye, 
   EyeOff, 
-  UserPlus, 
-  AlertCircle,
-  CheckCircle,
-  ShoppingBag,
-  Store
+  Store,
+  Shield,
+  UserPlus,
+  ShoppingBag
 } from 'lucide-react';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const { register, showToast } = useAuth();
+  const router = useRouter();
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
-  const [isSuccess, setIsSuccess] = useState(false);
-  
-  const { register } = useAuth();
-  const router = useRouter();
-
-  // Real-time validation
-  useEffect(() => {
-    const newErrors: {[key: string]: string} = {};
-    
-    // Email validation
-    if (email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        newErrors.email = 'Format email tidak valid';
-      }
-    }
-    
-    // Password validation
-    if (password) {
-      if (password.length < 6) {
-        newErrors.password = 'Password minimal 6 karakter';
-      }
-      if (password.length < 8) {
-        newErrors.password = 'Password minimal 8 karakter untuk keamanan';
-      }
-      if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-        newErrors.password = 'Password harus mengandung huruf besar, kecil, dan angka';
-      }
-    }
-    
-    // Confirm password validation
-    if (confirmPassword && password !== confirmPassword) {
-      newErrors.confirmPassword = 'Password tidak cocok';
-    }
-    
-    setErrors(newErrors);
-  }, [email, password, confirmPassword]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setErrors({});
-
-    // Final validation
-    if (!name || !email || !password || !confirmPassword) {
-      setErrors({ general: 'Semua field harus diisi' });
-      setIsLoading(false);
+    setIsSubmitting(true);
+    
+    if (formData.password !== formData.confirmPassword) {
+      showToast('Password tidak cocok. Silakan periksa kembali.', 'error');
+      setIsSubmitting(false);
       return;
     }
-
-    if (password !== confirmPassword) {
-      setErrors({ confirmPassword: 'Password tidak cocok. Silakan periksa kembali.' });
-      setIsLoading(false);
-      return;
+    
+    const result = await register({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password
+    });
+    
+    if (result.success) {
+      router.push('/account');
     }
-
-    if (password.length < 6) {
-      setErrors({ password: 'Password minimal 6 karakter.' });
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      await register({ name, email, password });
-      setIsSuccess(true);
-      // Redirect to account profile after successful registration
-      setTimeout(() => {
-        router.push('/account/profile');
-      }, 2000);
-    } catch (err) {
-      setErrors({ general: 'Registrasi gagal. Email mungkin sudah digunakan.' });
-    } finally {
-      setIsLoading(false);
-    }
+    
+    setIsSubmitting(false);
   };
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Registrasi Berhasil!</h2>
-          <p className="text-gray-600 mb-6">Akun Anda telah dibuat. Mengarahkan ke halaman profil...</p>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '100%'}}></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -161,7 +103,7 @@ export default function RegisterPage() {
             </div>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center flex-shrink-0">
-                <Lock className="w-6 h-6 text-white" />
+                <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 className="font-semibold">100% Aman</h3>
@@ -200,13 +142,6 @@ export default function RegisterPage() {
 
             {/* Form */}
             <div className="p-8">
-              {errors.general && (
-                <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-sm">{errors.general}</span>
-                </div>
-              )}
-
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name Field */}
                 <div>
@@ -217,22 +152,15 @@ export default function RegisterPage() {
                     <UserPlus className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       id="name"
+                      name="name"
                       type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      value={formData.name}
+                      onChange={handleInputChange}
                       required
-                      className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                        errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                       placeholder="John Doe"
                     />
                   </div>
-                  {errors.name && (
-                    <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.name}
-                    </p>
-                  )}
                 </div>
 
                 {/* Email Field */}
@@ -244,22 +172,15 @@ export default function RegisterPage() {
                     <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       id="email"
+                      name="email"
                       type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={formData.email}
+                      onChange={handleInputChange}
                       required
-                      className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                        errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                       placeholder="nama@email.com"
                     />
                   </div>
-                  {errors.email && (
-                    <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.email}
-                    </p>
-                  )}
                 </div>
 
                 {/* Password Field */}
@@ -271,13 +192,12 @@ export default function RegisterPage() {
                     <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       id="password"
+                      name="password"
                       type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={formData.password}
+                      onChange={handleInputChange}
                       required
-                      className={`w-full pl-12 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                        errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}
+                      className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                       placeholder="Minimal 8 karakter"
                     />
                     <button
@@ -288,12 +208,6 @@ export default function RegisterPage() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  {errors.password && (
-                    <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.password}
-                    </p>
-                  )}
                 </div>
 
                 {/* Confirm Password Field */}
@@ -305,13 +219,12 @@ export default function RegisterPage() {
                     <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       id="confirmPassword"
+                      name="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
                       required
-                      className={`w-full pl-12 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                        errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}
+                      className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                       placeholder="Masukkan ulang kata sandi"
                     />
                     <button
@@ -322,21 +235,15 @@ export default function RegisterPage() {
                       {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  {errors.confirmPassword && (
-                    <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.confirmPassword}
-                    </p>
-                  )}
                 </div>
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-lg"
                 >
-                  {isLoading ? (
+                  {isSubmitting ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>Mendaftar...</span>

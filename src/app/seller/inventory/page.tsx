@@ -17,27 +17,16 @@ import {
   BarChart3,
   AlertCircle,
   CheckCircle,
-  XCircle,
-  Users,
-  Store,
-  Eye,
-  Ban,
-  CheckSquare,
-  Archive,
-  Activity,
-  Clock
+  XCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface AdminInventoryItem {
+interface InventoryItem {
   id: string;
   title: string;
   sku: string;
   category: string;
-  sellerId: string;
-  sellerName: string;
-  sellerEmail: string;
   currentStock: number;
   minStock: number;
   maxStock: number;
@@ -50,67 +39,48 @@ interface AdminInventoryItem {
   location?: string;
   batchNumber?: string;
   expiryDate?: string;
-  isActive: boolean;
-  approvalStatus: 'approved' | 'pending' | 'rejected' | 'suspended';
-  totalSales: number;
-  averageRating: number;
-  reviewCount: number;
 }
 
-interface AdminInventoryStats {
+interface InventoryStats {
   totalItems: number;
   totalValue: number;
-  totalSellers: number;
   lowStockItems: number;
   outOfStockItems: number;
   overstockItems: number;
-  pendingApproval: number;
-  suspendedItems: number;
   categories: number;
-  averageStockLevel: number;
 }
 
-export default function AdminInventoryPage() {
+export default function SellerInventoryPage() {
   const router = useRouter();
   const { user, isLoggedIn, isLoading } = useAuth();
-  const [inventory, setInventory] = useState<AdminInventoryItem[]>([]);
-  const [filteredInventory, setFilteredInventory] = useState<AdminInventoryItem[]>([]);
-  const [stats, setStats] = useState<AdminInventoryStats>({
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([]);
+  const [stats, setStats] = useState<InventoryStats>({
     totalItems: 0,
     totalValue: 0,
-    totalSellers: 0,
     lowStockItems: 0,
     outOfStockItems: 0,
     overstockItems: 0,
-    pendingApproval: 0,
-    suspendedItems: 0,
-    categories: 0,
-    averageStockLevel: 0
+    categories: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock' | 'overstock'>('all');
-  const [approvalFilter, setApprovalFilter] = useState<'all' | 'approved' | 'pending' | 'rejected' | 'suspended'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [sellerFilter, setSellerFilter] = useState<string>('all');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [updatingStock, setUpdatingStock] = useState<string | null>(null);
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading) {
-      if (!isLoggedIn || user?.role !== 'admin') {
-        return;
-      }
       fetchInventory();
     }
-  }, [isLoading, isLoggedIn, user]);
+  }, [isLoading]);
 
   useEffect(() => {
     filterInventory();
-  }, [inventory, searchTerm, statusFilter, approvalFilter, categoryFilter, sellerFilter]);
+  }, [inventory, searchTerm, statusFilter, categoryFilter]);
 
   useEffect(() => {
     calculateStats();
@@ -121,15 +91,12 @@ export default function AdminInventoryPage() {
       setLoading(true);
       
       // Mock data for demonstration
-      const mockInventory: AdminInventoryItem[] = [
+      const mockInventory: InventoryItem[] = [
         {
           id: '1',
           title: 'Kemeja Formal Premium',
           sku: 'KFP-001',
           category: 'Fashion',
-          sellerId: 'seller1',
-          sellerName: 'Toko Fashion Indonesia',
-          sellerEmail: 'fashion@toko.com',
           currentStock: 45,
           minStock: 10,
           maxStock: 100,
@@ -140,21 +107,13 @@ export default function AdminInventoryPage() {
           lastUpdated: '2024-01-15T10:30:00Z',
           supplier: 'Supplier A',
           location: 'Gudang A',
-          batchNumber: 'BATCH-001',
-          isActive: true,
-          approvalStatus: 'approved',
-          totalSales: 145,
-          averageRating: 4.8,
-          reviewCount: 23
+          batchNumber: 'BATCH-001'
         },
         {
           id: '2',
           title: 'Sepatu Sneakers Sport',
           sku: 'SSS-002',
           category: 'Shoes',
-          sellerId: 'seller2',
-          sellerName: 'Sport Store',
-          sellerEmail: 'sport@store.com',
           currentStock: 8,
           minStock: 15,
           maxStock: 80,
@@ -165,21 +124,13 @@ export default function AdminInventoryPage() {
           lastUpdated: '2024-01-14T15:45:00Z',
           supplier: 'Supplier B',
           location: 'Gudang B',
-          batchNumber: 'BATCH-002',
-          isActive: true,
-          approvalStatus: 'approved',
-          totalSales: 98,
-          averageRating: 4.6,
-          reviewCount: 18
+          batchNumber: 'BATCH-002'
         },
         {
           id: '3',
           title: 'Tas Leather Handbag',
           sku: 'TLH-003',
           category: 'Bags',
-          sellerId: 'seller3',
-          sellerName: 'Bag Boutique',
-          sellerEmail: 'bags@boutique.com',
           currentStock: 0,
           minStock: 5,
           maxStock: 50,
@@ -190,21 +141,13 @@ export default function AdminInventoryPage() {
           lastUpdated: '2024-01-13T09:20:00Z',
           supplier: 'Supplier C',
           location: 'Gudang A',
-          batchNumber: 'BATCH-003',
-          isActive: true,
-          approvalStatus: 'approved',
-          totalSales: 76,
-          averageRating: 4.9,
-          reviewCount: 31
+          batchNumber: 'BATCH-003'
         },
         {
           id: '4',
           title: 'Jam Tangan Elegant',
           sku: 'JTE-004',
           category: 'Accessories',
-          sellerId: 'seller4',
-          sellerName: 'Watch Gallery',
-          sellerEmail: 'watch@gallery.com',
           currentStock: 75,
           minStock: 20,
           maxStock: 60,
@@ -215,21 +158,13 @@ export default function AdminInventoryPage() {
           lastUpdated: '2024-01-12T14:10:00Z',
           supplier: 'Supplier D',
           location: 'Gudang C',
-          batchNumber: 'BATCH-004',
-          isActive: true,
-          approvalStatus: 'approved',
-          totalSales: 62,
-          averageRating: 4.7,
-          reviewCount: 15
+          batchNumber: 'BATCH-004'
         },
         {
           id: '5',
           title: 'Kaos Casual Comfort',
           sku: 'KCC-005',
           category: 'Fashion',
-          sellerId: 'seller1',
-          sellerName: 'Toko Fashion Indonesia',
-          sellerEmail: 'fashion@toko.com',
           currentStock: 120,
           minStock: 25,
           maxStock: 150,
@@ -240,21 +175,13 @@ export default function AdminInventoryPage() {
           lastUpdated: '2024-01-11T11:30:00Z',
           supplier: 'Supplier A',
           location: 'Gudang B',
-          batchNumber: 'BATCH-005',
-          isActive: true,
-          approvalStatus: 'pending',
-          totalSales: 58,
-          averageRating: 4.5,
-          reviewCount: 12
+          batchNumber: 'BATCH-005'
         },
         {
           id: '6',
           title: 'Sepatu Boots Formal',
           sku: 'SBF-006',
           category: 'Shoes',
-          sellerId: 'seller2',
-          sellerName: 'Sport Store',
-          sellerEmail: 'sport@store.com',
           currentStock: 5,
           minStock: 12,
           maxStock: 70,
@@ -265,12 +192,7 @@ export default function AdminInventoryPage() {
           lastUpdated: '2024-01-10T16:45:00Z',
           supplier: 'Supplier B',
           location: 'Gudang A',
-          batchNumber: 'BATCH-006',
-          isActive: false,
-          approvalStatus: 'suspended',
-          totalSales: 34,
-          averageRating: 4.2,
-          reviewCount: 8
+          batchNumber: 'BATCH-006'
         }
       ];
 
@@ -292,19 +214,9 @@ export default function AdminInventoryPage() {
       filtered = filtered.filter(item => item.status === statusFilter);
     }
 
-    // Filter by approval status
-    if (approvalFilter !== 'all') {
-      filtered = filtered.filter(item => item.approvalStatus === approvalFilter);
-    }
-
     // Filter by category
     if (categoryFilter !== 'all') {
       filtered = filtered.filter(item => item.category === categoryFilter);
-    }
-
-    // Filter by seller
-    if (sellerFilter !== 'all') {
-      filtered = filtered.filter(item => item.sellerId === sellerFilter);
     }
 
     // Filter by search term
@@ -312,8 +224,7 @@ export default function AdminInventoryPage() {
       filtered = filtered.filter(item =>
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.sellerName.toLowerCase().includes(searchTerm.toLowerCase())
+        item.category.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -321,19 +232,13 @@ export default function AdminInventoryPage() {
   };
 
   const calculateStats = () => {
-    const stats: AdminInventoryStats = {
+    const stats: InventoryStats = {
       totalItems: inventory.length,
       totalValue: inventory.reduce((sum, item) => sum + item.totalValue, 0),
-      totalSellers: new Set(inventory.map(item => item.sellerId)).size,
       lowStockItems: inventory.filter(item => item.status === 'low_stock').length,
       outOfStockItems: inventory.filter(item => item.status === 'out_of_stock').length,
       overstockItems: inventory.filter(item => item.status === 'overstock').length,
-      pendingApproval: inventory.filter(item => item.approvalStatus === 'pending').length,
-      suspendedItems: inventory.filter(item => item.approvalStatus === 'suspended').length,
-      categories: new Set(inventory.map(item => item.category)).size,
-      averageStockLevel: inventory.length > 0 
-        ? inventory.reduce((sum, item) => sum + item.currentStock, 0) / inventory.length
-        : 0
+      categories: new Set(inventory.map(item => item.category)).size
     };
     setStats(stats);
   };
@@ -373,31 +278,6 @@ export default function AdminInventoryPage() {
       alert('Gagal mengupdate stok');
     } finally {
       setUpdatingStock(null);
-    }
-  };
-
-  const updateApprovalStatus = async (itemId: string, newStatus: AdminInventoryItem['approvalStatus']) => {
-    try {
-      setUpdatingStatus(itemId);
-      
-      // Update local state
-      setInventory(prev => prev.map(item => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            approvalStatus: newStatus,
-            isActive: newStatus === 'approved',
-            lastUpdated: new Date().toISOString()
-          };
-        }
-        return item;
-      }));
-      
-    } catch (error) {
-      console.error('Error updating approval status:', error);
-      alert('Gagal mengupdate status persetujuan');
-    } finally {
-      setUpdatingStatus(null);
     }
   };
 
@@ -441,51 +321,6 @@ export default function AdminInventoryPage() {
         return 'bg-red-100 text-red-800 border-red-200';
       case 'overstock':
         return 'bg-orange-100 text-orange-800 border-orange-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getApprovalStatusIcon = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <CheckSquare className="h-4 w-4 text-green-500" />;
-      case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'rejected':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'suspended':
-        return <Ban className="h-4 w-4 text-red-500" />;
-      default:
-        return <AlertCircle className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getApprovalStatusText = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'Disetujui';
-      case 'pending':
-        return 'Menunggu';
-      case 'rejected':
-        return 'Ditolak';
-      case 'suspended':
-        return 'Disuspend';
-      default:
-        return 'Unknown';
-    }
-  };
-
-  const getApprovalStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'suspended':
-        return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -543,30 +378,19 @@ export default function AdminInventoryPage() {
     setSelectedItems([]);
   };
 
-  const bulkUpdateApproval = (status: AdminInventoryItem['approvalStatus']) => {
-    selectedItems.forEach(itemId => {
-      updateApprovalStatus(itemId, status);
-    });
-    setSelectedItems([]);
-  };
-
   const exportInventory = () => {
     const csvContent = [
-      ['SKU', 'Nama Produk', 'Kategori', 'Seller', 'Stok Saat Ini', 'Stok Minimum', 'Stok Maksimum', 'Harga Satuan', 'Total Nilai', 'Status', 'Status Persetujuan', 'Total Penjualan', 'Rating', 'Terakhir Update'],
+      ['SKU', 'Nama Produk', 'Kategori', 'Stok Saat Ini', 'Stok Minimum', 'Stok Maksimum', 'Harga Satuan', 'Total Nilai', 'Status', 'Terakhir Update'],
       ...filteredInventory.map(item => [
         item.sku,
         item.title,
         item.category,
-        item.sellerName,
         item.currentStock,
         item.minStock,
         item.maxStock,
         formatCurrency(item.unitPrice),
         formatCurrency(item.totalValue),
         getStatusText(item.status),
-        getApprovalStatusText(item.approvalStatus),
-        item.totalSales,
-        item.averageRating.toFixed(1),
         formatDate(item.lastUpdated)
       ])
     ].map(row => row.join(',')).join('\n');
@@ -575,32 +399,17 @@ export default function AdminInventoryPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `admin-inventory-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `inventory-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
   const categories = Array.from(new Set(inventory.map(item => item.category)));
-  const sellers = Array.from(new Set(inventory.map(item => ({ id: item.sellerId, name: item.sellerName })))).filter((seller, index, self) => 
-    index === self.findIndex((s) => s.id === seller.id)
-  );
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 font-medium">Access Denied</p>
-          <p className="text-gray-600 mt-2">Admin role required</p>
-        </div>
       </div>
     );
   }
@@ -613,7 +422,7 @@ export default function AdminInventoryPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <Package className="h-6 w-6 text-blue-600 mr-3" />
-              <h1 className="text-xl font-semibold text-gray-900">Admin Inventory Management</h1>
+              <h1 className="text-xl font-semibold text-gray-900">Manajemen Inventory</h1>
             </div>
             <div className="flex items-center gap-4">
               <button
@@ -637,123 +446,64 @@ export default function AdminInventoryPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Total Items</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.totalItems}</p>
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <Package className="h-8 w-8 text-blue-600" />
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Items</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p>
               </div>
+              <Package className="h-8 w-8 text-blue-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Total Nilai</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                    {stats.totalValue >= 1000000000 
-                      ? `Rp ${(stats.totalValue / 1000000000).toFixed(1)} M`
-                      : stats.totalValue >= 1000000
-                      ? `Rp ${(stats.totalValue / 1000000).toFixed(1)} Jt`
-                      : formatCurrency(stats.totalValue)
-                    }
-                  </p>
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <BarChart3 className="h-8 w-8 text-green-600" />
-                </div>
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Nilai</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalValue)}</p>
               </div>
+              <BarChart3 className="h-8 w-8 text-green-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Total Sellers</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.totalSellers}</p>
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <Store className="h-8 w-8 text-purple-600" />
-                </div>
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Stok Rendah</p>
+                <p className="text-2xl font-bold text-yellow-600">{stats.lowStockItems}</p>
               </div>
+              <AlertTriangle className="h-8 w-8 text-yellow-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Stok Rendah</p>
-                  <p className="text-xl sm:text-2xl font-bold text-yellow-600 mt-1">{stats.lowStockItems}</p>
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <AlertTriangle className="h-8 w-8 text-yellow-600" />
-                </div>
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Habis</p>
+                <p className="text-2xl font-bold text-red-600">{stats.outOfStockItems}</p>
               </div>
+              <XCircle className="h-8 w-8 text-red-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Habis</p>
-                  <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">{stats.outOfStockItems}</p>
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <XCircle className="h-8 w-8 text-red-600" />
-                </div>
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Stok Berlebih</p>
+                <p className="text-2xl font-bold text-orange-600">{stats.overstockItems}</p>
               </div>
+              <AlertCircle className="h-8 w-8 text-orange-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Stok Berlebih</p>
-                  <p className="text-xl sm:text-2xl font-bold text-orange-600 mt-1">{stats.overstockItems}</p>
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <AlertCircle className="h-8 w-8 text-orange-600" />
-                </div>
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Kategori</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.categories}</p>
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Menunggu Approval</p>
-                  <p className="text-xl sm:text-2xl font-bold text-purple-600 mt-1">{stats.pendingApproval}</p>
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <Clock className="h-8 w-8 text-purple-600" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Disuspend</p>
-                  <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">{stats.suspendedItems}</p>
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <Ban className="h-8 w-8 text-red-600" />
-                </div>
-              </div>
+              <Package className="h-8 w-8 text-purple-600" />
             </div>
           </div>
         </div>
@@ -767,7 +517,7 @@ export default function AdminInventoryPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Cari berdasarkan nama, SKU, kategori, atau seller..."
+                  placeholder="Cari berdasarkan nama, SKU, atau kategori..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -790,21 +540,6 @@ export default function AdminInventoryPage() {
               </select>
             </div>
 
-            {/* Approval Filter */}
-            <div className="w-full lg:w-48">
-              <select
-                value={approvalFilter}
-                onChange={(e) => setApprovalFilter(e.target.value as any)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">Semua Persetujuan</option>
-                <option value="approved">Disetujui</option>
-                <option value="pending">Menunggu</option>
-                <option value="rejected">Ditolak</option>
-                <option value="suspended">Disuspend</option>
-              </select>
-            </div>
-
             {/* Category Filter */}
             <div className="w-full lg:w-48">
               <select
@@ -818,33 +553,19 @@ export default function AdminInventoryPage() {
                 ))}
               </select>
             </div>
-
-            {/* Seller Filter */}
-            <div className="w-full lg:w-48">
-              <select
-                value={sellerFilter}
-                onChange={(e) => setSellerFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">Semua Seller</option>
-                {sellers.map(seller => (
-                  <option key={seller.id} value={seller.id}>{seller.name}</option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
 
         {/* Bulk Actions */}
         {selectedItems.length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <span className="text-sm text-blue-800">
                   {selectedItems.length} item terpilih
                 </span>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => bulkUpdateStock('add', 10)}
                   className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
@@ -867,25 +588,6 @@ export default function AdminInventoryPage() {
                   className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
                 >
                   Set Stok
-                </button>
-                <div className="border-l border-blue-300 h-6 mx-2"></div>
-                <button
-                  onClick={() => bulkUpdateApproval('approved')}
-                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm"
-                >
-                  Setujui
-                </button>
-                <button
-                  onClick={() => bulkUpdateApproval('rejected')}
-                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm"
-                >
-                  Tolak
-                </button>
-                <button
-                  onClick={() => bulkUpdateApproval('suspended')}
-                  className="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-sm"
-                >
-                  Suspend
                 </button>
                 <button
                   onClick={() => setSelectedItems([])}
@@ -912,12 +614,12 @@ export default function AdminInventoryPage() {
           <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm || statusFilter !== 'all' || approvalFilter !== 'all' || categoryFilter !== 'all' || sellerFilter !== 'all' ? 'Tidak ada item yang cocok' : 'Belum ada inventory'}
+              {searchTerm || statusFilter !== 'all' || categoryFilter !== 'all' ? 'Tidak ada item yang cocok' : 'Belum ada inventory'}
             </h3>
             <p className="text-gray-600">
-              {searchTerm || statusFilter !== 'all' || approvalFilter !== 'all' || categoryFilter !== 'all' || sellerFilter !== 'all' 
+              {searchTerm || statusFilter !== 'all' || categoryFilter !== 'all' 
                 ? 'Coba ubah filter atau kata kunci pencarian'
-                : 'Inventory akan muncul di sini ketika seller menambahkan produk'
+                : 'Mulai dengan menambahkan produk ke inventory'
               }
             </p>
           </div>
@@ -942,9 +644,6 @@ export default function AdminInventoryPage() {
                       SKU
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Seller
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Stok
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -957,10 +656,7 @@ export default function AdminInventoryPage() {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Persetujuan
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Penjualan
+                      Lokasi
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Aksi
@@ -990,12 +686,6 @@ export default function AdminInventoryPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-mono text-gray-900">{item.sku}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{item.sellerName}</div>
-                          <div className="text-xs text-gray-500">{item.sellerEmail}</div>
-                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
@@ -1037,16 +727,7 @@ export default function AdminInventoryPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getApprovalStatusColor(item.approvalStatus)}`}>
-                          {getApprovalStatusIcon(item.approvalStatus)}
-                          <span className="ml-1">{getApprovalStatusText(item.approvalStatus)}</span>
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{item.totalSales}</div>
-                          <div className="text-xs text-gray-500">⭐ {item.averageRating.toFixed(1)} ({item.reviewCount})</div>
-                        </div>
+                        <span className="text-sm text-gray-900">{item.location || '-'}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
@@ -1063,33 +744,6 @@ export default function AdminInventoryPage() {
                           >
                             <Edit className="h-4 w-4" />
                           </button>
-                          {item.approvalStatus === 'pending' && (
-                            <button
-                              onClick={() => updateApprovalStatus(item.id, 'approved')}
-                              disabled={updatingStatus === item.id}
-                              className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs disabled:opacity-50"
-                            >
-                              Setujui
-                            </button>
-                          )}
-                          {item.approvalStatus === 'approved' && (
-                            <button
-                              onClick={() => updateApprovalStatus(item.id, 'suspended')}
-                              disabled={updatingStatus === item.id}
-                              className="px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-xs disabled:opacity-50"
-                            >
-                              Suspend
-                            </button>
-                          )}
-                          {item.approvalStatus === 'suspended' && (
-                            <button
-                              onClick={() => updateApprovalStatus(item.id, 'approved')}
-                              disabled={updatingStatus === item.id}
-                              className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs disabled:opacity-50"
-                            >
-                              Aktifkan
-                            </button>
-                          )}
                         </div>
                       </td>
                     </tr>

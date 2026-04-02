@@ -74,18 +74,18 @@ export default function Navbar() {
               {/* Login Button when not logged in */}
               {!isLoggedIn && (
                 <Link
-                  href="/account"
+                  href="/account/login"
                   className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
                 >
                   <User className="h-4 w-4" />
-                  Login
+                  Sign In
                 </Link>
               )}
               
               <AccountDropdown 
                 user={user as any} 
                 isLoggedIn={isLoggedIn} 
-                onLogin={() => login('demo@example.com', 'password')}
+                onLogin={() => {}} // Login handled by account page
                 onLogout={logout}
               />
               <button 

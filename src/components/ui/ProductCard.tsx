@@ -133,7 +133,7 @@ export default function ProductCard({
       style={{ transform: 'none' }}
     >
       {/* Product Image - Clickable */}
-      <Link href={`/product/${product.id}`}>
+      <Link href={`/marketplace/product${product.id}`}>
         <div className="relative h-64 sm:h-80 overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity duration-200">
           <OptimizedImage
             src={firstImage}
@@ -187,7 +187,7 @@ export default function ProductCard({
         </div>
         
         {/* Product Name - Clickable */}
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/marketplace/product${product.id}`}>
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors duration-200">
             {product.name || product.title}
           </h3>

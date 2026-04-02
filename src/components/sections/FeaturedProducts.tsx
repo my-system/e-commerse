@@ -73,7 +73,7 @@ export default function FeaturedProducts() {
 
   const handleProductClick = (product: Product) => {
     // Navigate to product detail page
-    window.location.href = `/products/${product.id}`;
+    window.location.href = `/marketplace/product${product.id}`;
   };
 
   const closeQuickView = () => {

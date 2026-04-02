@@ -53,12 +53,12 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
   const handleQuickView = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     // Navigate to product detail page
-    window.location.href = `/product/${product.id}`
+    window.location.href = `/marketplace/product${product.id}`
   }
 
   const handleProductClick = () => {
     // Navigate to product detail page
-    window.location.href = `/product/${product.id}`
+    window.location.href = `/marketplace/product${product.id}`
   }
 
   return (
