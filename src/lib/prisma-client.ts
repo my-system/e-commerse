@@ -4,13 +4,49 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Completely disable database in production deployment
+// Auto-setup database connection
+async function setupDatabase(): Promise<PrismaClient> {
+  const DATABASE_URL = process.env.DATABASE_URL || 'file:./dev.db';
+  
+  try {
+    console.log('🔍 Testing database connection...');
+    console.log('📍 Database URL:', DATABASE_URL);
+    
+    // Test connection
+    const testClient = new PrismaClient();
+    await testClient.$queryRaw`SELECT 1`;
+    await testClient.$disconnect();
+    
+    console.log('✅ Database connection successful');
+    
+    // Return working client
+    return new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    });
+    
+  } catch (error) {
+    console.log('❌ Database connection failed:', (error as Error).message);
+    console.log('🔄 Using fallback SQLite database...');
+    
+    // Fallback to SQLite
+    return new PrismaClient({
+      datasources: {
+        db: { url: 'file:./fallback.db' }
+      }
+    } as any);
+  }
+}
+
+// Enhanced prisma client with auto-setup
 export const prisma = process.env.NODE_ENV === 'production' 
   ? (null as any) 
-  : (globalForPrisma.prisma ?? new PrismaClient({
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    }));
+  : (globalForPrisma.prisma ?? setupDatabase());
 
 if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
+  setupDatabase().then(client => {
+    globalForPrisma.prisma = client;
+    console.log('🎉 Database auto-setup completed!');
+  }).catch(error => {
+    console.log('💥 Database setup failed:', error);
+  });
 }

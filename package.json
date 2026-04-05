@@ -6,8 +6,18 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "node -r esbuild scripts/seed.js",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset --force",
+    "db:setup": "node scripts/auto-setup-database.js",
+    "db:health": "node -e \"const { prisma } = require('./src/lib/auto-prisma-client'); prisma.healthCheck().then(healthy => console.log(healthy ? '✅ Database healthy' : '❌ Database unhealthy'));\"",
+    "postinstall": "npm run db:setup"
   },
   "dependencies": {
     "@prisma/client": "^7.6.0",
