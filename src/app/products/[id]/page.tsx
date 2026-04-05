@@ -27,13 +27,59 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        // Try to fetch from API first
+        // Try to fetch from 3-Database API first
+        const response = await fetch(`/api/products/${productId}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.success && data.product) {
+            console.log('✅ Product found in 3-Database:', data.product);
+            
+            // Convert API product to Product interface format
+            const convertedProduct: Product = {
+              id: data.product.id,
+              title: data.product.title,
+              price: data.product.price,
+              category: data.product.category,
+              description: data.product.description || '',
+              featured: data.product.featured,
+              inStock: data.product.inStock,
+              rating: data.product.rating,
+              reviews: data.product.reviews,
+              images: Array.isArray(data.product.images) ? data.product.images : 
+                       typeof data.product.images === 'string' ? JSON.parse(data.product.images || '[]') : [],
+              material: data.product.material || '',
+              care: data.product.care || '',
+              variants: {
+                sizes: data.product.sizes || [],
+                colors: data.product.colors || []
+              },
+              specifications: data.product.specifications || {}
+            };
+            
+            setProduct(convertedProduct);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        console.log('❌ Product not found in 3-Database, trying fallback...');
+        
+      } catch (error) {
+        console.error('Error fetching product from 3-Database API:', error);
+      }
+      
+      // Try fallback to test-seller-products API
+      try {
         const response = await fetch('/api/test-seller-products');
         if (response.ok) {
           const data = await response.json();
           const foundProduct = data.products.find((p: any) => p.id === productId);
           
           if (foundProduct) {
+            console.log('✅ Product found in test-seller-products:', foundProduct);
+            
             // Convert API product to Product interface format
             const convertedProduct: Product = {
               id: foundProduct.id,
@@ -87,16 +133,23 @@ export default function ProductDetailPage() {
           }
         }
       } catch (error) {
-        console.error('Error fetching product from API:', error);
+        console.error('Error fetching product from test-seller-products API:', error);
       }
       
       // Fallback to static data
       const foundProduct = products.find(p => p.id === productId);
       
       if (!foundProduct) {
-        router.push('/marketplace');
+        console.log('❌ Product not found anywhere, showing not found page');
+        // Don't redirect, show not found state instead
+        setProduct(null);
+        setIsLoading(false);
         return;
       }
+      
+      setProduct(foundProduct);
+      setIsLoading(false);
+    };
       
       setProduct(foundProduct);
       

@@ -6,6 +6,7 @@ import ProductCard from '@/components/ui/ProductCard';
 import { useCart } from '@/contexts/CartContext';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { products } from '@/data/products';
+import { useIntersectionObserverMultiple } from '@/hooks/useIntersectionObserver';
 
 interface FlashSale {
   id: string;
@@ -32,6 +33,7 @@ export default function FlashSales({ className = "" }: FlashSalesProps) {
   const [isActive, setIsActive] = useState(true);
   const { addItem } = useCart();
   const { trackProductView, addToWishlist, removeFromWishlist } = useUserPreferences();
+  const { setRef } = useIntersectionObserverMultiple({ threshold: 0.1 });
 
   // Flash sale data
   const [flashSale, setFlashSale] = useState<FlashSale | null>(null);
@@ -116,16 +118,21 @@ export default function FlashSales({ className = "" }: FlashSalesProps) {
 
   const isUrgent = timeLeft.hours < 6 || (timeLeft.hours === 0 && timeLeft.minutes < 30);
 
-  if (!isActive) {
-    return null; // Don't show if flash sale has ended
-  }
+  // Always show the section - remove conditional hiding
+  // if (!isActive) {
+  //   return null; // Don't show if flash sale has ended
+  // }
 
   return (
     <section className={`py-16 bg-gradient-to-r from-red-50 to-orange-50 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Flash Sale Header */}
-        <div className="text-center mb-12">
+        <div 
+          ref={setRef('flash-sale-header')}
+          className="text-center mb-12 scroll-animate scroll-animate-fade-up"
+          data-scroll-id="flash-sale-header"
+        >
           <div className="flex items-center justify-center gap-3 mb-4">
             <Zap className="h-8 w-8 text-red-600 animate-pulse" />
             <h2 className="text-4xl font-bold text-red-600">
@@ -139,7 +146,11 @@ export default function FlashSales({ className = "" }: FlashSalesProps) {
           </p>
 
           {/* Countdown Timer */}
-          <div className="flex items-center justify-center gap-4 mb-6">
+          <div 
+            ref={setRef('countdown-timer')}
+            className="flex items-center justify-center gap-4 mb-6 scroll-animate scroll-animate-scale"
+            data-scroll-id="countdown-timer"
+          >
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-red-600" />
               <span className="text-lg font-semibold text-gray-800">Berakhir dalam:</span>
@@ -199,60 +210,67 @@ export default function FlashSales({ className = "" }: FlashSalesProps) {
 
         {/* Flash Sale Products */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {flashSaleProducts.map((product) => (
-            <div key={product.id} className="relative">
-              {/* Flash Sale Badge */}
-              <div className="absolute -top-2 -right-2 z-10">
-                <div className="bg-red-600 text-white px-3 py-1 rounded-full flex items-center gap-1">
-                  <Percent className="h-3 w-3" />
-                  <span className="text-sm font-bold">-{flashSale.discount}%</span>
-                </div>
-              </div>
-
-              {/* Product Card with custom styling */}
-              <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-                {/* Product Image */}
-                <div className="relative h-64 overflow-hidden bg-gray-100">
-                  <img
-                    src={product.images[0]}
-                    alt={product.title}
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  {/* Flash Sale Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-red-600/20 to-transparent" />
+          {flashSaleProducts.map((product, index) => (
+            <div 
+              key={product.id} 
+              className="relative"
+              ref={setRef(`flash-product-${index}`)}
+              data-scroll-id={`flash-product-${index}`}
+            >
+              <div className="scroll-animate scroll-animate-fade-up scroll-animate-scale" style={{ transitionDelay: `${index * 0.1}s` }}>
+                {/* Flash Sale Badge */}
+                <div className="absolute -top-2 -right-2 z-10">
+                  <div className="bg-red-600 text-white px-3 py-1 rounded-full flex items-center gap-1">
+                    <Percent className="h-3 w-3" />
+                    <span className="text-sm font-bold">-{flashSale.discount}%</span>
+                  </div>
                 </div>
 
-                {/* Product Info */}
-                <div className="p-4">
-                  {/* Category */}
-                  <div className="text-sm text-gray-500 mb-2 capitalize">
-                    {product.category}
-                  </div>
-                  
-                  {/* Product Name */}
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
-                    {product.title}
-                  </h3>
-                  
-                  {/* Price */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-xl font-bold text-red-600">
-                      Rp {(product.price * (1 - flashSale.discount / 100)).toLocaleString('id-ID')}
-                    </span>
-                    <span className="text-sm text-gray-400 line-through">
-                      Rp {product.price.toLocaleString('id-ID')}
-                    </span>
+                {/* Product Card with custom styling */}
+                <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+                  {/* Product Image */}
+                  <div className="relative h-64 overflow-hidden bg-gray-100">
+                    <img
+                      src={product.images[0]}
+                      alt={product.title}
+                      className="w-full h-full object-cover"
+                    />
+                    
+                    {/* Flash Sale Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-red-600/20 to-transparent" />
                   </div>
 
-                  {/* Action Button */}
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center justify-center gap-2"
-                  >
-                    <Zap className="h-4 w-4" />
-                    Beli Sekarang
-                  </button>
+                  {/* Product Info */}
+                  <div className="p-4">
+                    {/* Category */}
+                    <div className="text-sm text-gray-500 mb-2 capitalize">
+                      {product.category}
+                    </div>
+                    
+                    {/* Product Name */}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
+                      {product.title}
+                    </h3>
+                    
+                    {/* Price */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl font-bold text-red-600">
+                        Rp {(product.price * (1 - flashSale.discount / 100)).toLocaleString('id-ID')}
+                      </span>
+                      <span className="text-sm text-gray-400 line-through">
+                        Rp {product.price.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      onClick={() => handleAddToCart(product)}
+                      className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                      <Zap className="h-4 w-4" />
+                      Beli Sekarang
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -260,7 +278,11 @@ export default function FlashSales({ className = "" }: FlashSalesProps) {
         </div>
 
         {/* View All Button */}
-        <div className="text-center mt-12">
+        <div 
+          ref={setRef('flash-view-all')}
+          className="text-center mt-12 scroll-animate scroll-animate-fade-up"
+          data-scroll-id="flash-view-all"
+        >
           <button className="inline-block px-8 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors duration-300">
             Lihat Semua Flash Sale
           </button>

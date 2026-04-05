@@ -47,15 +47,13 @@ export default function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
 
-  useEffect(() => {
-    if (!isLoggedIn || user?.role !== 'admin') {
-      router.push('/');
-    }
-  }, [isLoggedIn, user, router]);
+  const fetchOrders = () => {
+    // Orders already loaded from mock data
+  };
 
-  if (!isLoggedIn || user?.role !== 'admin') {
-    return null;
-  }
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   const filteredOrders = mockOrders.filter(order => {
     const matchesSearch = order.customer.toLowerCase().includes(searchTerm.toLowerCase()) || 

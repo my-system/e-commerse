@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Product {
@@ -23,8 +22,6 @@ model Product {
   images      String   // JSON string of image URLs
   material    String?
   care        String?
-  status      String   @default("pending") // pending | approved | rejected
-  badges      String   @default("[]") // JSON array of badges
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -32,9 +29,6 @@ model Product {
   sizes       ProductSize[]
   colors      ProductColor[]
   specs       ProductSpec[]
-  seller      Seller   @relation(fields: [sellerId], references: [id])
-
-  sellerId    String
 
   @@map("products")
 }
@@ -44,9 +38,8 @@ model ProductSize {
   name      String
   value     String
   inStock   Boolean @default(true)
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
   productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_sizes")
 }
@@ -56,9 +49,8 @@ model ProductColor {
   name      String
   value     String // hex color
   inStock   Boolean @default(true)
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
   productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_colors")
 }
@@ -67,24 +59,8 @@ model ProductSpec {
   id        String @id @default(cuid())
   key       String
   value     String
+  productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  productId String
-
   @@map("product_specs")
-}
-
-model Seller {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  phone       String
-  role        String   @default("seller")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  products    Product[]
-
-  @@map("sellers")
 }

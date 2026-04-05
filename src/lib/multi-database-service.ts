@@ -169,7 +169,7 @@ export class MarketplaceDatabaseService {
     try {
       const client = await marketplacePool.connect();
       try {
-        const result = await client.query('SELECT * FROM products ORDER BY approved_at DESC');
+        const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY approved_at DESC', ['approved']);
         return result.rows.map(row => this.mapRowToProduct(row));
       } finally {
         client.release();
@@ -183,13 +183,29 @@ export class MarketplaceDatabaseService {
         inStock: p.inStock !== undefined ? p.inStock : true,
         rating: p.rating || 0,
         reviews: p.reviews || 0,
-        images: Array.isArray(p.images) ? p.images.join(',') : p.images || '',
+        images: Array.isArray(p.images) ? p.images.join(',') : (p.images?.[0] || ''),
         status: 'approved' as const,
-        badges: Array.isArray(p.badges) ? p.badges.join(',') : 'Approved',
+        badges: 'Approved', // Simple string for fallback
         sellerId: 'demo-seller',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }));
+    }
+  }
+  
+  // Delete product from marketplace
+  static async deleteMarketplaceProduct(productId: string): Promise<boolean> {
+    try {
+      const client = await marketplacePool.connect();
+      try {
+        const result = await client.query('DELETE FROM products WHERE id = $1 AND status = $2', [productId, 'approved']);
+        return (result.rowCount || 0) > 0;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error deleting marketplace product:', error);
+      return false;
     }
   }
   
@@ -229,16 +245,13 @@ export class ApprovalWorkflowService {
         throw new Error('Product not found in pending database');
       }
       
-      // 2. Add to marketplace database
+      // 2. Add to marketplace database with approved status
       await MarketplaceDatabaseService.addApprovedProduct(product);
       
-      // 3. Update status in pending database
-      await PendingDatabaseService.updateProductStatus(productId, 'approved');
+      // 3. Remove from pending database (not just update status)
+      await PendingDatabaseService.deleteProduct(productId);
       
-      // 4. Optionally remove from pending database
-      // await PendingDatabaseService.deleteProduct(productId);
-      
-      console.log(`✅ Product ${productId} approved and moved to marketplace`);
+      console.log(`✅ Product ${productId} approved and moved to marketplace, removed from pending`);
       return true;
       
     } catch (error) {

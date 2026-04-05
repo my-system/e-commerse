@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Toast } from '@/components/ui/Toast';
+import { useIntersectionObserverMultiple } from '@/hooks/useIntersectionObserver';
 
 export default function FeaturedProducts() {
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
@@ -16,6 +17,7 @@ export default function FeaturedProducts() {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const { addItem, openCart } = useCart();
+  const { setRef } = useIntersectionObserverMultiple({ threshold: 0.1 });
 
   const validProducts = getValidProducts();
   const featuredProducts = validProducts.filter((product: Product) => product.featured).slice(0, 8);
@@ -73,7 +75,7 @@ export default function FeaturedProducts() {
 
   const handleProductClick = (product: Product) => {
     // Navigate to product detail page
-    window.location.href = `/marketplace/product${product.id}`;
+    window.location.href = `/marketplace/product/${product.id}`;
   };
 
   const closeQuickView = () => {
@@ -84,7 +86,11 @@ export default function FeaturedProducts() {
     <section id="products" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div 
+          ref={setRef('featured-header')}
+          className="text-center mb-16 scroll-animate scroll-animate-fade-up"
+          data-scroll-id="featured-header"
+        >
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Produk Unggulan
           </h2>
@@ -95,110 +101,117 @@ export default function FeaturedProducts() {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {featuredProducts.map((product) => (
+          {featuredProducts.map((product, index) => (
             <div
-              key={`featured-${product.id}`} // Pastikan key unik dan stabil
-              className="group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
-              onMouseEnter={() => setHoveredProduct(product.id)}
-              onMouseLeave={() => setHoveredProduct(null)}
-              onClick={() => handleProductClick(product)}
+              key={`featured-${product.id}`}
+              ref={setRef(`featured-product-${index}`)}
+              data-scroll-id={`featured-product-${index}`}
+              className="scroll-animate scroll-animate-fade-up scroll-animate-scale"
+              style={{ transitionDelay: `${index * 0.1}s` }}
             >
-              {/* Product Image */}
-              <div className="relative aspect-square bg-gray-200 overflow-hidden">
-                <OptimizedImage
-                  src={product.images?.[0] || '/placeholder.jpg'}
-                  alt={product.title}
-                  className="w-full h-full group-hover:scale-110 transition-transform duration-700"
-                  priority={false}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  placeholder="blur"
-                  fallback="/placeholder.jpg"
-                />
-                
-                {/* Quick Actions Overlay */}
-                <div className={`absolute inset-0 bg-black/40 flex items-center justify-center gap-3 transition-all duration-300 ${
-                  hoveredProduct === product.id ? 'opacity-100' : 'opacity-0'
-                }`}>
-                  <button 
-                    onClick={(e) => handleQuickView(product, e)}
-                    className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110 shadow-lg"
-                    title="Quick View"
-                  >
-                    <Eye className="h-5 w-5 text-gray-800" />
-                  </button>
-                  <button 
-                    onClick={(e) => handleToggleWishlist(product.id, e)}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-200 transform hover:scale-110 shadow-lg ${
-                      wishlist.has(product.id) 
-                        ? 'bg-red-500 hover:bg-red-600' 
-                        : 'bg-white hover:bg-gray-100'
-                    }`}
-                    title={wishlist.has(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
-                  >
-                    <Heart className={`h-5 w-5 ${
-                      wishlist.has(product.id) ? 'text-white' : 'text-gray-800'
-                    }`} />
-                  </button>
-                  <button 
-                    onClick={(e) => handleAddToCart(product, e)}
-                    disabled={addingToCart === product.id}
-                    className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                    title="Add to Cart"
-                  >
-                    {addingToCart === product.id ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    ) : (
-                      <ShoppingCart className="h-5 w-5 text-white" />
-                    )}
-                  </button>
-                </div>
+              <div
+                className="group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
+                onMouseEnter={() => setHoveredProduct(product.id)}
+                onMouseLeave={() => setHoveredProduct(null)}
+                onClick={() => handleProductClick(product)}
+              >
+                {/* Product Image */}
+                <div className="relative aspect-square bg-gray-200 overflow-hidden">
+                  <OptimizedImage
+                    src={product.images?.[0] || '/placeholder.jpg'}
+                    alt={product.title}
+                    className="w-full h-full group-hover:scale-110 transition-transform duration-700"
+                    priority={false}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    placeholder="blur"
+                    fallback="/placeholder.jpg"
+                  />
+                  
+                  {/* Quick Actions Overlay */}
+                  <div className={`absolute inset-0 bg-black/40 flex items-center justify-center gap-3 transition-all duration-300 ${
+                    hoveredProduct === product.id ? 'opacity-100' : 'opacity-0'
+                  }`}>
+                    <button 
+                      onClick={(e) => handleQuickView(product, e)}
+                      className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110 shadow-lg"
+                      title="Quick View"
+                    >
+                      <Eye className="h-5 w-5 text-gray-800" />
+                    </button>
+                    <button 
+                      onClick={(e) => handleToggleWishlist(product.id, e)}
+                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-200 transform hover:scale-110 shadow-lg ${
+                        wishlist.has(product.id) 
+                          ? 'bg-red-500 hover:bg-red-600' 
+                          : 'bg-white hover:bg-gray-100'
+                      }`}
+                      title={wishlist.has(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                    >
+                      <Heart className={`h-5 w-5 ${
+                        wishlist.has(product.id) ? 'text-white' : 'text-gray-800'
+                      }`} />
+                    </button>
+                    <button 
+                      onClick={(e) => handleAddToCart(product, e)}
+                      disabled={addingToCart === product.id}
+                      className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                      title="Add to Cart"
+                    >
+                      {addingToCart === product.id ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <ShoppingCart className="h-5 w-5 text-white" />
+                      )}
+                    </button>
+                  </div>
 
-                {/* Badge */}
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">
-                    HOT
-                  </span>
-                </div>
-              </div>
-
-              {/* Product Info */}
-              <div className="p-6">
-                {/* Category */}
-                <div className="text-sm text-gray-500 mb-2 capitalize font-['Inter']">
-                  {product.category}
-                </div>
-                
-                {/* Product Name */}
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200 font-['Inter']">
-                  {product.title}
-                </h3>
-                
-                {/* Price */}
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl font-bold text-gray-900 font-['Inter']">
-                    {formatPrice(product.price)}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-yellow-400">★</span>
-                    <span className="text-sm text-gray-600 font-['Inter']">4.8</span>
+                  {/* Badge */}
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">
+                      HOT
+                    </span>
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <button 
-                    onClick={(e) => handleAddToCart(product, e)}
-                    disabled={addingToCart === product.id}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-['Inter']"
-                  >
-                    {addingToCart === product.id ? 'Menambahkan...' : 'Tambah ke Keranjang'}
-                  </button>
-                  <button 
-                    onClick={(e) => handleQuickView(product, e)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-['Inter']"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
+                {/* Product Info */}
+                <div className="p-6">
+                  {/* Category */}
+                  <div className="text-sm text-gray-500 mb-2 capitalize font-['Inter']">
+                    {product.category}
+                  </div>
+                  
+                  {/* Product Name */}
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200 font-['Inter']">
+                    {product.title}
+                  </h3>
+                  
+                  {/* Price */}
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-2xl font-bold text-gray-900 font-['Inter']">
+                      {formatPrice(product.price)}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-400">★</span>
+                      <span className="text-sm text-gray-600 font-['Inter']">4.8</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={(e) => handleAddToCart(product, e)}
+                      disabled={addingToCart === product.id}
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-['Inter']"
+                    >
+                      {addingToCart === product.id ? 'Menambahkan...' : 'Tambah ke Keranjang'}
+                    </button>
+                    <button 
+                      onClick={(e) => handleQuickView(product, e)}
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-['Inter']"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -206,7 +219,11 @@ export default function FeaturedProducts() {
         </div>
 
         {/* View All Button */}
-        <div className="text-center mt-12">
+        <div 
+          ref={setRef('featured-view-all')}
+          className="text-center mt-12 scroll-animate scroll-animate-fade-up"
+          data-scroll-id="featured-view-all"
+        >
           <Link 
             href="/marketplace"
             className="inline-block px-8 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors duration-300"

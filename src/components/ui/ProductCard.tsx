@@ -11,6 +11,14 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import QuickViewModal from './QuickViewModal';
 import OptimizedImage from './OptimizedImage';
 
+// Helper function to generate slug
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 interface ProductCardProps {
   product: Product;
   onQuickView?: (product: Product) => void;
@@ -125,7 +133,7 @@ export default function ProductCard({
 
   return (
     <div
-      className={`group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-out ${
+      className={`group relative bg-white rounded-[16px] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_32px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400 ease-out ${
         isLoading ? 'pointer-events-none opacity-75' : ''
       }`}
       onMouseEnter={() => !isLoading && setIsHovered(true)}
@@ -133,12 +141,12 @@ export default function ProductCard({
       style={{ transform: 'none' }}
     >
       {/* Product Image - Clickable */}
-      <Link href={`/marketplace/product${product.id}`}>
-        <div className="relative h-64 sm:h-80 overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity duration-200">
+      <Link href={`/product/${(product as any).slug || generateSlug(product.name || product.title || '')}`}>
+        <div className="relative overflow-hidden bg-gray-50 cursor-pointer transition-opacity duration-300" style={{ aspectRatio: '1 / 1' }}>
           <OptimizedImage
             src={firstImage}
             alt={product.name || product.title}
-            className="w-full h-full hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             priority={true}
             disableIntersectionObserver={true}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -147,12 +155,20 @@ export default function ProductCard({
           
           {/* Badge */}
           {product.featured && (
-            <div className="absolute top-2 left-2">
-              <span className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg">
-                HOT
+            <div className="absolute top-3 left-3">
+              <span className="px-2 py-1 bg-black text-white text-[9px] font-medium tracking-wider uppercase rounded-[6px] shadow-md">
+                Hot
               </span>
             </div>
           )}
+
+          {/* Wishlist Icon - Top Right */}
+          <button
+            onClick={handleToggleWishlist}
+            className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white hover:scale-110 transition-all duration-300 z-10"
+          >
+            <Heart className={`h-4 w-4 ${productInWishlist ? 'fill-current text-red-500' : 'text-gray-600'}`} />
+          </button>
 
           {/* Loading Overlay */}
           {isLoading && (
@@ -165,10 +181,10 @@ export default function ProductCard({
 
       {/* Notification Toast */}
       {notification && (
-        <div className={`absolute top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-300 ${
+        <div className={`absolute top-6 right-6 z-50 px-4 py-3 rounded-[12px] shadow-lg flex items-center gap-3 transition-all duration-300 ${
           notification.type === 'cart' 
-            ? 'bg-blue-600 text-white' 
-            : 'bg-red-600 text-white'
+            ? 'bg-black text-white' 
+            : 'bg-black text-white'
         }`}>
           {notification.type === 'cart' ? (
             <ShoppingCart className="h-4 w-4" />
@@ -180,58 +196,46 @@ export default function ProductCard({
       )}
 
       {/* Product Info */}
-      <div className="p-4 sm:p-6 flex flex-col h-full">
+      <div className="p-4 flex flex-col h-full bg-white relative">
         {/* Category */}
-        <div className="text-sm text-gray-500 mb-2 capitalize">
+        <div className="text-[10px] text-gray-500 mb-2 uppercase tracking-[0.5px] font-light">
           {product.category}
         </div>
         
         {/* Product Name - Clickable */}
-        <Link href={`/marketplace/product${product.id}`}>
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors duration-200">
+        <Link href={`/product/${(product as any).slug || generateSlug(product.name || product.title || '')}`}>
+          <h3 className="text-sm font-medium text-[#2d3436] mb-2 line-clamp-2 cursor-pointer hover:text-black transition-colors duration-300 leading-tight">
             {product.name || product.title}
           </h3>
         </Link>
         
-        {/* Price & Rating */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-lg sm:text-2xl font-bold text-gray-900">
-            {formatPrice(product.price)}
-          </span>
-          <div className="flex items-center gap-1">
-            <span className="text-yellow-400">★</span>
-            <span className="text-sm text-gray-600">{product.rating || '4.8'}</span>
+        {/* Price & Cart Icon */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-[10px] text-gray-500 font-light">Rp</span>
+            <span className="text-base font-semibold text-[#2d3436]">
+              {formatPrice(product.price).replace('Rp', '')}
+            </span>
           </div>
-        </div>
-
-        {/* Spacer untuk push action buttons ke bawah */}
-        <div className="flex-grow"></div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <Link 
-            href={`/product/${product.id}`}
-            className="flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-          >
-            <Eye className="h-4 w-4" />
-          </Link>
+          
+          {/* Cart Icon - Bottom Right */}
           <button
             onClick={handleAddToCart}
             disabled={isLoading}
-            className="flex-1 px-3 sm:px-4 py-2 bg-blue-600 text-white font-medium tracking-wide text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Menambah...' : 'Tambah ke Keranjang'}
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+            ) : (
+              <ShoppingCart className="h-4 w-4" />
+            )}
           </button>
-          <button
-            onClick={handleToggleWishlist}
-            className={`px-3 sm:px-4 py-2 rounded-lg transition-colors duration-200 ${
-              productInWishlist 
-                ? 'bg-red-500 text-white hover:bg-red-600' 
-                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <Heart className={`h-4 w-4 ${productInWishlist ? 'fill-current' : ''}`} />
-          </button>
+        </div>
+
+        {/* Rating - Compact */}
+        <div className="flex items-center gap-1 mt-2">
+          <span className="text-amber-400 text-xs">★</span>
+          <span className="text-xs text-gray-600 font-light">{product.rating || '4.8'}</span>
         </div>
       </div>
       

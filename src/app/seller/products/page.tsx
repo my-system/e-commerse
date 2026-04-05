@@ -38,6 +38,32 @@ export default function SellerProductsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Helper function for safe image parsing
+  const parseImages = (imagesData: string | null | any): string[] => {
+    if (!imagesData) return [];
+    
+    // If it's already an array, return as is
+    if (Array.isArray(imagesData)) {
+      return imagesData;
+    }
+    
+    // Convert to string if not already
+    const imagesString = String(imagesData);
+    
+    // Check if it's a single base64 data URL
+    if (imagesString.startsWith('data:image')) {
+      return [imagesString];
+    }
+    
+    try {
+      const parsed = JSON.parse(imagesString);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error('Error parsing images:', error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     if (!isLoading) {
       // Remove auth check for development - allow direct access
@@ -52,6 +78,16 @@ export default function SellerProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      
+      // Try localStorage first (fallback)
+      const localProducts = JSON.parse(localStorage.getItem('sellerProducts') || '[]');
+      if (localProducts.length > 0) {
+        console.log('Loading products from localStorage:', localProducts);
+        setProducts(localProducts);
+        setError(null);
+        setLoading(false);
+        return;
+      }
       
       // Use tri-database API
       try {
@@ -421,7 +457,16 @@ export default function SellerProductsPage() {
                           <div className="h-10 w-10 flex-shrink-0">
                             <img
                               className="h-10 w-10 rounded-lg object-cover"
-                              src={product.images ? JSON.parse(product.images)[0] : '/api/placeholder/40/40/product'}
+                              src={
+                                product.images 
+                                  ? (() => {
+                                      const parsedImages = parseImages(product.images);
+                                      return parsedImages.length > 0 
+                                        ? parsedImages[0] 
+                                        : '/api/placeholder/40/40/product';
+                                    })()
+                                  : '/api/placeholder/40/40/product'
+                              }
                               alt={product.title}
                             />
                           </div>

@@ -6,6 +6,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { products } from '@/data/products';
 import { formatPrice } from '@/lib/utils';
+import { useIntersectionObserverMultiple } from '@/hooks/useIntersectionObserver';
 
 interface BundleDeal {
   id: string;
@@ -30,6 +31,7 @@ export default function BundleDeals({ className = "" }: BundleDealsProps) {
   const [addedToCart, setAddedToCart] = useState<Set<string>>(new Set());
   const { addItem } = useCart();
   const { trackProductView } = useUserPreferences();
+  const { setRef } = useIntersectionObserverMultiple({ threshold: 0.1 });
 
   // Bundle deals data
   const bundleDeals: BundleDeal[] = [
@@ -179,7 +181,11 @@ export default function BundleDeals({ className = "" }: BundleDealsProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <div 
+          ref={setRef('bundle-header')}
+          className="text-center mb-12 scroll-animate scroll-animate-fade-up"
+          data-scroll-id="bundle-header"
+        >
           <div className="flex items-center justify-center gap-3 mb-4">
             <Package className="h-8 w-8 text-purple-600" />
             <h2 className="text-4xl font-bold text-gray-900">Bundle Deals</h2>
@@ -193,7 +199,7 @@ export default function BundleDeals({ className = "" }: BundleDealsProps) {
 
         {/* Bundle Deals Grid */}
         <div className="space-y-8">
-          {bundleDeals.map((bundle) => {
+          {bundleDeals.map((bundle, index) => {
             const bundleProducts = getBundleProducts(bundle);
             const { originalPrice, bundlePrice, savings } = calculateBundlePrice(bundle);
             const isSelected = selectedBundles.has(bundle.id);
@@ -202,9 +208,12 @@ export default function BundleDeals({ className = "" }: BundleDealsProps) {
             return (
               <div
                 key={bundle.id}
-                className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 ${
+                ref={setRef(`bundle-${index}`)}
+                data-scroll-id={`bundle-${index}`}
+                className={`scroll-animate scroll-animate-fade-up scroll-animate-scale ${
                   isSelected ? 'ring-4 ring-purple-500 shadow-2xl transform scale-105' : 'hover:shadow-xl'
-                }`}
+                } bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300`}
+                style={{ transitionDelay: `${index * 0.2}s` }}
               >
                 {/* Bundle Header */}
                 <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
@@ -367,7 +376,11 @@ export default function BundleDeals({ className = "" }: BundleDealsProps) {
         </div>
 
         {/* View All Button */}
-        <div className="text-center mt-12">
+        <div 
+          ref={setRef('bundle-view-all')}
+          className="text-center mt-12 scroll-animate scroll-animate-fade-up"
+          data-scroll-id="bundle-view-all"
+        >
           <button className="inline-block px-8 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors duration-300">
             Lihat Semua Bundle Deals
           </button>

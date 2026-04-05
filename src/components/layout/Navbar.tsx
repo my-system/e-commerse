@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, ShoppingCart, User, Search as SearchIcon, ChevronDown, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +20,7 @@ export default function Navbar() {
   const { state: cartState, openCart } = useCart();
   const { user, isLoggedIn, login, logout } = useAuth();
   const { toggleSidebar } = useSidebar();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,15 +58,22 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-gray-700 hover:text-black transition-colors duration-200 font-medium text-sm"
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`relative pb-1 transition-all duration-300 font-medium text-sm ${
+                      isActive 
+                        ? 'text-black after:content-[\'\'] after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-[2px] after:bg-black' 
+                        : 'text-gray-700 hover:text-black'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Desktop Actions */}
@@ -103,8 +112,9 @@ export default function Navbar() {
               {/* Hamburger Menu - Desktop */}
               <button
                 onClick={toggleSidebar}
-                className="p-2 text-gray-700 hover:text-black transition-colors duration-200"
+                className="p-2 text-gray-700 hover:text-black transition-colors duration-200 relative z-50"
                 aria-label="Buka menu"
+                style={{ pointerEvents: 'auto' }}
               >
                 <Menu className="h-6 w-6" />
               </button>
@@ -146,8 +156,9 @@ export default function Navbar() {
               {/* Mobile menu button */}
               <button
                 onClick={toggleSidebar}
-                className="p-2 text-gray-700 hover:text-black transition-colors duration-200"
+                className="p-2 text-gray-700 hover:text-black transition-colors duration-200 relative z-50"
                 aria-label="Buka menu"
+                style={{ pointerEvents: 'auto' }}
               >
                 <Menu className="h-6 w-6" />
               </button>

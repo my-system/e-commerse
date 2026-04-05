@@ -1,13 +1,21 @@
+"use client";
+
 import { categories } from '@/data/categories';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
+import { useIntersectionObserverMultiple } from '@/hooks/useIntersectionObserver';
 
 export default function ProductCategories() {
+  const { setRef } = useIntersectionObserverMultiple({ threshold: 0.1 });
   return (
     <section id="categories" className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div 
+          ref={setRef('section-header')}
+          className="text-center mb-16 scroll-animate scroll-animate-fade-up"
+          data-scroll-id="section-header"
+        >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Jelajahi Kategori
           </h2>
@@ -18,11 +26,14 @@ export default function ProductCategories() {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <Link
               key={category.id}
               href={`/category/${category.slug}`}
-              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 cursor-pointer bg-white"
+              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 cursor-pointer bg-white scroll-animate scroll-animate-fade-up scroll-animate-scale"
+              ref={setRef(`category-${index}`)}
+              data-scroll-id={`category-${index}`}
+              style={{ transitionDelay: `${index * 0.1}s` }}
             >
               {/* Category Image */}
               <div className="relative h-72 overflow-hidden">
@@ -80,7 +91,11 @@ export default function ProductCategories() {
         </div>
 
         {/* View All Button */}
-        <div className="text-center mt-16">
+        <div 
+          ref={setRef('view-all-button')}
+          className="text-center mt-16 scroll-animate scroll-animate-fade-up"
+          data-scroll-id="view-all-button"
+        >
           <Link
             href="/categories"
             className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-black to-gray-800 text-white font-medium rounded-xl hover:from-gray-800 hover:to-gray-900 transition-all duration-300 transform hover:scale-105 shadow-lg"

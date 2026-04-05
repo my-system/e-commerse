@@ -32,3 +32,53 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// DELETE - Delete product from marketplace
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const productId = searchParams.get('id');
+    
+    if (!productId) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Product ID is required' 
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Delete product from marketplace database
+    const success = await MarketplaceDatabaseService.deleteMarketplaceProduct(productId);
+    
+    if (!success) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Failed to delete product from marketplace' 
+        },
+        { status: 500 }
+      );
+    }
+    
+    // Get updated products list
+    const updatedProducts = await MarketplaceDatabaseService.getMarketplaceProducts();
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Product deleted from marketplace successfully',
+      products: updatedProducts
+    });
+    
+  } catch (error: any) {
+    console.error('Error deleting marketplace product:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error.message || 'Failed to delete marketplace product' 
+      },
+      { status: 500 }
+    );
+  }
+}

@@ -48,9 +48,14 @@ const menuItems = [
     description: 'Manage products',
     submenu: [
       {
-        name: 'Daftar Produk',
+        name: 'Pending Products',
         href: '/admin/products',
-        description: 'View all products'
+        description: 'View pending products'
+      },
+      {
+        name: 'Marketplace Products',
+        href: '/admin/products?tab=marketplace',
+        description: 'Manage marketplace products'
       },
       {
         name: 'Tambah Produk',

@@ -7,7 +7,12 @@ import {
   ChevronUp, 
   RotateCcw, 
   Filter,
-  X
+  X,
+  Grid3x3,
+  Tag,
+  Sliders,
+  Search,
+  ArrowLeft
 } from 'lucide-react';
 
 interface FilterState {
@@ -68,27 +73,30 @@ interface CollapsibleSectionProps {
   defaultOpen?: boolean;
 }
 
-function CollapsibleSection({ title, children, defaultOpen = true }: CollapsibleSectionProps) {
+function CollapsibleSection({ title, children, defaultOpen = false, icon }: CollapsibleSectionProps & { icon?: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-gray-100 last:border-b-0">
+    <div className="border-b border-gray-100">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-3 text-left hover:bg-gray-50 transition-all duration-200 group"
+        className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors duration-200"
       >
-        <h3 className="text-sm font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-200">
-          {title}
-        </h3>
+        <div className="flex items-center gap-3">
+          {icon && <span className="text-gray-400">{icon}</span>}
+          <h3 className="text-sm font-medium text-gray-900">
+            {title}
+          </h3>
+        </div>
         <div className={`transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
-          <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
+          <ChevronDown className="w-4 h-4 text-gray-400" />
         </div>
       </button>
       
       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
         isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
       }`}>
-        <div className="py-4">
+        <div className="px-6 py-4">
           {children}
         </div>
       </div>
@@ -179,219 +187,147 @@ export default function ModernSidebarFilter({
     filters.rating !== null;
 
   return (
-    <div className={`w-[280px] bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden ${className}`}>
-      {/* Header */}
-      <div className="px-4 py-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-blue-500" />
-            <h2 className="text-base font-bold text-gray-900">Filters</h2>
-          </div>
-          <button
-            onClick={handleReset}
-            className="text-xs text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition-all duration-200 font-medium"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-
+    <div className={`bg-white h-screen overflow-hidden flex flex-col ${className}`}>
       {/* Scrollable Content */}
       <div 
         ref={scrollRef}
-        className="max-h-[calc(100vh-200px)] overflow-y-auto"
+        className="flex-1 overflow-y-auto overflow-x-hidden filter-scrollbar"
+        style={{ height: 'calc(100vh - 0px)' }}
       >
         {/* Categories Section */}
-        <CollapsibleSection title="Categories">
-          <div className="space-y-2">
+        <CollapsibleSection title="Categories" icon={<Grid3x3 className="w-4 h-4" />} defaultOpen={false}>
+          <div className="space-y-1">
+            <button
+              onClick={() => handleCategoryToggle('')}
+              className={`w-full text-left px-3 py-2 text-sm transition-colors duration-200 rounded-md ${
+                filters.categories.length === 0 
+                  ? 'text-blue-600 bg-blue-50 font-medium' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              All Categories
+            </button>
             {categories.map((category) => {
               const isSelected = filters.categories.includes(category.id);
               return (
-                <label
+                <button
                   key={category.id}
-                  className={`
-                    flex items-center justify-between py-2 px-3 rounded-lg cursor-pointer transition-all duration-200 group
-                    ${isSelected 
-                      ? 'bg-blue-50 border border-blue-200' 
-                      : 'hover:bg-gray-50 border border-transparent'
-                    }
-                  `}
+                  onClick={() => handleCategoryToggle(category.id)}
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors duration-200 rounded-md ${
+                    isSelected 
+                      ? 'text-blue-600 bg-blue-50 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleCategoryToggle(category.id)}
-                        className="w-4 h-4 text-blue-500 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none cursor-pointer"
-                      />
-                      {isSelected && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></div>
-                        </div>
-                      )}
-                    </div>
-                    <span className={`text-sm font-medium transition-colors duration-200 ${
-                      isSelected ? 'text-blue-700' : 'text-gray-700 group-hover:text-gray-900'
-                    }`}>
-                      {category.name}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
-                    {category.count}
-                  </span>
-                </label>
+                  {category.name}
+                </button>
               );
             })}
           </div>
         </CollapsibleSection>
 
         {/* Price Range Section */}
-        <CollapsibleSection title="Price Range">
-          <div className="px-3 space-y-3">
-            {/* Price Presets */}
+        <CollapsibleSection title="Price Range" icon={<Tag className="w-4 h-4" />} defaultOpen={false}>
+          <div className="space-y-2">
             {pricePresets.map((preset) => {
               const isSelected = 
                 filters.priceRange.min === preset.min && 
                 filters.priceRange.max === preset.max;
               
               return (
-                <label
+                <button
                   key={preset.label}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 group"
+                  onClick={() => handlePricePresetSelect(preset.min, preset.max)}
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors duration-200 rounded-md ${
+                    isSelected 
+                      ? 'text-blue-600 bg-blue-50 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handlePricePresetSelect(preset.min, preset.max)}
-                    className="w-4 h-4 text-blue-500 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none cursor-pointer"
-                  />
-                  {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></div>
-                    </div>
-                  )}
-                  <span className={`text-sm font-medium transition-colors duration-200 ${
-                    isSelected ? 'text-blue-700' : 'text-gray-700 group-hover:text-gray-900'
-                  }`}>
-                    {preset.label}
-                  </span>
-                </label>
+                  {preset.label}
+                </button>
               );
             })}
-
+            
             {/* Manual Input */}
-            <div className="space-y-3 pt-3">
-              <div className="text-sm font-medium text-gray-700">Atur manual:</div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none z-10">
-                    Rp
-                  </span>
-                  <input
-                    type="text"
-                    value={formatPrice(filters.priceRange.min)}
-                    onChange={(e) => handleManualPriceChange('min', e.target.value)}
-                    className="w-full pl-8 pr-2 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    placeholder="Rp 0"
-                  />
-                </div>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none z-10">
-                    Rp
-                  </span>
-                  <input
-                    type="text"
-                    value={formatPrice(filters.priceRange.max)}
-                    onChange={(e) => handleManualPriceChange('max', e.target.value)}
-                    className="w-full pl-8 pr-2 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    placeholder="Rp 999.999.999"
-                  />
-                </div>
+            <div className="pt-2 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={formatPrice(filters.priceRange.min)}
+                  onChange={(e) => handleManualPriceChange('min', e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Min"
+                />
+                <input
+                  type="text"
+                  value={formatPrice(filters.priceRange.max)}
+                  onChange={(e) => handleManualPriceChange('max', e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Max"
+                />
               </div>
             </div>
           </div>
         </CollapsibleSection>
 
         {/* Rating Section */}
-        <CollapsibleSection title="Rating">
-          <div className="px-3 space-y-2">
+        <CollapsibleSection title="Rating" icon={<Star className="w-4 h-4" />} defaultOpen={false}>
+          <div className="space-y-1">
             {ratingOptions.map((option) => {
               const isSelected = filters.rating === option.value;
               return (
-                <label
+                <button
                   key={option.value}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 group"
+                  onClick={() => handleRatingSelect(option.value)}
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors duration-200 rounded-md flex items-center gap-2 ${
+                    isSelected 
+                      ? 'text-blue-600 bg-blue-50 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
-                  <input
-                    type="radio"
-                    name="rating"
-                    checked={isSelected}
-                    onChange={() => handleRatingSelect(option.value)}
-                    className="w-4 h-4 text-blue-500 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none cursor-pointer"
-                  />
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3.5 h-3.5 ${
-                            i < option.stars
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className={`text-sm font-medium transition-colors duration-200 ${
-                      isSelected ? 'text-blue-700' : 'text-gray-700 group-hover:text-gray-900'
-                    }`}>
-                      {option.label}
-                    </span>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-3.5 h-3.5 ${
+                          i < option.stars
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
                   </div>
-                </label>
+                  {option.label}
+                </button>
               );
             })}
           </div>
         </CollapsibleSection>
 
         {/* Sort By Section */}
-        <CollapsibleSection title="Sort By">
-          <div className="px-3 space-y-2">
+        <CollapsibleSection title="Sort By" icon={<Sliders className="w-4 h-4" />} defaultOpen={false}>
+          <div className="space-y-1">
             {sortOptions.map((option) => {
               const isSelected = filters.sortBy === option.value;
               return (
-                <label
+                <button
                   key={option.value}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 group"
+                  onClick={() => handleSortSelect(option.value)}
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors duration-200 rounded-md ${
+                    isSelected 
+                      ? 'text-blue-600 bg-blue-50 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
-                  <input
-                    type="radio"
-                    name="sortBy"
-                    checked={isSelected}
-                    onChange={() => handleSortSelect(option.value)}
-                    className="w-4 h-4 text-blue-500 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none cursor-pointer"
-                  />
-                  <span className={`text-sm font-medium transition-colors duration-200 ${
-                    isSelected ? 'text-blue-700' : 'text-gray-700 group-hover:text-gray-900'
-                  }`}>
-                    {option.label}
-                  </span>
-                </label>
+                  {option.label}
+                </button>
               );
             })}
           </div>
         </CollapsibleSection>
 
-        {/* Apply Button */}
-        <div className="px-4 py-4 border-t border-gray-100 sticky bottom-0 bg-white">
-          <button
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
-          >
-            Terapkan Filter
-          </button>
-        </div>
-      </div>
+              </div>
     </div>
   );
 }

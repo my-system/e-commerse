@@ -54,7 +54,7 @@ export default function OptimizedImage({
         fill
         sizes={sizes}
         priority={priority || disableIntersectionObserver}
-        loading={priority || disableIntersectionObserver ? 'eager' : 'lazy'}
+        loading="eager"
         className={`object-cover transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} ${className || ''}`}
         onError={handleError}
         onLoad={handleLoad}

@@ -11,8 +11,8 @@ export default function ProductRedirect() {
     const pathname = window.location.pathname;
     const slug = pathname.replace('/marketplace/product/', '');
     
-    // Redirect to the correct format without slash
-    router.replace(`/marketplace/product${slug}`);
+    // Redirect to the correct format with slash
+    router.replace(`/marketplace/product/${slug}`);
   }, [router]);
 
   return (

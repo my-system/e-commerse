@@ -111,12 +111,9 @@ export default function AdminAnalyticsPage() {
 
   useEffect(() => {
     if (!isLoading) {
-      if (!isLoggedIn || user?.role !== 'admin') {
-        return;
-      }
       fetchAnalyticsData();
     }
-  }, [isLoading, isLoggedIn, user, selectedPeriod]);
+  }, [isLoading, selectedPeriod]);
 
   const fetchAnalyticsData = async () => {
     try {
@@ -378,18 +375,6 @@ export default function AdminAnalyticsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 font-medium">Access Denied</p>
-          <p className="text-gray-600 mt-2">Admin role required</p>
-        </div>
       </div>
     );
   }

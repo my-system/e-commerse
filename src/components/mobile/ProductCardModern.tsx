@@ -6,10 +6,19 @@ import Link from 'next/link'
 import OptimizedImage from '@/components/ui/OptimizedImage'
 import { formatPrice } from '@/lib/utils'
 
+// Helper function to generate slug
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 interface Product {
   id: string
   name?: string
   title?: string
+  slug?: string
   description?: string
   price: number
   originalPrice?: number
@@ -53,25 +62,27 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
   const handleQuickView = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     // Navigate to product detail page
-    window.location.href = `/marketplace/product${product.id}`
+    const slug = product.slug || generateSlug(productName)
+    window.location.href = `/product/${slug}`
   }
 
   const handleProductClick = () => {
     // Navigate to product detail page
-    window.location.href = `/marketplace/product${product.id}`
+    const slug = product.slug || generateSlug(productName)
+    window.location.href = `/product/${slug}`
   }
 
   return (
     <div 
-      className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer group"
+      className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_32px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400 ease-out overflow-hidden cursor-pointer group"
       onClick={handleProductClick}
     >
       {/* Product Image - Mobile Optimized */}
-      <div className="relative aspect-square bg-gray-100 overflow-hidden">
+      <div className="relative aspect-[4/5] bg-gray-50 overflow-hidden">
         <OptimizedImage
           src={productImage}
           alt={productName}
-          className="w-full h-full group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           priority={true}
           disableIntersectionObserver={true}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -80,64 +91,29 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
         />
 
         {/* Badges - Mobile Optimized */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {product.isNew && (
-            <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-sm">
-              NEW
+            <span className="bg-black text-white text-[9px] px-2 py-1 rounded-[6px] font-medium tracking-wider uppercase shadow-sm">
+              New
             </span>
           )}
           {discountPercentage > 0 && (
-            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-sm">
+            <span className="bg-black text-white text-[9px] px-2 py-1 rounded-[6px] font-medium tracking-wider uppercase shadow-sm">
               -{discountPercentage}%
             </span>
           )}
         </div>
 
-        {/* Quick Actions Overlay - Mobile */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
-          <div className="flex gap-2">
-            {/* Quick View Button - Perfect Center */}
-            <button
-              onClick={handleQuickView}
-              className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all duration-200"
-              title="Quick View"
-            >
-              <Eye className="w-5 h-5 text-gray-700" />
-            </button>
-            
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all duration-200 ${
-                isAdded 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-white/90 backdrop-blur-sm hover:bg-white'
-              }`}
-              title="Add to Cart"
-            >
-              {isAdded ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                <ShoppingCart className="w-5 h-5 text-gray-700" />
-              )}
-            </button>
-          </div>
-        </div>
-
         {/* Wishlist Button - Top Right */}
-        <div className="absolute top-2 right-2 z-10">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              // Add to wishlist
-            }}
-            className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white hover:scale-110 transition-all duration-200"
-          >
-            <Heart className="w-4 h-4 text-gray-600" />
-          </button>
-        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            // Add to wishlist
+          }}
+          className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white hover:scale-110 transition-all duration-300 z-10"
+        >
+          <Heart className="w-4 h-4 text-gray-600" />
+        </button>
 
         {/* Loading Skeleton */}
         {false && isImageLoading && !isImageError && (
@@ -146,72 +122,54 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
       </div>
 
       {/* Product Info - Mobile Optimized */}
-      <div className="p-3 space-y-2">
+      <div className="p-3 space-y-2 bg-white relative">
         {/* Product Name - Clear Typography */}
-        <div className="min-h-[2.5rem]">
-          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight font-['Inter']">
+        <div className="min-h-[2rem]">
+          <h3 className="text-sm font-medium text-[#2d3436] line-clamp-2 leading-tight">
             {productName}
           </h3>
         </div>
 
-        {/* Rating - Clear Display */}
-        {product.rating && (
-          <div className="flex items-center gap-1">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-3 h-3 ${
-                    i < Math.floor(product.rating!)
-                      ? 'text-yellow-400 fill-current'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-xs text-gray-600 ml-1 font-['Inter']">
-              {product.rating} ({product.reviews || 0})
-            </span>
-          </div>
-        )}
-
-        {/* Price - Bold and Clear Hierarchy with Rupiah */}
+        {/* Price & Cart Icon */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-base font-bold text-gray-900 font-['Inter']">
-              {formatPrice(product.price)}
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-[10px] text-gray-500 font-light">Rp</span>
+            <span className="text-sm font-semibold text-[#2d3436]">
+              {formatPrice(product.price).replace('Rp', '')}
             </span>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-xs text-gray-500 line-through font-['Inter']">
-                {formatPrice(product.originalPrice)}
-              </span>
-            )}
           </div>
-        </div>
-
-        {/* Add to Cart Button - Mobile Optimized */}
-        <button
-          onClick={handleAddToCart}
-          className={`w-full py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 font-['Inter'] ${
-            isAdded
-              ? 'bg-green-500 text-white'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-          }`}
-        >
-          {isAdded ? (
-            <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {product.originalPrice && product.originalPrice > product.price && (
+            <span className="text-xs text-gray-500 line-through font-light">
+              {formatPrice(product.originalPrice)}
+            </span>
+          )}
+          
+          {/* Cart Icon - Bottom Right */}
+          <button
+            onClick={handleAddToCart}
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
+              isAdded
+                ? 'bg-black text-white'
+                : 'bg-black hover:bg-gray-800 text-white'
+            }`}
+          >
+            {isAdded ? (
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Ditambahkan!
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-4 h-4" />
-              Tambah ke Keranjang
-            </>
-          )}
-        </button>
+            ) : (
+              <ShoppingCart className="w-3 h-3" />
+            )}
+          </button>
+        </div>
+
+        {/* Rating - Compact */}
+        {product.rating && (
+          <div className="flex items-center gap-1">
+            <span className="text-amber-400 text-xs">★</span>
+            <span className="text-xs text-gray-600 font-light">{product.rating} ({product.reviews || 0})</span>
+          </div>
+        )}
       </div>
     </div>
   )

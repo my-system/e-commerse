@@ -1,0 +1,253 @@
+{
+  "timestamp": "2026-04-05T04:01:12.211Z",
+  "system": {
+    "health": {
+      "pending": {
+        "status": "healthy",
+        "total": 3,
+        "statusBreakdown": [
+          {
+            "status": "pending",
+            "count": "3"
+          }
+        ]
+      },
+      "marketplace": {
+        "status": "warning",
+        "total": 6,
+        "statusBreakdown": [
+          {
+            "status": "approved",
+            "count": "4"
+          },
+          {
+            "status": "pending",
+            "count": "2"
+          }
+        ]
+      },
+      "consistency": {
+        "status": "warning",
+        "duplicates": [
+          "1775338540943",
+          "1775338499187",
+          "1774780325527"
+        ]
+      },
+      "workflow": {
+        "status": "healthy",
+        "endpoints": [
+          {
+            "endpoint": "/api/pending-products",
+            "status": "healthy"
+          },
+          {
+            "endpoint": "/api/admin/pending-products",
+            "status": "healthy"
+          },
+          {
+            "endpoint": "/api/marketplace-products",
+            "status": "healthy"
+          }
+        ]
+      },
+      "timestamp": "2026-04-05T04:01:12.084Z"
+    },
+    "tests": [
+      {
+        "suite": "API Endpoints",
+        "test": "GET /api/pending-products",
+        "status": "passed",
+        "expected": 200,
+        "actual": 200
+      },
+      {
+        "suite": "API Endpoints",
+        "test": "GET /api/admin/pending-products",
+        "status": "passed",
+        "expected": 200,
+        "actual": 200
+      },
+      {
+        "suite": "API Endpoints",
+        "test": "GET /api/marketplace-products",
+        "status": "passed",
+        "expected": 200,
+        "actual": 200
+      },
+      {
+        "suite": "Data Validation",
+        "test": "Valid Product",
+        "status": "passed",
+        "expected": true,
+        "actual": true,
+        "errors": []
+      },
+      {
+        "suite": "Data Validation",
+        "test": "Missing Title",
+        "status": "passed",
+        "expected": false,
+        "actual": false,
+        "errors": [
+          "title is required"
+        ]
+      },
+      {
+        "suite": "Data Validation",
+        "test": "Invalid Price",
+        "status": "passed",
+        "expected": false,
+        "actual": false,
+        "errors": [
+          "Price must be a positive number"
+        ]
+      },
+      {
+        "suite": "Data Validation",
+        "test": "Short Title",
+        "status": "passed",
+        "expected": false,
+        "actual": false,
+        "errors": [
+          "Title must be at least 3 characters"
+        ]
+      },
+      {
+        "suite": "Data Validation",
+        "test": "Invalid Category",
+        "status": "passed",
+        "expected": false,
+        "actual": false,
+        "errors": [
+          "Invalid category. Must be one of: fashion, electronics, home, beauty, sports, books"
+        ]
+      },
+      {
+        "suite": "Business Rules",
+        "test": "Seller Create Product",
+        "status": "failed",
+        "error": "Cannot read properties of undefined (reading 'getUserProductCount')"
+      },
+      {
+        "suite": "Business Rules",
+        "test": "Customer Create Product",
+        "status": "failed",
+        "error": "Cannot read properties of undefined (reading 'getUserProductCount')"
+      },
+      {
+        "suite": "Business Rules",
+        "test": "Price Too Low",
+        "status": "failed",
+        "error": "Cannot read properties of undefined (reading 'getUserProductCount')"
+      },
+      {
+        "suite": "Business Rules",
+        "test": "Price Too High",
+        "status": "failed",
+        "error": "Cannot read properties of undefined (reading 'getUserProductCount')"
+      },
+      {
+        "suite": "Business Rules",
+        "test": "Admin Approve Product",
+        "status": "failed",
+        "error": "Cannot read properties of undefined (reading 'getUserProductCount')"
+      },
+      {
+        "suite": "Workflow Integrity",
+        "test": "No Product Overlap",
+        "status": "failed",
+        "overlaps": [
+          "1774780325527"
+        ]
+      },
+      {
+        "suite": "Workflow Integrity",
+        "test": "Marketplace Status Filter",
+        "status": "passed"
+      },
+      {
+        "suite": "Database Consistency",
+        "test": "Pending Database Structure",
+        "status": "passed"
+      },
+      {
+        "suite": "Database Consistency",
+        "test": "Marketplace Database Structure",
+        "status": "passed"
+      },
+      {
+        "suite": "Database Consistency",
+        "test": "No Data Duplication",
+        "status": "warning"
+      },
+      {
+        "suite": "Database Consistency",
+        "test": "Status Consistency",
+        "status": "passed"
+      }
+    ],
+    "dashboard": {
+      "products": {
+        "pending": 3,
+        "approved": 6,
+        "uploaded": 9,
+        "rejected": 0,
+        "dailyStats": {
+          "pending": [
+            {
+              "total": "2",
+              "pending": "2",
+              "approved": "0",
+              "rejected": "0",
+              "date": "2026-04-03T16:00:00.000Z"
+            },
+            {
+              "total": "1",
+              "pending": "1",
+              "approved": "0",
+              "rejected": "0",
+              "date": "2026-03-28T16:00:00.000Z"
+            }
+          ],
+          "marketplace": [
+            {
+              "total": "2",
+              "approved": "0",
+              "avg_price": "1000.0000000000000000",
+              "date": "2026-04-03T16:00:00.000Z"
+            },
+            {
+              "total": "4",
+              "approved": "4",
+              "avg_price": "187508.000000000000",
+              "date": "2026-03-28T16:00:00.000Z"
+            }
+          ]
+        }
+      },
+      "performance": {
+        "apiResponseTime": 7,
+        "errorRate": 0
+      },
+      "users": {
+        "activeSellers": 0,
+        "activeCustomers": 0
+      },
+      "system": {
+        "databaseConnections": {
+          "pending": "healthy",
+          "marketplace": "healthy"
+        },
+        "uptime": 0.513844
+      }
+    }
+  },
+  "status": "CRITICAL",
+  "recommendations": [
+    "Check marketplace database connection and status filters",
+    "Run data cleanup to remove duplicates and fix inconsistencies",
+    "Review and update business rules configuration",
+    "Verify product approval workflow is functioning correctly"
+  ]
+}

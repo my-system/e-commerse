@@ -73,9 +73,16 @@ export async function addProduct(product: Omit<Product, 'id' | 'createdAt' | 'up
   await ensureInitialized();
   
   try {
+    console.log('🔄 Connecting to database...');
+    console.log('📋 Database URL:', process.env.DATABASE_URL);
+    
     const client = await pool.connect();
+    console.log('✅ Database connected successfully');
+    
     const id = Date.now().toString();
     const now = new Date().toISOString();
+    
+    console.log('💾 Inserting product:', { id, title: product.title, price: product.price });
     
     const result = await client.query(`
       INSERT INTO products (
@@ -87,14 +94,17 @@ export async function addProduct(product: Omit<Product, 'id' | 'createdAt' | 'up
     `, [
       id, product.title, product.price, product.category, product.description,
       product.featured, product.inStock, product.rating, product.reviews,
-      product.images, product.material, product.care, product.status,
-      product.badges, product.sellerId, now, now
+      JSON.stringify(product.images), // Stringify the images array
+      product.material, product.care, product.status,
+      JSON.stringify(product.badges), // Stringify the badges array
+      product.sellerId, now, now
     ]);
     
+    console.log('✅ Product inserted successfully');
     client.release();
     
     const row = result.rows[0];
-    return {
+    const savedProduct = {
       id: row.id,
       title: row.title,
       price: parseFloat(row.price),
@@ -116,8 +126,14 @@ export async function addProduct(product: Omit<Product, 'id' | 'createdAt' | 'up
       colors: [],
       specifications: {}
     };
-  } catch (error) {
-    console.error('Error adding product:', error);
+    
+    console.log('📦 Saved product:', savedProduct);
+    return savedProduct;
+    
+  } catch (error: any) {
+    console.error('❌ Error adding product:', error);
+    console.error('❌ Error details:', error.message);
+    console.error('❌ Error stack:', error.stack);
     throw error;
   }
 }

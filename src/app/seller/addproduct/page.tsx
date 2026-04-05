@@ -2,25 +2,50 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Product, ProductVariant } from '@/data/products';
-import { categories } from '@/data/categories';
-import { ArrowLeft, Plus, X, Upload, Save, AlertCircle } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Plus, 
+  X, 
+  Upload, 
+  Save, 
+  AlertCircle, 
+  Package,
+  DollarSign,
+  Tag,
+  Image as ImageIcon,
+  Palette,
+  Settings,
+  Eye,
+  EyeOff,
+  Check,
+  Loader2
+} from 'lucide-react';
 import Link from 'next/link';
 
 interface FormData {
   // Basic Info
   title: string;
-  price: string;
-  category: string;
+  slug: string;
   description: string;
-  featured: boolean;
+  category: string;
+  brand: string;
   
-  // Images
+  // Pricing & Stock
+  price: string;
+  discount_price: string;
+  stock: string;
+  sku: string;
+  
+  // Media
   images: string[];
   
   // Variants
-  sizes: ProductVariant[];
-  colors: ProductVariant[];
+  sizes: Array<{ id: string; name: string; price: number; inStock: boolean }>;
+  colors: Array<{ id: string; name: string; value: string; inStock: boolean }>;
+  
+  // Status
+  status: 'active' | 'draft';
+  featured: boolean;
   
   // Specifications
   material: string;
@@ -30,24 +55,62 @@ interface FormData {
 
 const initialFormData: FormData = {
   title: '',
-  price: '',
-  category: '',
+  slug: '',
   description: '',
-  featured: false,
+  category: '',
+  brand: '',
+  price: '',
+  discount_price: '',
+  stock: '',
+  sku: '',
   images: [],
   sizes: [],
   colors: [],
+  status: 'draft',
+  featured: false,
   material: '',
   care: '',
   specifications: {}
 };
 
-export default function SellerAddProductPage() {
+const categories = [
+  { id: 'fashion', name: 'Fashion' },
+  { id: 'electronics', name: 'Electronics' },
+  { id: 'home', name: 'Home & Living' },
+  { id: 'beauty', name: 'Beauty' },
+  { id: 'sports', name: 'Sports' },
+  { id: 'books', name: 'Books' },
+  { id: 'toys', name: 'Toys' },
+  { id: 'food', name: 'Food & Beverage' }
+];
+
+export default function ModernSellerAddProductPage() {
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Auto-generate slug from title
+  useEffect(() => {
+    if (formData.title) {
+      const slug = formData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setFormData(prev => ({ ...prev, slug }));
+    }
+  }, [formData.title]);
+
+  // Auto-generate SKU
+  useEffect(() => {
+    if (formData.title && formData.category) {
+      const sku = `${formData.category.substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+      setFormData(prev => ({ ...prev, sku }));
+    }
+  }, [formData.title, formData.category]);
 
   // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,6 +127,38 @@ export default function SellerAddProductPage() {
         setImagePreviews(prev => [...prev, imageUrl]);
       };
       reader.readAsDataURL(file);
+    });
+  };
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    files.forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const imageUrl = event.target?.result as string;
+          setFormData(prev => ({
+            ...prev,
+            images: [...prev.images, imageUrl]
+          }));
+          setImagePreviews(prev => [...prev, imageUrl]);
+        };
+        reader.readAsDataURL(file);
+      }
     });
   };
 
@@ -96,11 +191,11 @@ export default function SellerAddProductPage() {
 
   // Add variant
   const addVariant = (type: 'sizes' | 'colors') => {
-    const newVariant: ProductVariant = {
+    const newVariant = {
       id: Date.now().toString(),
       name: '',
-      value: '',
       price: 0,
+      value: '',
       inStock: true
     };
     
@@ -119,7 +214,7 @@ export default function SellerAddProductPage() {
   };
 
   // Update variant
-  const updateVariant = (type: 'sizes' | 'colors', index: number, field: keyof ProductVariant, value: any) => {
+  const updateVariant = (type: 'sizes' | 'colors', index: number, field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [type]: prev[type].map((variant, i) => 
@@ -133,23 +228,23 @@ export default function SellerAddProductPage() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Nama produk wajib diisi';
+      newErrors.title = 'Product name is required';
     }
 
     if (!formData.category) {
-      newErrors.category = 'Kategori wajib dipilih';
+      newErrors.category = 'Category is required';
     }
 
     if (!formData.price || parseFloat(formData.price) <= 0) {
-      newErrors.price = 'Harga harus lebih dari 0';
+      newErrors.price = 'Price must be greater than 0';
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'Deskripsi wajib diisi';
+      newErrors.description = 'Description is required';
     }
 
     if (formData.images.length === 0) {
-      newErrors.images = 'Setidaknya satu gambar diperlukan';
+      newErrors.images = 'At least one image is required';
     }
 
     setErrors(newErrors);
@@ -169,48 +264,63 @@ export default function SellerAddProductPage() {
     try {
       // Create product object
       const newProduct = {
-        id: Date.now().toString(),
         title: formData.title,
-        price: parseFloat(formData.price),
-        category: formData.category,
+        slug: formData.slug,
         description: formData.description,
+        price: parseFloat(formData.price),
+        discount_price: formData.discount_price ? parseFloat(formData.discount_price) : undefined,
+        stock: parseInt(formData.stock) || 0,
+        category: formData.category,
+        brand: formData.brand,
+        sku: formData.sku,
         images: formData.images,
-        variants: {
-          sizes: formData.sizes,
-          colors: formData.colors
-        },
+        sizes: formData.sizes,
+        colors: formData.colors,
+        status: formData.status,
+        featured: formData.featured,
+        material: formData.material,
+        care: formData.care,
         specifications: {
           material: formData.material,
           care: formData.care,
           ...formData.specifications
         },
-        featured: formData.featured,
-        inStock: true,
-        rating: 0,
-        reviews: 0,
-        sellerId: 'current-seller', // This should come from auth context
+        badges: [],
+        sellerId: 'current-seller',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
-      // Save to localStorage (in real app, this would be API call)
-      const existingProducts = JSON.parse(localStorage.getItem('sellerProducts') || '[]');
-      const updatedProducts = [...existingProducts, newProduct];
-      localStorage.setItem('sellerProducts', JSON.stringify(updatedProducts));
+      // Save to database via API
+      const response = await fetch('/api/seller-products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProduct)
+      });
 
-      // Show success message
-      alert('Produk berhasil ditambahkan!');
-      
-      // Reset form
-      setFormData(initialFormData);
-      setImagePreviews([]);
-      
-      // Redirect to seller products
-      router.push('/seller/products');
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Product saved successfully:', result);
+        
+        // Show success message
+        setShowSuccess(true);
+        
+        // Reset form after 2 seconds
+        setTimeout(() => {
+          setFormData(initialFormData);
+          setImagePreviews([]);
+          setShowSuccess(false);
+          router.push('/seller/products');
+        }, 2000);
+      } else {
+        throw new Error('Failed to save product');
+      }
       
     } catch (error) {
       console.error('Error saving product:', error);
-      alert('Terjadi kesalahan saat menyimpan produk');
+      alert('Error saving product. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -218,356 +328,537 @@ export default function SellerAddProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Top Bar */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <Link 
                 href="/seller/products"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Kembali
+                Back to Products
               </Link>
-              <h1 className="ml-4 text-xl font-semibold text-gray-900">
-                Tambah Produk Baru
-              </h1>
+              <div className="ml-8">
+                <h1 className="text-xl font-semibold text-gray-900">Add New Product</h1>
+                <p className="text-sm text-gray-500">Add a new product to your store catalog</p>
+              </div>
             </div>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              <Save className="h-4 w-4" />
-              {isSubmitting ? 'Menyimpan...' : 'Simpan Produk'}
-            </button>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/seller/products"
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </Link>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save Product
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Informasi Dasar</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama Produk *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.title ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Masukkan nama produk"
-                />
-                {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kategori *
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.category ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                >
-                  <option value="">Pilih Kategori</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <p className="mt-1 text-sm text-red-600">{errors.category}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Harga (Rp) *
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.price ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                />
-                {errors.price && (
-                  <p className="mt-1 text-sm text-red-600">{errors.price}</p>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Deskripsi *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={4}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.description ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Deskripsi produk Anda"
-                />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
-                )}
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="featured"
-                  id="featured"
-                  checked={formData.featured}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                <label htmlFor="featured" className="text-sm text-gray-700">
-                  Tampilkan sebagai produk unggulan
-                </label>
-              </div>
+      {/* Success Message */}
+      {showSuccess && (
+        <div className="fixed top-4 right-4 z-50 animate-pulse">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+            <Check className="h-5 w-5 text-green-600" />
+            <div>
+              <h3 className="text-sm font-medium text-green-900">Product Added Successfully!</h3>
+              <p className="text-sm text-green-700">Your product has been saved and is now pending approval.</p>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Product Images */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Gambar Produk</h2>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Gambar *
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label
-                  htmlFor="image-upload"
-                  className="cursor-pointer flex flex-col items-center"
-                >
-                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-600">
-                    Klik untuk upload atau drag and drop
-                  </span>
-                  <span className="text-xs text-gray-500 mt-1">
-                    PNG, JPG, GIF (Max. 5MB per file)
-                  </span>
-                </label>
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="w-64 bg-white border-r border-gray-200 min-h-screen p-6">
+          <nav className="space-y-2">
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 bg-blue-50 border-l-4 border-blue-600 rounded-r-lg">
+              <Package className="h-4 w-4" />
+              <span className="text-sm font-medium">Basic Info</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
+              <DollarSign className="h-4 w-4" />
+              <span className="text-sm font-medium">Pricing</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
+              <ImageIcon className="h-4 w-4" />
+              <span className="text-sm font-medium">Media</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
+              <Palette className="h-4 w-4" />
+              <span className="text-sm font-medium">Variants</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
+              <Settings className="h-4 w-4" />
+              <span className="text-sm font-medium">Settings</span>
+            </button>
+          </nav>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8">
+          <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
+            {/* Basic Information */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <Package className="h-5 w-5 text-blue-600" />
+                <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
               </div>
-              {errors.images && (
-                <p className="mt-2 text-sm text-red-600">{errors.images}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Product Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors.title ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter product name"
+                  />
+                  {errors.title && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.title}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Slug
+                  </label>
+                  <input
+                    type="text"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
+                    placeholder="Auto-generated from product name"
+                    readOnly
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category *
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors.category ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.category && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.category}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Brand
+                  </label>
+                  <input
+                    type="text"
+                    name="brand"
+                    value={formData.brand}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Enter brand name"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description *
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows={4}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none ${
+                      errors.description ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Describe your product in detail..."
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing & Stock */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <DollarSign className="h-5 w-5 text-green-600" />
+                <h2 className="text-lg font-semibold text-gray-900">Pricing & Stock</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Price (Rp) *
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors.price ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                  />
+                  {errors.price && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.price}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount Price (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    name="discount_price"
+                    value={formData.discount_price}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Optional"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Stock Quantity
+                  </label>
+                  <input
+                    type="number"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="0"
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SKU
+                  </label>
+                  <input
+                    type="text"
+                    name="sku"
+                    value={formData.sku}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
+                    placeholder="Auto-generated"
+                    readOnly
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Product Images */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <ImageIcon className="h-5 w-5 text-purple-600" />
+                <h2 className="text-lg font-semibold text-gray-900">Product Images</h2>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Images *
+                </label>
+                <div
+                  className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                    isDragging 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    <Upload className="h-12 w-12 text-gray-400 mb-4" />
+                    <span className="text-lg font-medium text-gray-700 mb-2">
+                      Click to upload or drag and drop
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      PNG, JPG, GIF up to 5MB each
+                    </span>
+                  </label>
+                </div>
+                {errors.images && (
+                  <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.images}
+                  </p>
+                )}
+              </div>
+
+              {imagePreviews.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Image Previews</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
-            {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-gray-200"
+            {/* Product Variants */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <Palette className="h-5 w-5 text-orange-600" />
+                <h2 className="text-lg font-semibold text-gray-900">Product Variants</h2>
+              </div>
+
+              {/* Sizes */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-md font-medium text-gray-800">Sizes</h3>
+                  <button
+                    type="button"
+                    onClick={() => addVariant('sizes')}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Size
+                  </button>
+                </div>
+                
+                {formData.sizes.map((size, index) => (
+                  <div key={size.id} className="flex gap-3 mb-3">
+                    <input
+                      type="text"
+                      placeholder="Size name (e.g., M, L, XL)"
+                      value={size.name}
+                      onChange={(e) => updateVariant('sizes', index, 'name', e.target.value)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Price adjustment"
+                      value={size.price || 0}
+                      onChange={(e) => updateVariant('sizes', index, 'price', parseFloat(e.target.value) || 0)}
+                      className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <button
                       type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeVariant('sizes', index)}
+                      className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
+                
+                {formData.sizes.length === 0 && (
+                  <p className="text-sm text-gray-500 mb-3">No sizes added yet</p>
+                )}
+              </div>
+
+              {/* Colors */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-md font-medium text-gray-800">Colors</h3>
+                  <button
+                    type="button"
+                    onClick={() => addVariant('colors')}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Color
+                  </button>
+                </div>
+                
+                {formData.colors.map((color, index) => (
+                  <div key={color.id} className="flex gap-3 mb-3">
+                    <input
+                      type="text"
+                      placeholder="Color name (e.g., Red, Blue)"
+                      value={color.name}
+                      onChange={(e) => updateVariant('colors', index, 'name', e.target.value)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Color code (e.g., #FF0000)"
+                      value={color.value}
+                      onChange={(e) => updateVariant('colors', index, 'value', e.target.value)}
+                      className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeVariant('colors', index)}
+                      className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                
+                {formData.colors.length === 0 && (
+                  <p className="text-sm text-gray-500 mb-3">No colors added yet</p>
+                )}
+              </div>
+            </div>
+
+            {/* Status Settings */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <Settings className="h-5 w-5 text-gray-600" />
+                <h2 className="text-lg font-semibold text-gray-900">Status Settings</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div>
+                    <label className="text-sm font-medium text-gray-900">Product Status</label>
+                    <p className="text-sm text-gray-500">Choose whether to publish or save as draft</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, status: 'draft' }))}
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        formData.status === 'draft'
+                          ? 'bg-gray-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <EyeOff className="h-4 w-4 inline mr-1" />
+                      Draft
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, status: 'active' }))}
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        formData.status === 'active'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Eye className="h-4 w-4 inline mr-1" />
+                      Active
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div>
+                    <label className="text-sm font-medium text-gray-900">Featured Product</label>
+                    <p className="text-sm text-gray-500">Display this product on the homepage</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, featured: !prev.featured }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      formData.featured ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        formData.featured ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Error Summary */}
+            {Object.keys(errors).length > 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div className="flex items-center mb-2">
+                  <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+                  <h3 className="text-lg font-medium text-red-900">Please fix the following errors:</h3>
+                </div>
+                <ul className="list-disc list-inside space-y-1 text-sm text-red-800">
+                  {Object.values(errors).map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
               </div>
             )}
-          </div>
-
-          {/* Product Variants */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Variasi Produk</h2>
-            </div>
-
-            {/* Sizes */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-md font-medium text-gray-800">Ukuran</h3>
-                <button
-                  type="button"
-                  onClick={() => addVariant('sizes')}
-                  className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
-                >
-                  <Plus className="h-3 w-3" />
-                  Tambah Ukuran
-                </button>
-              </div>
-              
-              {formData.sizes.map((size, index) => (
-                <div key={size.id} className="flex gap-3 mb-3">
-                  <input
-                    type="text"
-                    placeholder="Nama ukuran"
-                    value={size.name}
-                    onChange={(e) => updateVariant('sizes', index, 'name', e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Harga tambahan"
-                    value={size.price || 0}
-                    onChange={(e) => updateVariant('sizes', index, 'price', parseFloat(e.target.value) || 0)}
-                    className="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeVariant('sizes', index)}
-                    className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              
-              {formData.sizes.length === 0 && (
-                <p className="text-sm text-gray-500 mb-3">Belum ada ukuran ditambahkan</p>
-              )}
-            </div>
-
-            {/* Colors */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-md font-medium text-gray-800">Warna</h3>
-                <button
-                  type="button"
-                  onClick={() => addVariant('colors')}
-                  className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
-                >
-                  <Plus className="h-3 w-3" />
-                  Tambah Warna
-                </button>
-              </div>
-              
-              {formData.colors.map((color, index) => (
-                <div key={color.id} className="flex gap-3 mb-3">
-                  <input
-                    type="text"
-                    placeholder="Nama warna"
-                    value={color.name}
-                    onChange={(e) => updateVariant('colors', index, 'name', e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Kode warna"
-                    value={color.value}
-                    onChange={(e) => updateVariant('colors', index, 'value', e.target.value)}
-                    className="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeVariant('colors', index)}
-                    className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              
-              {formData.colors.length === 0 && (
-                <p className="text-sm text-gray-500 mb-3">Belum ada warna ditambahkan</p>
-              )}
-            </div>
-          </div>
-
-          {/* Specifications */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Spesifikasi Produk</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Material
-                </label>
-                <input
-                  type="text"
-                  name="material"
-                  value={formData.material}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Contoh: Cotton, Polyester, etc."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Perawatan
-                </label>
-                <input
-                  type="text"
-                  name="care"
-                  value={formData.care}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Contoh: Machine wash, Tumble dry"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Error Summary */}
-          {Object.keys(errors).length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center mb-2">
-                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-                <h3 className="text-lg font-medium text-red-900">Mohon perbaiki kesalahan berikut:</h3>
-              </div>
-              <ul className="list-disc list-inside space-y-1 text-sm text-red-800">
-                {Object.values(errors).map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save className="h-4 w-4" />
-              {isSubmitting ? 'Menyimpan...' : 'Simpan Produk'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
