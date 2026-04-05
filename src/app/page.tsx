@@ -2,7 +2,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import HeroSection from '@/components/sections/HeroSection';
 import ProductCategories from '@/components/sections/ProductCategories';
 import PersonalizedRecommendations from '@/components/sections/PersonalizedRecommendations';
-import AdvancedRecommendations from '@/components/sections/AdvancedRecommendations';
+import AIRecommendations from '@/components/home/AIRecommendations';
 import FlashSales from '@/components/sections/FlashSales';
 import BundleDeals from '@/components/sections/BundleDeals';
 import FeaturedProducts from '@/components/sections/FeaturedProducts';
@@ -84,8 +84,8 @@ export default function Home() {
         {/* Personalized Recommendations */}
         <PersonalizedRecommendations />
 
-        {/* Advanced Recommendations */}
-        <AdvancedRecommendations />
+        {/* AI Recommendations */}
+        <AIRecommendations />
 
         {/* Flash Sales */}
         <FlashSales />

@@ -7,9 +7,9 @@ const syncService = new EnhancedSynchronizationService();
 // Enhanced Approve Product Endpoint
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const productId = params.id;
+  const { id: productId } = await params;
   
   try {
     console.log(`🚀 [API] Starting enhanced approval process for product: ${productId}`);

@@ -62,7 +62,7 @@ export async function GET(
         const backupProducts = await BackupDatabaseService.getAllBackupProducts();
         product = backupProducts.find(p => {
           const productSlug = generateSlug(p.title);
-          return productSlug === slug || p.slug === slug;
+          return productSlug === slug || (p as any).slug === slug;
         });
         if (product) {
           source = 'backup';

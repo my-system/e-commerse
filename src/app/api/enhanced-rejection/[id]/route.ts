@@ -6,9 +6,9 @@ const syncService = new EnhancedSynchronizationService();
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const productId = params.id;
+  const { id: productId } = await params;
   
   try {
     console.log(`🚫 [API] Starting enhanced rejection process for product: ${productId}`);

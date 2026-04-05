@@ -148,10 +148,6 @@ export default function ProductDetailPage() {
       }
       
       setProduct(foundProduct);
-      setIsLoading(false);
-    };
-      
-      setProduct(foundProduct);
       
       // Find related products (same category, exclude current product)
       const related = products

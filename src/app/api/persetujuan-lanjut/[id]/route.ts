@@ -7,9 +7,9 @@ const syncService = new EnhancedSynchronizationService();
 // Endpoint Persetujuan Produk Tingkat Lanjut
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const productId = params.id;
+  const { id: productId } = await params;
   
   try {
     console.log(`🚀 [API] Memulai proses persetujuan tingkat lanjut untuk produk: ${productId}`);

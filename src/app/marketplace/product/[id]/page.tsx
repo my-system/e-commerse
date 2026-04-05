@@ -455,7 +455,7 @@ export default function ProductDetailPage() {
             {Object.entries(product.specifications).map(([key, value]) => (
               <div key={key} className="flex justify-between py-2 border-b border-gray-100">
                 <span className="font-medium text-gray-700">{key}</span>
-                <span className="text-gray-600">{value}</span>
+                <span className="text-gray-600">{String(value)}</span>
               </div>
             ))}
           </div>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { Plus, Search, Filter, Edit, Trash2, Eye, Check, X, Clock, AlertCircle, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Product {
   id: string;
@@ -44,6 +45,98 @@ interface ApiResponse {
   products?: Product[];
   message?: string;
   error?: string;
+}
+
+// Animated Counter Component for Stats
+function AnimatedCounter({ value, prefix = '', suffix = '', duration = 1.5 }: { 
+  value: number; 
+  prefix?: string; 
+  suffix?: string; 
+  duration?: number;
+}) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTime: number;
+    let startValue = 0;
+    const endValue = value;
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
+      
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const currentValue = Math.floor(startValue + (endValue - startValue) * easeOutQuart);
+      
+      setDisplayValue(currentValue);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [value, duration]);
+
+  return (
+    <span>
+      {prefix}{displayValue.toLocaleString('id-ID')}{suffix}
+    </span>
+  );
+}
+
+// Animated Product Card Component
+function AnimatedProductCard({ children, index }: { children: React.ReactNode; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ 
+        duration: 0.6, 
+        delay: index * 0.1,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
+      whileHover={{ 
+        y: -5, 
+        scale: 1.02,
+        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)"
+      }}
+      className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Tab Animation Component
+function AnimatedTab({ isActive, children, onClick }: { 
+  isActive: boolean; 
+  children: React.ReactNode; 
+  onClick: () => void;
+}) {
+  return (
+    <motion.button
+      onClick={onClick}
+      className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+        isActive
+          ? 'border-blue-500 text-blue-600'
+          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+      }`}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      {children}
+      {isActive && (
+        <motion.div
+          layoutId="activeTab"
+          className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500"
+          initial={false}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        />
+      )}
+    </motion.button>
+  );
 }
 
 export default function AdminProducts() {
@@ -366,112 +459,201 @@ export default function AdminProducts() {
         
         <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
           {/* Header with Tabs */}
-          <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10"
+          >
             {/* Tabs */}
-            <div className="flex space-x-8 border-b border-gray-200 mb-4">
-              <button
+            <div className="flex space-x-8 border-b border-gray-200 mb-4 relative">
+              <AnimatedTab 
+                isActive={activeTab === 'pending'} 
                 onClick={() => setActiveTab('pending')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'pending'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
               >
                 Pending Products
-              </button>
-              <button
+              </AnimatedTab>
+              <AnimatedTab 
+                isActive={activeTab === 'marketplace'} 
                 onClick={() => setActiveTab('marketplace')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'marketplace'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
               >
                 Marketplace Products
-              </button>
+              </AnimatedTab>
             </div>
             
-            <div className="flex items-center justify-between">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex items-center justify-between"
+            >
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <motion.h1 
+                  key={activeTab}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="text-2xl font-bold text-gray-900"
+                >
                   {activeTab === 'pending' ? 'Produk Menunggu Persetujuan' : 'Marketplace Products'}
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
+                </motion.h1>
+                <motion.p 
+                  key={`desc-${activeTab}`}
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
+                  className="text-sm text-gray-500 mt-1"
+                >
                   {activeTab === 'pending' 
                     ? 'Kelola produk yang diunggah oleh seller'
                     : 'Kelola produk yang sudah disetujui di marketplace'
                   }
                   {lastUpdated && (
-                    <span className="ml-2">
+                    <motion.span 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.4, delay: 0.2 }}
+                      className="ml-2"
+                    >
                       • Terakhir update: {formatDate(lastUpdated.toISOString())}
-                    </span>
+                    </motion.span>
                   )}
-                </p>
+                </motion.p>
               </div>
-              <div className="flex items-center gap-3">
-                <button
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="flex items-center gap-3"
+              >
+                <motion.button
                   onClick={handleRefresh}
                   disabled={loading}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
                 >
-                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  <span>Refresh</span>
-                </button>
-                {activeTab === 'pending' && (
-                  <Link
-                    href="/admin/products/create"
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  <motion.div
+                    animate={loading ? { rotate: 360 } : {}}
+                    transition={{ duration: 1, repeat: loading ? Infinity : 0, ease: "linear" }}
                   >
-                    <Plus className="w-4 h-4" />
-                    <span>Tambah Produk</span>
-                  </Link>
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                  </motion.div>
+                  <span>Refresh</span>
+                </motion.button>
+                {activeTab === 'pending' && (
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link
+                      href="/admin/products/create"
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <motion.div
+                        whileHover={{ rotate: 90 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </motion.div>
+                      <span>Tambah Produk</span>
+                    </Link>
+                  </motion.div>
                 )}
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
 
           {/* Error Display */}
           {error && (
-            <div className="mx-6 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-600" />
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mx-6 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+            >
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+                className="flex items-center gap-2"
+              >
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                </motion.div>
                 <span className="text-red-800 font-medium">Error:</span>
                 <span className="text-red-700">{error}</span>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           )}
 
           {/* Filters */}
-          <div className="p-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-              <div className="flex flex-col lg:flex-row gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="p-6"
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6"
+            >
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 1.0 }}
+                className="flex flex-col lg:flex-row gap-4"
+              >
                 <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
+                    <motion.div
+                      animate={{ x: [0, 2, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    </motion.div>
+                    <motion.input
                       type="text"
                       placeholder="Cari produk..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
+                      whileFocus={{ scale: 1.02 }}
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-gray-400" />
-                  <select
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 1.2 }}
+                  className="flex items-center gap-2"
+                >
+                  <motion.div
+                    animate={{ rotate: [0, 180, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Filter className="w-4 h-4 text-gray-400" />
+                  </motion.div>
+                  <motion.select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
+                    whileHover={{ scale: 1.05 }}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">Semua Status</option>
                     <option value="pending">Menunggu Persetujuan</option>
                     <option value="approved">Disetujui</option>
                     <option value="rejected">Ditolak</option>
-                  </select>
-                  <select
+                  </motion.select>
+                  <motion.select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
+                    whileHover={{ scale: 1.05 }}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">Semua Kategori</option>
@@ -481,120 +663,254 @@ export default function AdminProducts() {
                     <option value="beauty">Beauty</option>
                     <option value="sports">Sports</option>
                     <option value="books">Books</option>
-                  </select>
-                </div>
-              </div>
+                  </motion.select>
+                </motion.div>
+              </motion.div>
               
               {/* Stats */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 1.4 }}
+                className="mt-4 pt-4 border-t border-gray-200"
+              >
                 <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-4">
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 1.5 }}
+                    className="flex items-center gap-4"
+                  >
                     <span className="text-gray-600">
-                      Total: <span className="font-medium text-gray-900">{products.length}</span> produk
+                      Total: <span className="font-medium text-gray-900"><AnimatedCounter value={products.length} /></span> produk
                     </span>
                     <span className="text-gray-600">
-                      Ditampilkan: <span className="font-medium text-gray-900">{filteredProducts.length}</span> produk
+                      Ditampilkan: <span className="font-medium text-gray-900"><AnimatedCounter value={filteredProducts.length} /></span> produk
                     </span>
-                  </div>
+                  </motion.div>
                   {products.length > 0 && (
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-yellow-100 border border-yellow-200 rounded-full"></div>
-                        Pending: {products.filter(p => p.status === 'pending').length}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-green-100 border border-green-200 rounded-full"></div>
-                        Approved: {products.filter(p => p.status === 'approved').length}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-red-100 border border-red-200 rounded-full"></div>
-                        Rejected: {products.filter(p => p.status === 'rejected').length}
-                      </span>
-                    </div>
+                    <motion.div 
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 1.6 }}
+                      className="flex items-center gap-4 text-sm"
+                    >
+                      <motion.span 
+                        whileHover={{ scale: 1.1 }}
+                        className="flex items-center gap-1"
+                      >
+                        <motion.div 
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                          className="w-3 h-3 bg-yellow-100 border border-yellow-200 rounded-full"
+                        />
+                        Pending: <AnimatedCounter value={products.filter(p => p.status === 'pending').length} />
+                      </motion.span>
+                      <motion.span 
+                        whileHover={{ scale: 1.1 }}
+                        className="flex items-center gap-1"
+                      >
+                        <motion.div 
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                          className="w-3 h-3 bg-green-100 border border-green-200 rounded-full"
+                        />
+                        Approved: <AnimatedCounter value={products.filter(p => p.status === 'approved').length} />
+                      </motion.span>
+                      <motion.span 
+                        whileHover={{ scale: 1.1 }}
+                        className="flex items-center gap-1"
+                      >
+                        <motion.div 
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                          className="w-3 h-3 bg-red-100 border border-red-200 rounded-full"
+                        />
+                        Rejected: <AnimatedCounter value={products.filter(p => p.status === 'rejected').length} />
+                      </motion.span>
+                    </motion.div>
                   )}
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* Products Grid */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.8 }}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+            >
               {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
-                  <span className="ml-3 text-gray-600">Memuat produk...</span>
-                </div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center py-12"
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  >
+                    <RefreshCw className="w-8 h-8 text-blue-600" />
+                  </motion.div>
+                  <motion.span 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
+                    className="ml-3 text-gray-600"
+                  >
+                    Memuat produk...
+                  </motion.span>
+                </motion.div>
               ) : filteredProducts.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6 }}
+                  className="text-center py-12"
+                >
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                  >
                     <Eye className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  </motion.div>
+                  <motion.h3 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="text-lg font-medium text-gray-900 mb-2"
+                  >
                     {searchTerm || selectedCategory !== 'all' || selectedStatus !== 'all' 
                       ? 'Tidak ada produk yang cocok dengan filter' 
                       : 'Tidak ada produk menunggu persetujuan'}
-                  </h3>
-                  <p className="text-gray-500 mb-4">
+                  </motion.h3>
+                  <motion.p 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
+                    className="text-gray-500 mb-4"
+                  >
                     {searchTerm || selectedCategory !== 'all' || selectedStatus !== 'all' 
                       ? 'Coba ubah filter atau kata kunci pencarian' 
                       : 'Semua produk telah diproses atau belum ada produk baru'}
-                  </p>
+                  </motion.p>
                   {!searchTerm && selectedCategory === 'all' && selectedStatus === 'all' && (
-                    <Link
-                      href="/admin/products/create"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <Plus className="w-4 h-4" />
-                      Tambah Produk
-                    </Link>
+                      <Link
+                        href="/admin/products/create"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <motion.div
+                          whileHover={{ rotate: 90 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </motion.div>
+                        Tambah Produk
+                      </Link>
+                    </motion.div>
                   )}
-                </div>
+                </motion.div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredProducts.map((product) => {
+                  {filteredProducts.map((product, index) => {
                     const images = parseImages(product.images);
                     const isLoading = actionLoading === product.id;
                     
                     return (
-                      <div key={product.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                      <AnimatedProductCard key={product.id} index={index}>
                         {/* Product Image */}
                         <div className="relative h-48 bg-gray-100">
                           {images.length > 0 ? (
-                            <img
+                            <motion.img
                               src={images[0]}
                               alt={product.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.src = '/placeholder.jpg';
                               }}
+                              whileHover={{ scale: 1.05 }}
+                              transition={{ duration: 0.3 }}
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <Eye className="w-12 h-12 text-gray-400" />
+                              <motion.div
+                                animate={{ rotate: [0, 360] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                              >
+                                <Eye className="w-12 h-12 text-gray-400" />
+                              </motion.div>
                             </div>
                           )}
                           
                           {/* Status Badge */}
-                          <div className="absolute top-2 left-2">
+                          <motion.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
+                            className="absolute top-2 left-2"
+                          >
                             <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(product.status)}`}>
-                              {getStatusIcon(product.status)}
+                              <motion.div
+                                animate={{ rotate: [0, 5, 0] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                              >
+                                {getStatusIcon(product.status)}
+                              </motion.div>
                               {getStatusText(product.status)}
                             </span>
-                          </div>
+                          </motion.div>
                           
                           {/* Featured Badge */}
                           {product.featured && (
-                            <div className="absolute top-2 right-2">
-                              <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">Featured</span>
-                            </div>
+                            <motion.div 
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                              className="absolute top-2 right-2"
+                            >
+                              <motion.span 
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                className="bg-blue-500 text-white text-xs px-2 py-1 rounded"
+                              >
+                                Featured
+                              </motion.span>
+                            </motion.div>
                           )}
                         </div>
 
                         {/* Product Info */}
                         <div className="p-4">
-                          <h3 className="font-medium text-gray-900 truncate mb-1">{product.title}</h3>
-                          <p className="text-sm text-gray-500 mb-2">{product.category}</p>
+                          <motion.h3 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
+                            className="font-medium text-gray-900 truncate mb-1"
+                          >
+                            {product.title}
+                          </motion.h3>
+                          <motion.p 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
+                            className="text-sm text-gray-500 mb-2"
+                          >
+                            {product.category}
+                          </motion.p>
                           
-                          <div className="flex items-center justify-between mb-2">
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
+                            className="flex items-center justify-between mb-2"
+                          >
                             <div>
                               <p className="text-lg font-bold text-blue-600">
                                 Rp {product.price.toLocaleString('id-ID')}
@@ -607,79 +923,138 @@ export default function AdminProducts() {
                             </div>
                             <div className="text-right">
                               <div className="flex items-center gap-1">
-                                <span className="text-yellow-400 text-sm">★</span>
+                                <motion.span
+                                  animate={{ rotate: [0, 360] }}
+                                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                                  className="text-yellow-400 text-sm"
+                                >
+                                  ★
+                                </motion.span>
                                 <span className="text-sm text-gray-600">{product.rating ?? 0}</span>
                               </div>
                               <p className="text-xs text-gray-500">{product.reviews ?? 0} ulasan</p>
                             </div>
-                          </div>
+                          </motion.div>
 
                           {/* Additional Info */}
-                          <div className="text-xs text-gray-500 mb-3">
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}
+                            className="text-xs text-gray-500 mb-3"
+                          >
                             <p>Seller: {product.sellerId}</p>
                             <p>Ditambah: {formatDate(product.createdAt)}</p>
-                          </div>
+                          </motion.div>
 
                           {/* Actions */}
-                          <div className="flex flex-wrap gap-2">
-                            <button
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
+                            className="flex flex-wrap gap-2"
+                          >
+                            <motion.button
                               onClick={() => handleViewProduct(product.id)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-sm"
                             >
-                              <Eye className="w-3 h-3" />
+                              <motion.div
+                                whileHover={{ scale: 1.2 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <Eye className="w-3 h-3" />
+                              </motion.div>
                               Lihat
-                            </button>
+                            </motion.button>
                             
                             {activeTab === 'pending' && product.status === 'pending' && (
                               <>
-                                <button 
+                                <motion.button 
                                   onClick={() => handleApprove(product.id)}
                                   disabled={isLoading}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
                                   className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   {isLoading ? (
-                                    <RefreshCw className="w-3 h-3 animate-spin" />
+                                    <motion.div
+                                      animate={{ rotate: 360 }}
+                                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    >
+                                      <RefreshCw className="w-3 h-3" />
+                                    </motion.div>
                                   ) : (
-                                    <Check className="w-3 h-3" />
+                                    <motion.div
+                                      whileHover={{ scale: 1.2, rotate: 15 }}
+                                      transition={{ duration: 0.2 }}
+                                    >
+                                      <Check className="w-3 h-3" />
+                                    </motion.div>
                                   )}
                                   Approve
-                                </button>
-                                <button 
+                                </motion.button>
+                                <motion.button 
                                   onClick={() => handleReject(product.id)}
                                   disabled={isLoading}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
                                   className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   {isLoading ? (
-                                    <RefreshCw className="w-3 h-3 animate-spin" />
+                                    <motion.div
+                                      animate={{ rotate: 360 }}
+                                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    >
+                                      <RefreshCw className="w-3 h-3" />
+                                    </motion.div>
                                   ) : (
-                                    <X className="w-3 h-3" />
+                                    <motion.div
+                                      whileHover={{ scale: 1.2, rotate: -15 }}
+                                      transition={{ duration: 0.2 }}
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </motion.div>
                                   )}
                                   Reject
-                                </button>
+                                </motion.button>
                               </>
                             )}
                             
-                            <button 
+                            <motion.button 
                               onClick={() => handleDelete(product.id)}
                               disabled={isLoading}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               title={activeTab === 'marketplace' ? 'Hapus dari marketplace' : 'Hapus produk'}
                             >
                               {isLoading ? (
-                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                <motion.div
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                >
+                                  <RefreshCw className="w-4 h-4" />
+                                </motion.div>
                               ) : (
-                                <Trash2 className="w-4 h-4" />
+                                <motion.div
+                                  whileHover={{ scale: 1.2, rotate: 90 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </motion.div>
                               )}
-                            </button>
-                          </div>
+                            </motion.button>
+                          </motion.div>
                         </div>
-                      </div>
+                      </AnimatedProductCard>
                     );
                   })}
                 </div>
               )}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </div>

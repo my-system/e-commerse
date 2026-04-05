@@ -230,15 +230,15 @@ export default function ProductDetailPage() {
           {/* Product Gallery */}
           <ProductGallery 
             images={product.images} 
-            title={product.title}
+            productName={product.title}
           />
           
           {/* Product Info */}
           <ProductInfo
             product={product}
             onAddToCart={handleAddToCart}
-            onToggleWishlist={toggleWishlist}
-            isInWishlist={wishlist.includes(product.id)}
+            onToggleWishlist={() => toggleWishlist(product.id)}
+            isWishlisted={wishlist.includes(product.id)}
           />
         </div>
         
@@ -251,8 +251,8 @@ export default function ProductDetailPage() {
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
-                  onToggleWishlist={toggleWishlist}
-                  isInWishlist={wishlist.includes(relatedProduct.id)}
+                  onToggleWishlist={() => toggleWishlist(relatedProduct.id)}
+                  isWishlisted={wishlist.includes(relatedProduct.id)}
                 />
               ))}
             </div>

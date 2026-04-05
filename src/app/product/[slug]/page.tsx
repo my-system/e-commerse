@@ -134,10 +134,6 @@ export default function ProductDetailPage() {
       price: product.discount_price || product.price,
       image: product.images[0],
       quantity: selectedVariant.quantity,
-      variant: {
-        size: selectedVariant.size,
-        color: selectedVariant.color,
-      },
       slug: product.slug
     };
     
@@ -564,9 +560,9 @@ export default function ProductDetailPage() {
               {relatedProducts.map((relatedProduct) => (
                 <ProductCard
                   key={relatedProduct.id}
-                  product={relatedProduct}
-                  onQuickView={handleQuickView}
-                  onAddToCart={handleRelatedAddToCart}
+                  product={relatedProduct as any}
+                  onQuickView={(product: any) => handleQuickView(product)}
+                  onAddToCart={(product: any) => handleRelatedAddToCart(product)}
                   onToggleWishlist={() => {}}
                   isWishlisted={false}
                 />
