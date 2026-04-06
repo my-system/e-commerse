@@ -1037,6 +1037,139 @@ export default function HomeDemo() {
           border-radius: 16px;
         }
 
+        .database-card::before {
+          content: "";
+          position: absolute;
+          width: 300%;
+          height: 300%;
+          top: -100%;
+          left: -100%;
+          background: conic-gradient(
+            from 0deg,
+            #fbbf24,
+            #f59e0b,
+            #fbbf24 25%,
+            transparent 25%,
+            transparent 50%,
+            #fbbf24 50%,
+            #f59e0b 75%,
+            #fbbf24 100%
+          );
+          animation: spin 8s linear infinite;
+          border-radius: 16px;
+          z-index: 0;
+          opacity: 0.3;
+          transition: opacity 0.3s ease;
+        }
+
+        .database-card:hover::before {
+          opacity: 0.6;
+        }
+
+        .database-card::after {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: #1f2937;
+          border-radius: 14px;
+          z-index: 1;
+        }
+
+        .database-card-content {
+          position: relative;
+          z-index: 10;
+          background: transparent;
+          border-radius: 14px;
+        }
+
+        .database-card-blue {
+          position: relative;
+          overflow: hidden;
+          border-radius: 16px;
+        }
+
+        .database-card-blue::before {
+          content: "";
+          position: absolute;
+          width: 300%;
+          height: 300%;
+          top: -100%;
+          left: -100%;
+          background: conic-gradient(
+            from 0deg,
+            #3b82f6,
+            #2563eb,
+            #3b82f6 25%,
+            transparent 25%,
+            transparent 50%,
+            #3b82f6 50%,
+            #2563eb 75%,
+            #3b82f6 100%
+          );
+          animation: spin 6s linear infinite;
+          border-radius: 16px;
+          z-index: 0;
+          opacity: 0.3;
+          transition: opacity 0.3s ease;
+        }
+
+        .database-card-blue:hover::before {
+          opacity: 0.6;
+        }
+
+        .database-card-blue::after {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: #1f2937;
+          border-radius: 14px;
+          z-index: 1;
+        }
+
+        .database-card-purple {
+          position: relative;
+          overflow: hidden;
+          border-radius: 16px;
+        }
+
+        .database-card-purple::before {
+          content: "";
+          position: absolute;
+          width: 300%;
+          height: 300%;
+          top: -100%;
+          left: -100%;
+          background: conic-gradient(
+            from 0deg,
+            #a855f7,
+            #9333ea,
+            #a855f7 25%,
+            transparent 25%,
+            transparent 50%,
+            #a855f7 50%,
+            #9333ea 75%,
+            #a855f7 100%
+          );
+          animation: spin 7s linear infinite;
+          border-radius: 16px;
+          z-index: 0;
+          opacity: 0.3;
+          transition: opacity 0.3s ease;
+        }
+
+        .database-card-purple:hover::before {
+          opacity: 0.6;
+        }
+
+        .database-card-purple::after {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: #1f2937;
+          border-radius: 14px;
+          z-index: 1;
+        }
+
         .analytics-preview-card {
           position: relative;
           overflow: hidden;
