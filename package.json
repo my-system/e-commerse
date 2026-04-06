@@ -17,17 +17,17 @@
     "db:reset": "prisma migrate reset --force",
     "db:setup": "node scripts/auto-setup-database.js",
     "db:health": "node -e \"const { prisma } = require('./src/lib/auto-prisma-client'); prisma.healthCheck().then(healthy => console.log(healthy ? '✅ Database healthy' : '❌ Database unhealthy'));\"",
-    "postinstall": "npm run db:setup"
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^7.6.0",
+    "@prisma/client": "^5.19.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0",
     "next": "16.2.1",
     "node-fetch": "^3.3.2",
     "pg": "^8.20.0",
     "postgres": "^3.4.8",
-    "prisma": "^7.6.0",
+    "prisma": "^5.19.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.1"

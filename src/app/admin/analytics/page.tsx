@@ -33,6 +33,23 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  LineChart as ReLineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart as RePieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 interface AdminAnalyticsData {
   overview: {
@@ -108,6 +125,9 @@ export default function AdminAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
   const [selectedMetric, setSelectedMetric] = useState<'revenue' | 'orders' | 'users'>('revenue');
+
+  // Colors for charts
+  const COLORS = ['#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#84cc16'];
 
   useEffect(() => {
     if (!isLoading) {
@@ -373,39 +393,39 @@ export default function AdminAnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
       </div>
     );
   }
 
   if (!analyticsData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="h-8 w-8 text-red-600 mx-auto mb-4" />
-          <p className="text-red-800">{error || 'Data tidak tersedia'}</p>
+          <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-4" />
+          <p className="text-red-400">{error || 'Data tidak tersedia'}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-950 text-white">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-slate-900/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <BarChart3 className="h-6 w-6 text-blue-600 mr-3" />
-              <h1 className="text-xl font-semibold text-gray-900">Admin Analytics</h1>
+              <BarChart3 className="h-6 w-6 text-blue-400 mr-3" />
+              <h1 className="text-xl font-semibold text-white font-['Inter']">Admin Analytics</h1>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value as any)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="px-3 py-2 bg-slate-800 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-white font-['Inter']"
                 >
                   <option value="7d">7 Hari</option>
                   <option value="30d">30 Hari</option>
@@ -415,14 +435,14 @@ export default function AdminAnalyticsPage() {
               </div>
               <button
                 onClick={exportAnalytics}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 font-['Inter']"
               >
                 <Download className="h-4 w-4" />
                 Export
               </button>
               <button
                 onClick={fetchAnalyticsData}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 font-['Inter']"
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
@@ -435,88 +455,88 @@ export default function AdminAnalyticsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Overview Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300">
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Total Revenue</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-sm text-slate-400 truncate font-['Inter']">Total Revenue</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white mt-1 font-['Inter']">
                     {formatCompactCurrency(analyticsData.overview.totalRevenue)}
                   </p>
                   <div className="flex items-center mt-2">
                     {getGrowthIcon(analyticsData.growth.revenueGrowth)}
-                    <span className={`text-sm font-medium ml-1 ${getGrowthColor(analyticsData.growth.revenueGrowth)}`}>
+                    <span className={`text-sm font-medium ml-1 font-['Inter'] ${getGrowthColor(analyticsData.growth.revenueGrowth)}`}>
                       {analyticsData.growth.revenueGrowth}%
                     </span>
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-3">
-                  <DollarSign className="h-8 w-8 text-green-600" />
+                  <DollarSign className="h-8 w-8 text-emerald-400" />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300">
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Total Orders</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-sm text-slate-400 truncate font-['Inter']">Total Orders</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white mt-1 font-['Inter']">
                     {formatNumber(analyticsData.overview.totalOrders)}
                   </p>
                   <div className="flex items-center mt-2">
                     {getGrowthIcon(analyticsData.growth.orderGrowth)}
-                    <span className={`text-sm font-medium ml-1 ${getGrowthColor(analyticsData.growth.orderGrowth)}`}>
+                    <span className={`text-sm font-medium ml-1 font-['Inter'] ${getGrowthColor(analyticsData.growth.orderGrowth)}`}>
                       {analyticsData.growth.orderGrowth}%
                     </span>
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-3">
-                  <ShoppingCart className="h-8 w-8 text-blue-600" />
+                  <ShoppingCart className="h-8 w-8 text-blue-400" />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300">
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Total Users</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-sm text-slate-400 truncate font-['Inter']">Total Users</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white mt-1 font-['Inter']">
                     {formatNumber(analyticsData.overview.totalUsers)}
                   </p>
                   <div className="flex items-center mt-2">
                     {getGrowthIcon(analyticsData.growth.userGrowth)}
-                    <span className={`text-sm font-medium ml-1 ${getGrowthColor(analyticsData.growth.userGrowth)}`}>
+                    <span className={`text-sm font-medium ml-1 font-['Inter'] ${getGrowthColor(analyticsData.growth.userGrowth)}`}>
                       {analyticsData.growth.userGrowth}%
                     </span>
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-3">
-                  <Users className="h-8 w-8 text-purple-600" />
+                  <Users className="h-8 w-8 text-violet-400" />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300">
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">Platform Commission</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-sm text-slate-400 truncate font-['Inter']">Platform Commission</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white mt-1 font-['Inter']">
                     {formatCompactCurrency(analyticsData.overview.platformCommission)}
                   </p>
                   <div className="flex items-center mt-2">
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-slate-500 font-['Inter']">
                       {((analyticsData.overview.platformCommission / analyticsData.overview.totalRevenue) * 100).toFixed(1)}% dari revenue
                     </span>
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-3">
-                  <CreditCard className="h-8 w-8 text-orange-600" />
+                  <CreditCard className="h-8 w-8 text-orange-400" />
                 </div>
               </div>
             </div>
@@ -526,93 +546,153 @@ export default function AdminAnalyticsPage() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Monthly Revenue Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Revenue Trend</h3>
+              <h3 className="text-lg font-semibold text-white font-['Inter']">Revenue Trend</h3>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setSelectedMetric('revenue')}
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors font-['Inter'] ${
                     selectedMetric === 'revenue' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   Revenue
                 </button>
                 <button
                   onClick={() => setSelectedMetric('orders')}
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors font-['Inter'] ${
                     selectedMetric === 'orders' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   Orders
                 </button>
                 <button
                   onClick={() => setSelectedMetric('users')}
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors font-['Inter'] ${
                     selectedMetric === 'users' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   Users
                 </button>
               </div>
             </div>
-            <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-              <div className="text-center">
-                <LineChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Chart visualization placeholder</p>
-                <p className="text-sm text-gray-500 mt-2">Monthly {selectedMetric} trend</p>
-              </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={analyticsData.monthlyRevenue}>
+                  <defs>
+                    <linearGradient id="adminColorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.2} horizontal={true} vertical={false} />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="#64748b"
+                    fontSize={12}
+                    fontFamily="'Inter', sans-serif"
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="#64748b"
+                    fontSize={12}
+                    fontFamily="'Inter', sans-serif"
+                    tickFormatter={(value) => formatCompactCurrency(value)}
+                    axisLine={false}
+                  />
+                  <Tooltip 
+                    formatter={(value: any) => [formatCompactCurrency(value), selectedMetric === 'revenue' ? 'Revenue' : selectedMetric === 'orders' ? 'Orders' : 'Users']}
+                    contentStyle={{ 
+                      backgroundColor: '#0f172a', 
+                      border: '1px solid rgba(255,255,255,0.1)', 
+                      borderRadius: '12px',
+                      color: '#fff'
+                    }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey={selectedMetric} 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    fill="url(#adminColorRevenue)"
+                    dot={false}
+                    activeDot={{ r: 6, fill: '#3b82f6' }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
           {/* Order Status Distribution */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Order Status</h3>
-              <PieChart className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg font-semibold text-white font-['Inter']">Order Status</h3>
+              <PieChart className="h-5 w-5 text-slate-400" />
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  <span className="text-sm text-gray-700">Delivered</span>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <RePieChart>
+                  <Pie
+                    data={[
+                      { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981' },
+                      { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6' },
+                      { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b' },
+                      { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316' },
+                      { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444' }
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {[
+                      { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981' },
+                      { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6' },
+                      { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b' },
+                      { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316' },
+                      { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444' }
+                    ].map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: any) => [formatNumber(value), 'Orders']}
+                    contentStyle={{ 
+                      backgroundColor: '#0f172a', 
+                      border: '1px solid rgba(255,255,255,0.1)', 
+                      borderRadius: '12px',
+                      color: '#fff'
+                    }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                </RePieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 space-y-2">
+              {[
+                { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981', icon: CheckCircle },
+                { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6', icon: Truck },
+                { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b', icon: Clock },
+                { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316', icon: AlertCircle },
+                { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444', icon: XCircle }
+              ].map((status) => (
+                <div key={status.name} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <status.icon className={`h-4 w-4 mr-2`} style={{ color: status.color }} />
+                    <span className="text-sm text-slate-300 font-['Inter']">{status.name}</span>
+                  </div>
+                  <span className="text-sm font-medium text-white font-['Inter']">{formatNumber(status.value)}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{formatNumber(analyticsData.orderStatus.delivered)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Truck className="h-4 w-4 text-blue-500 mr-2" />
-                  <span className="text-sm text-gray-700">Shipped</span>
-                </div>
-                <span className="text-sm font-medium text-gray-900">{formatNumber(analyticsData.orderStatus.shipped)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 text-yellow-500 mr-2" />
-                  <span className="text-sm text-gray-700">Processing</span>
-                </div>
-                <span className="text-sm font-medium text-gray-900">{formatNumber(analyticsData.orderStatus.processing)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <AlertCircle className="h-4 w-4 text-orange-500 mr-2" />
-                  <span className="text-sm text-gray-700">Pending</span>
-                </div>
-                <span className="text-sm font-medium text-gray-900">{formatNumber(analyticsData.orderStatus.pending)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <XCircle className="h-4 w-4 text-red-500 mr-2" />
-                  <span className="text-sm text-gray-700">Cancelled</span>
-                </div>
-                <span className="text-sm font-medium text-gray-900">{formatNumber(analyticsData.orderStatus.cancelled)}</span>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -620,28 +700,28 @@ export default function AdminAnalyticsPage() {
         {/* Top Sellers & Products */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Top Sellers */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Top Sellers</h3>
-              <Store className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg font-semibold text-white font-['Inter']">Top Sellers</h3>
+              <Store className="h-5 w-5 text-slate-400" />
             </div>
             <div className="space-y-4">
               {analyticsData.topSellers.map((seller, index) => (
-                <div key={seller.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={seller.id} className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-sm font-medium text-blue-600">{index + 1}</span>
+                    <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center mr-3 border border-blue-500/30">
+                      <span className="text-sm font-medium text-blue-400 font-['Inter']">{index + 1}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{seller.name}</p>
-                      <p className="text-xs text-gray-500">{seller.products} products</p>
+                      <p className="text-sm font-medium text-white font-['Inter']">{seller.name}</p>
+                      <p className="text-xs text-slate-500 font-['Inter']">{seller.products} products</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{formatCompactCurrency(seller.revenue)}</p>
+                    <p className="text-sm font-medium text-white font-['Inter']">{formatCompactCurrency(seller.revenue)}</p>
                     <div className="flex items-center justify-end">
                       <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                      <span className="text-xs text-gray-600">{seller.rating}</span>
+                      <span className="text-xs text-slate-400 font-['Inter']">{seller.rating}</span>
                     </div>
                   </div>
                 </div>
@@ -650,28 +730,28 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Top Products */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Top Products</h3>
-              <Package className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg font-semibold text-white font-['Inter']">Top Products</h3>
+              <Package className="h-5 w-5 text-slate-400" />
             </div>
             <div className="space-y-4">
               {analyticsData.topProducts.map((product, index) => (
-                <div key={product.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={product.id} className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-sm font-medium text-green-600">{index + 1}</span>
+                    <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center mr-3 border border-emerald-500/30">
+                      <span className="text-sm font-medium text-emerald-400 font-['Inter']">{index + 1}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900 line-clamp-1">{product.title}</p>
-                      <p className="text-xs text-gray-500">{product.category}</p>
+                      <p className="text-sm font-medium text-white font-['Inter'] line-clamp-1">{product.title}</p>
+                      <p className="text-xs text-slate-500 font-['Inter']">{product.category}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{formatNumber(product.sales)} sold</p>
+                    <p className="text-sm font-medium text-white font-['Inter']">{formatNumber(product.sales)} sold</p>
                     <div className="flex items-center justify-end">
                       <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                      <span className="text-xs text-gray-600">{product.rating}</span>
+                      <span className="text-xs text-slate-400 font-['Inter']">{product.rating}</span>
                     </div>
                   </div>
                 </div>
@@ -681,35 +761,35 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Category Performance */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Category Performance</h3>
-            <ChartBar className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-white font-['Inter']">Category Performance</h3>
+            <ChartBar className="h-5 w-5 text-slate-400" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {analyticsData.categoryPerformance.map((category, index) => (
-              <div key={category.category} className="p-4 bg-gray-50 rounded-lg">
+              <div key={category.category} className="p-4 bg-slate-800/30 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-900">{category.category}</h4>
+                  <h4 className="text-sm font-medium text-white font-['Inter']">{category.category}</h4>
                   <div className="flex items-center">
                     {getGrowthIcon(category.growth)}
-                    <span className={`text-xs font-medium ml-1 ${getGrowthColor(category.growth)}`}>
+                    <span className={`text-xs font-medium ml-1 font-['Inter'] ${getGrowthColor(category.growth)}`}>
                       {category.growth}%
                     </span>
                   </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Revenue</span>
-                    <span className="font-medium text-gray-900">{formatCompactCurrency(category.revenue)}</span>
+                    <span className="text-slate-400 font-['Inter']">Revenue</span>
+                    <span className="font-medium text-white font-['Inter']">{formatCompactCurrency(category.revenue)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Orders</span>
-                    <span className="font-medium text-gray-900">{formatNumber(category.orders)}</span>
+                    <span className="text-slate-400 font-['Inter']">Orders</span>
+                    <span className="font-medium text-white font-['Inter']">{formatNumber(category.orders)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Products</span>
-                    <span className="font-medium text-gray-900">{formatNumber(category.products)}</span>
+                    <span className="text-slate-400 font-['Inter']">Products</span>
+                    <span className="font-medium text-white font-['Inter']">{formatNumber(category.products)}</span>
                   </div>
                 </div>
               </div>
@@ -719,43 +799,43 @@ export default function AdminAnalyticsPage() {
 
         {/* Additional Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Avg Order Value</p>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(analyticsData.overview.averageOrderValue)}</p>
+                <p className="text-sm text-slate-400 font-['Inter']">Avg Order Value</p>
+                <p className="text-xl font-bold text-white font-['Inter']">{formatCurrency(analyticsData.overview.averageOrderValue)}</p>
               </div>
-              <ShoppingCart className="h-8 w-8 text-blue-600" />
+              <ShoppingCart className="h-8 w-8 text-blue-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Conversion Rate</p>
-                <p className="text-xl font-bold text-gray-900">{analyticsData.overview.conversionRate}%</p>
+                <p className="text-sm text-slate-400 font-['Inter']">Conversion Rate</p>
+                <p className="text-xl font-bold text-white font-['Inter']">{analyticsData.overview.conversionRate}%</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-green-600" />
+              <TrendingUp className="h-8 w-8 text-emerald-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Sellers</p>
-                <p className="text-xl font-bold text-gray-900">{formatNumber(analyticsData.overview.totalSellers)}</p>
+                <p className="text-sm text-slate-400 font-['Inter']">Total Sellers</p>
+                <p className="text-xl font-bold text-white font-['Inter']">{formatNumber(analyticsData.overview.totalSellers)}</p>
               </div>
-              <Store className="h-8 w-8 text-purple-600" />
+              <Store className="h-8 w-8 text-violet-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Products</p>
-                <p className="text-xl font-bold text-gray-900">{formatNumber(analyticsData.overview.totalProducts)}</p>
+                <p className="text-sm text-slate-400 font-['Inter']">Total Products</p>
+                <p className="text-xl font-bold text-white font-['Inter']">{formatNumber(analyticsData.overview.totalProducts)}</p>
               </div>
-              <Package className="h-8 w-8 text-orange-600" />
+              <Package className="h-8 w-8 text-orange-400" />
             </div>
           </div>
         </div>
