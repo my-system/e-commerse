@@ -1031,19 +1031,32 @@ export default function HomeDemo() {
     if (typeof window !== 'undefined') {
       const styleElement = document.createElement('style');
       styleElement.innerHTML = `
+        @keyframes spin {
+          from { 
+            transform: rotate(0deg); 
+          }
+          to { 
+            transform: rotate(360deg); 
+          }
+        }
+
+        .animate-border-spin {
+          animation: spin 7s linear infinite;
+        }
+
         .database-card {
           position: relative;
           overflow: hidden;
-          border-radius: 16px;
+          border-radius: 12px;
         }
 
         .database-card::before {
           content: "";
           position: absolute;
-          width: 300%;
-          height: 300%;
-          top: -100%;
-          left: -100%;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
           background: conic-gradient(
             from 0deg,
             #fbbf24,
@@ -1055,8 +1068,8 @@ export default function HomeDemo() {
             #f59e0b 75%,
             #fbbf24 100%
           );
-          animation: spin 8s linear infinite;
-          border-radius: 16px;
+          animation: spin 7s linear infinite;
+          border-radius: 12px;
           z-index: 0;
           opacity: 0.3;
           transition: opacity 0.3s ease;
@@ -1069,9 +1082,9 @@ export default function HomeDemo() {
         .database-card::after {
           content: "";
           position: absolute;
-          inset: 2px;
+          inset: 1px;
           background: #1f2937;
-          border-radius: 14px;
+          border-radius: 11px;
           z-index: 1;
         }
 
@@ -1079,22 +1092,22 @@ export default function HomeDemo() {
           position: relative;
           z-index: 10;
           background: transparent;
-          border-radius: 14px;
+          border-radius: 11px;
         }
 
         .database-card-blue {
           position: relative;
           overflow: hidden;
-          border-radius: 16px;
+          border-radius: 12px;
         }
 
         .database-card-blue::before {
           content: "";
           position: absolute;
-          width: 300%;
-          height: 300%;
-          top: -100%;
-          left: -100%;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
           background: conic-gradient(
             from 0deg,
             #3b82f6,
@@ -1106,8 +1119,8 @@ export default function HomeDemo() {
             #2563eb 75%,
             #3b82f6 100%
           );
-          animation: spin 6s linear infinite;
-          border-radius: 16px;
+          animation: spin 7s linear infinite;
+          border-radius: 12px;
           z-index: 0;
           opacity: 0.3;
           transition: opacity 0.3s ease;
@@ -1120,25 +1133,25 @@ export default function HomeDemo() {
         .database-card-blue::after {
           content: "";
           position: absolute;
-          inset: 2px;
+          inset: 1px;
           background: #1f2937;
-          border-radius: 14px;
+          border-radius: 11px;
           z-index: 1;
         }
 
         .database-card-purple {
           position: relative;
           overflow: hidden;
-          border-radius: 16px;
+          border-radius: 12px;
         }
 
         .database-card-purple::before {
           content: "";
           position: absolute;
-          width: 300%;
-          height: 300%;
-          top: -100%;
-          left: -100%;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
           background: conic-gradient(
             from 0deg,
             #a855f7,
@@ -1151,7 +1164,7 @@ export default function HomeDemo() {
             #a855f7 100%
           );
           animation: spin 7s linear infinite;
-          border-radius: 16px;
+          border-radius: 12px;
           z-index: 0;
           opacity: 0.3;
           transition: opacity 0.3s ease;
@@ -1164,14 +1177,15 @@ export default function HomeDemo() {
         .database-card-purple::after {
           content: "";
           position: absolute;
-          inset: 2px;
+          inset: 1px;
           background: #1f2937;
-          border-radius: 14px;
+          border-radius: 11px;
           z-index: 1;
         }
 
         .analytics-preview-card {
           position: relative;
+{{ ... }
           overflow: hidden;
           border-radius: 20px;
         }
