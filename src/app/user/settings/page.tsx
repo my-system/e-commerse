@@ -5,6 +5,9 @@ import { Settings, ArrowLeft, Save, Lock, Bell, Shield, HelpCircle, LogOut } fro
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import ScrollAnimation from '@/components/ui/ScrollAnimation';
+import AnimatedCard from '@/components/ui/AnimatedCard';
+import AnimatedText from '@/components/ui/AnimatedText';
 
 
 interface UserSettings {
@@ -126,20 +129,26 @@ export default function SettingsPage() {
         {/* Header */}
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/account"
-                className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Pengaturan</h1>
-                <p className="text-gray-600 mt-2">
-                  Kelola pengaturan akun dan privasi Anda
-                </p>
+            <ScrollAnimation delay={100}>
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/user"
+                  className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Link>
+                <div>
+                  <AnimatedText animation="fade-in" speed={50}>
+                    <h1 className="text-2xl font-bold text-gray-900">Pengaturan</h1>
+                  </AnimatedText>
+                  <AnimatedText animation="slide-in" delay={200}>
+                    <p className="text-gray-600 mt-2">
+                      Kelola pengaturan akun dan privasi Anda
+                    </p>
+                  </AnimatedText>
+                </div>
               </div>
-            </div>
+            </ScrollAnimation>
           </div>
         </div>
 
@@ -179,13 +188,17 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit}>
-                {activeTab === 'profile' && (
-                  <div className="space-y-6">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Lengkap
-                      </label>
+              <ScrollAnimation delay={300}>
+                <AnimatedCard animation="scale-up">
+                  <form onSubmit={handleSubmit}>
+                    {activeTab === 'profile' && (
+                      <div className="space-y-6">
+                        <div>
+                          <AnimatedText animation="fade-in" speed={50}>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                              Nama Lengkap
+                            </label>
+                          </AnimatedText>
                       <input
                         type="text"
                         id="name"
@@ -379,6 +392,8 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </form>
+                </AnimatedCard>
+              </ScrollAnimation>
             </div>
           </div>
 
@@ -419,7 +434,7 @@ export default function SettingsPage() {
             {/* Mobile Header */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
               <div className="flex items-center gap-3 mb-4">
-                <Link href="/account" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <Link href="/user" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                   <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </Link>
                 <h1 className="text-lg font-bold text-gray-900">Pengaturan</h1>

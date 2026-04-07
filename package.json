@@ -2,6 +2,7 @@
   "name": "e-commerce-shopify",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
@@ -17,7 +18,11 @@
     "db:reset": "prisma migrate reset --force",
     "db:setup": "node scripts/auto-setup-database.js",
     "db:health": "node -e \"const { prisma } = require('./src/lib/auto-prisma-client'); prisma.healthCheck().then(healthy => console.log(healthy ? '✅ Database healthy' : '❌ Database unhealthy'));\"",
-    "postinstall": "npx prisma generate"
+    "postinstall": "npx prisma generate",
+    "deploy:vercel": "vercel --prod",
+    "deploy:build": "npm run build",
+    "pre-deploy": "node scripts/pre-deploy.js",
+    "deploy:full": "scripts/deploy-vercel.bat"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",

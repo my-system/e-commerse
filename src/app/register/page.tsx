@@ -94,7 +94,7 @@ export default function RegisterPage() {
       setIsSuccess(true);
       // Redirect to account profile after successful registration
       setTimeout(() => {
-        router.push('/account/profile');
+        router.push('/user/profile');
       }, 2000);
     } catch (err) {
       setErrors({ general: 'Registrasi gagal. Email mungkin sudah digunakan.' });
@@ -355,7 +355,7 @@ export default function RegisterPage() {
                 <p className="text-gray-600">
                   Sudah punya akun?{' '}
                   <Link 
-                    href="/account/login" 
+                    href="/user/login" 
                     className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                   >
                     Masuk di sini

@@ -33,7 +33,7 @@ export default function AccessDenied() {
           </button>
           
           <button
-            onClick={() => router.push('/account')}
+            onClick={() => router.push('/user')}
             className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
             Login to Different Account

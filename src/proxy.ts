@@ -14,7 +14,7 @@ export function proxy(request: NextRequest) {
     // In production, you'd verify the JWT token here and redirect if not admin
     if (!token) {
       // Redirect to login page
-      return NextResponse.redirect(new URL('/account', request.url));
+      return NextResponse.redirect(new URL('/user', request.url));
     }
   }
   

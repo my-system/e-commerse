@@ -291,7 +291,7 @@ export default function AboutPage() {
                 Mulai Belanja
               </a>
               <a
-                href="/account"
+                href="/user"
                 className="inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-bold rounded-xl border-2 border-white hover:bg-white hover:text-blue-600 transition-all duration-200"
               >
                 Buat Akun
@@ -481,7 +481,7 @@ export default function AboutPage() {
                   Mulai Belanja
                 </a>
                 <a
-                  href="/account"
+                  href="/user"
                   className="inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-bold rounded-xl border-2 border-white hover:bg-white hover:text-blue-600 transition-all duration-200"
                 >
                   Buat Akun

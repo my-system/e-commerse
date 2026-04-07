@@ -150,7 +150,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!isLoggedIn) {
-      router.push('/account/login');
+      router.push('/user/login');
       return;
     }
 
@@ -177,7 +177,7 @@ export default function ProductDetailPage() {
 
   const handleWishlistToggle = () => {
     if (!isLoggedIn) {
-      router.push('/account/login');
+      router.push('/user/login');
       return;
     }
 

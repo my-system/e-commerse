@@ -42,7 +42,7 @@ export default function LoginPage() {
     const result = await login(loginForm.email, loginForm.password);
     
     if (result.success) {
-      router.push('/account');
+      router.push('/user');
     }
     
     setIsSubmitting(false);
@@ -65,7 +65,7 @@ export default function LoginPage() {
     });
     
     if (result.success) {
-      router.push('/account');
+      router.push('/user');
     }
     
     setIsSubmitting(false);

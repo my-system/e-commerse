@@ -5,6 +5,9 @@ import { Heart, ArrowLeft, Trash2, ShoppingBag, Eye } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import ScrollAnimation from '@/components/ui/ScrollAnimation';
+import AnimatedCard from '@/components/ui/AnimatedCard';
+import AnimatedText from '@/components/ui/AnimatedText';
 
 
 interface WishlistItem {
@@ -126,33 +129,43 @@ export default function WishlistPage() {
         {/* Header */}
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/account"
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Link>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Wishlist Saya</h1>
-                  <p className="text-gray-600 mt-2">
-                    Produk yang Anda simpan untuk dibeli nanti
-                  </p>
+            <ScrollAnimation delay={100}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Link
+                    href="/user"
+                    className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Link>
+                  <div>
+                    <AnimatedText animation="fade-in" speed={50}>
+                      <h1 className="text-2xl font-bold text-gray-900">Wishlist Saya</h1>
+                    </AnimatedText>
+                    <AnimatedText animation="slide-in" delay={200}>
+                      <p className="text-gray-600 mt-2">
+                        Produk yang Anda simpan untuk dibeli nanti
+                      </p>
+                    </AnimatedText>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <AnimatedText animation="typewriter" delay={300} speed={80}>
+                      <p className="text-sm text-gray-600">
+                        {wishlist.length} produk • {inStockItems.length} tersedia
+                      </p>
+                    </AnimatedText>
+                    <AnimatedText animation="fade-in" delay={400}>
+                      <p className="text-lg font-bold text-gray-900">
+                        Total: Rp {totalPrice.toLocaleString('id-ID')}
+                      </p>
+                    </AnimatedText>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">
-                    {wishlist.length} produk • {inStockItems.length} tersedia
-                  </p>
-                  <p className="text-lg font-bold text-gray-900">
-                    Total: Rp {totalPrice.toLocaleString('id-ID')}
-                  </p>
-                </div>
-              </div>
-            </div>
+            </ScrollAnimation>
           </div>
         </div>
 
@@ -173,27 +186,29 @@ export default function WishlistPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {wishlist.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group">
-                  {/* Product Image */}
-                  <div className="relative">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    
-                    {/* Remove Button */}
-                    <button
-                      onClick={() => handleRemoveItem(item.id)}
-                      disabled={removingItem === item.id}
-                      className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors duration-200 group"
-                    >
-                      <Trash2 className="h-4 w-4 text-gray-400 group-hover:text-red-600 transition-colors duration-200" />
-                    </button>
-                    
-                    {/* Stock Status */}
+            <ScrollAnimation delay={500}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {wishlist.map((item, index) => (
+                  <AnimatedCard key={item.id} delay={index * 100} animation="scale-up">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group">
+                      {/* Product Image */}
+                      <div className="relative">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        
+                        {/* Remove Button */}
+                        <button
+                          onClick={() => handleRemoveItem(item.id)}
+                          disabled={removingItem === item.id}
+                          className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors duration-200 group"
+                        >
+                          <Trash2 className="h-4 w-4 text-gray-400 group-hover:text-red-600 transition-colors duration-200" />
+                        </button>
+                        
+                        {/* Stock Status */}
                     {!item.inStock && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                         <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -249,8 +264,10 @@ export default function WishlistPage() {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                  </AnimatedCard>
+                ))}
+              </div>
+            </ScrollAnimation>
           )}
         </div>
       </div>
@@ -262,7 +279,7 @@ export default function WishlistPage() {
             {/* Mobile Header */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
               <div className="flex items-center gap-3 mb-4">
-                <Link href="/account" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <Link href="/user" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                   <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </Link>
                 <h1 className="text-lg font-bold text-gray-900">Wishlist Saya</h1>

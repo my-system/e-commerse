@@ -64,7 +64,7 @@ export default function GlobalSidebar() {
     if (isLoggedIn) {
       // If logged in, go to account page
       closeSidebar();
-      router.push('/account');
+      router.push('/user');
     } else {
       // If not logged in, go to login page
       closeSidebar();
@@ -104,25 +104,25 @@ export default function GlobalSidebar() {
           {
             icon: User,
             label: 'Profil Saya',
-            href: '/account/profile',
+            href: '/user/profile',
             description: 'Kelola informasi profil Anda'
           },
           {
             icon: Package,
             label: 'Pesanan Saya',
-            href: '/account/orders',
+            href: '/user/orders',
             description: 'Lihat riwayat pesanan Anda'
           },
           {
             icon: Heart,
             label: 'Wishlist',
-            href: '/account/wishlist',
+            href: '/user/wishlist',
             description: 'Produk yang Anda simpan'
           },
           {
             icon: Settings,
             label: 'Pengaturan',
-            href: '/account/settings',
+            href: '/user/settings',
             description: 'Pengaturan akun dan privasi'
           }
         ]
@@ -136,25 +136,25 @@ export default function GlobalSidebar() {
           {
             icon: User,
             label: 'Profil Saya',
-            href: '/account/profile',
+            href: '/user/profile',
             description: 'Kelola informasi profil Anda'
           },
           {
             icon: Package,
             label: 'Pesanan Saya',
-            href: '/account/orders',
+            href: '/user/orders',
             description: 'Lihat riwayat pesanan Anda'
           },
           {
             icon: Heart,
             label: 'Wishlist',
-            href: '/account/wishlist',
+            href: '/user/wishlist',
             description: 'Produk yang Anda simpan'
           },
           {
             icon: Settings,
             label: 'Pengaturan',
-            href: '/account/settings',
+            href: '/user/settings',
             description: 'Pengaturan akun dan privasi'
           }
         ]
@@ -211,25 +211,25 @@ export default function GlobalSidebar() {
           {
             icon: User,
             label: 'Profil Saya',
-            href: '/account/profile',
+            href: '/user/profile',
             description: 'Kelola informasi profil Anda'
           },
           {
             icon: Package,
             label: 'Pesanan Saya',
-            href: '/account/orders',
+            href: '/user/orders',
             description: 'Lihat riwayat pesanan Anda'
           },
           {
             icon: Heart,
             label: 'Wishlist',
-            href: '/account/wishlist',
+            href: '/user/wishlist',
             description: 'Produk yang Anda simpan'
           },
           {
             icon: Settings,
             label: 'Pengaturan',
-            href: '/account/settings',
+            href: '/user/settings',
             description: 'Pengaturan akun dan privasi'
           }
         ]
