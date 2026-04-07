@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching marketplace products:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch marketplace products' },
+      { 
+        success: false, 
+        error: 'Failed to fetch marketplace products' 
+      },
       { status: 500 }
     );
   }

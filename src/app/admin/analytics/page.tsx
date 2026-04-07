@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   BarChart3, 
@@ -50,6 +50,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import { motion, useInView, useAnimation } from 'framer-motion';
 
 interface AdminAnalyticsData {
   overview: {
@@ -125,6 +126,94 @@ export default function AdminAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
   const [selectedMetric, setSelectedMetric] = useState<'revenue' | 'orders' | 'users'>('revenue');
+
+  // Animated Counter Component
+  function AnimatedCounter({ value, prefix = '', suffix = '', duration = 2 }: { 
+    value: number; 
+    prefix?: string; 
+    suffix?: string; 
+    duration?: number;
+  }) {
+    const [displayValue, setDisplayValue] = useState(0);
+    const [isVisible, setIsVisible] = useState(false);
+    const ref = useRef<HTMLSpanElement>(null);
+    const inView = useInView(ref, { once: true, margin: "-100px" });
+
+    useEffect(() => {
+      if (inView && !isVisible) {
+        setIsVisible(true);
+        let startTime: number;
+        let startValue = 0;
+        const endValue = value;
+
+        const animate = (currentTime: number) => {
+          if (!startTime) startTime = currentTime;
+          const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
+          
+          // Easing function for smooth animation
+          const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+          const currentValue = Math.floor(startValue + (endValue - startValue) * easeOutQuart);
+          
+          setDisplayValue(currentValue);
+          
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          }
+        };
+
+        requestAnimationFrame(animate);
+      }
+    }, [inView, isVisible, value, duration]);
+
+    return (
+      <span ref={ref}>
+        <span>
+          {prefix}{displayValue.toLocaleString('id-ID')}{suffix}
+        </span>
+      </span>
+    );
+  }
+
+  // Animated Card Component
+  function AnimatedCard({ children, delay = 0, className = '' }: { 
+    children: React.ReactNode; 
+    delay?: number;
+    className?: string;
+  }) {
+    const ref = useRef<HTMLDivElement>(null);
+    const inView = useInView(ref, { once: true, margin: "-50px" });
+    const controls = useAnimation();
+
+    useEffect(() => {
+      if (inView) {
+        controls.start({
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: 0.6,
+            delay: delay,
+            ease: [0.25, 0.46, 0.45, 0.94]
+          }
+        });
+      } else {
+        controls.start({
+          opacity: 0,
+          y: 30
+        });
+      }
+    }, [inView, controls, delay]);
+
+    return (
+      <motion.div
+        ref={ref}
+        animate={controls}
+        initial={{ opacity: 0, y: 30 }}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    );
+  }
 
   // Colors for charts
   const COLORS = ['#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#84cc16'];
@@ -393,39 +482,39 @@ export default function AdminAnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+      <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   if (!analyticsData) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-4" />
-          <p className="text-red-400">{error || 'Data tidak tersedia'}</p>
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600">{error || 'Data tidak tersedia'}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       {/* Header */}
-      <div className="bg-slate-900/80 backdrop-blur-md border-b border-white/10">
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <BarChart3 className="h-6 w-6 text-blue-400 mr-3" />
-              <h1 className="text-xl font-semibold text-white font-['Inter']">Admin Analytics</h1>
+              <BarChart3 className="h-6 w-6 text-blue-600 mr-3" />
+              <h1 className="text-xl font-semibold text-gray-900 font-['Inter']">Admin Analytics</h1>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value as any)}
-                  className="px-3 py-2 bg-slate-800 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-white font-['Inter']"
+                  className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 font-['Inter']"
                 >
                   <option value="7d">7 Hari</option>
                   <option value="30d">30 Hari</option>
@@ -435,14 +524,14 @@ export default function AdminAnalyticsPage() {
               </div>
               <button
                 onClick={exportAnalytics}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 font-['Inter']"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 font-['Inter'] shadow-sm hover:shadow-md"
               >
                 <Download className="h-4 w-4" />
                 Export
               </button>
               <button
                 onClick={fetchAnalyticsData}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 font-['Inter']"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 font-['Inter'] shadow-sm hover:shadow-md"
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
@@ -455,13 +544,13 @@ export default function AdminAnalyticsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Overview Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300">
+          <AnimatedCard delay={0} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg">
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-400 truncate font-['Inter']">Total Revenue</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white mt-1 font-['Inter']">
-                    {formatCompactCurrency(analyticsData.overview.totalRevenue)}
+                  <p className="text-sm text-gray-600 truncate font-['Inter']">Total Revenue</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 font-['Inter']">
+                    <AnimatedCounter value={analyticsData.overview.totalRevenue} prefix="Rp " duration={2.5} />
                   </p>
                   <div className="flex items-center mt-2">
                     {getGrowthIcon(analyticsData.growth.revenueGrowth)}
@@ -471,19 +560,19 @@ export default function AdminAnalyticsPage() {
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-3">
-                  <DollarSign className="h-8 w-8 text-emerald-400" />
+                  <DollarSign className="h-8 w-8 text-emerald-600" />
                 </div>
               </div>
             </div>
-          </div>
+          </AnimatedCard>
 
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300">
+          <AnimatedCard delay={0.1} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg">
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-400 truncate font-['Inter']">Total Orders</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white mt-1 font-['Inter']">
-                    {formatNumber(analyticsData.overview.totalOrders)}
+                  <p className="text-sm text-gray-600 truncate font-['Inter']">Total Orders</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 font-['Inter']">
+                    <AnimatedCounter value={analyticsData.overview.totalOrders} duration={2} />
                   </p>
                   <div className="flex items-center mt-2">
                     {getGrowthIcon(analyticsData.growth.orderGrowth)}
@@ -493,19 +582,19 @@ export default function AdminAnalyticsPage() {
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-3">
-                  <ShoppingCart className="h-8 w-8 text-blue-400" />
+                  <ShoppingCart className="h-8 w-8 text-blue-600" />
                 </div>
               </div>
             </div>
-          </div>
+          </AnimatedCard>
 
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300">
+          <AnimatedCard delay={0.2} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg">
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-400 truncate font-['Inter']">Total Users</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white mt-1 font-['Inter']">
-                    {formatNumber(analyticsData.overview.totalUsers)}
+                  <p className="text-sm text-gray-600 truncate font-['Inter']">Total Users</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 font-['Inter']">
+                    <AnimatedCounter value={analyticsData.overview.totalUsers} duration={2.2} />
                   </p>
                   <div className="flex items-center mt-2">
                     {getGrowthIcon(analyticsData.growth.userGrowth)}
@@ -515,47 +604,47 @@ export default function AdminAnalyticsPage() {
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-3">
-                  <Users className="h-8 w-8 text-violet-400" />
+                  <Users className="h-8 w-8 text-violet-600" />
                 </div>
               </div>
             </div>
-          </div>
+          </AnimatedCard>
 
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6 hover:border-blue-500/30 transition-all duration-300">
+          <AnimatedCard delay={0.3} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg">
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-400 truncate font-['Inter']">Platform Commission</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white mt-1 font-['Inter']">
-                    {formatCompactCurrency(analyticsData.overview.platformCommission)}
+                  <p className="text-sm text-gray-600 truncate font-['Inter']">Platform Commission</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 font-['Inter']">
+                    <AnimatedCounter value={analyticsData.overview.platformCommission} prefix="Rp " duration={2.8} />
                   </p>
                   <div className="flex items-center mt-2">
-                    <span className="text-sm text-slate-500 font-['Inter']">
+                    <span className="text-sm text-gray-500 font-['Inter']">
                       {((analyticsData.overview.platformCommission / analyticsData.overview.totalRevenue) * 100).toFixed(1)}% dari revenue
                     </span>
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-3">
-                  <CreditCard className="h-8 w-8 text-orange-400" />
+                  <CreditCard className="h-8 w-8 text-orange-600" />
                 </div>
               </div>
             </div>
-          </div>
+          </AnimatedCard>
         </div>
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Monthly Revenue Chart */}
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <AnimatedCard delay={0.4} className="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white font-['Inter']">Revenue Trend</h3>
+              <h3 className="text-lg font-semibold text-gray-900 font-['Inter']">Revenue Trend</h3>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setSelectedMetric('revenue')}
                   className={`px-3 py-1 text-sm rounded-lg transition-colors font-['Inter'] ${
                     selectedMetric === 'revenue' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   Revenue
@@ -565,7 +654,7 @@ export default function AdminAnalyticsPage() {
                   className={`px-3 py-1 text-sm rounded-lg transition-colors font-['Inter'] ${
                     selectedMetric === 'orders' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   Orders
@@ -575,32 +664,32 @@ export default function AdminAnalyticsPage() {
                   className={`px-3 py-1 text-sm rounded-lg transition-colors font-['Inter'] ${
                     selectedMetric === 'users' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   Users
                 </button>
               </div>
             </div>
-            <div className="h-64">
+            <div className="flex-1 min-h-0">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={analyticsData.monthlyRevenue}>
+                <AreaChart data={analyticsData.monthlyRevenue} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                   <defs>
                     <linearGradient id="adminColorRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.2} horizontal={true} vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.05} horizontal={true} vertical={false} />
                   <XAxis 
                     dataKey="month" 
-                    stroke="#64748b"
+                    stroke="#6b7280"
                     fontSize={12}
                     fontFamily="'Inter', sans-serif"
                     axisLine={false}
                   />
                   <YAxis 
-                    stroke="#64748b"
+                    stroke="#6b7280"
                     fontSize={12}
                     fontFamily="'Inter', sans-serif"
                     tickFormatter={(value) => formatCompactCurrency(value)}
@@ -609,12 +698,13 @@ export default function AdminAnalyticsPage() {
                   <Tooltip 
                     formatter={(value: any) => [formatCompactCurrency(value), selectedMetric === 'revenue' ? 'Revenue' : selectedMetric === 'orders' ? 'Orders' : 'Users']}
                     contentStyle={{ 
-                      backgroundColor: '#0f172a', 
-                      border: '1px solid rgba(255,255,255,0.1)', 
+                      backgroundColor: '#ffffff', 
+                      border: '1px solid #e5e7eb', 
                       borderRadius: '12px',
-                      color: '#fff'
+                      color: '#111827',
+                      fontFamily: "'Inter', sans-serif"
                     }}
-                    itemStyle={{ color: '#fff' }}
+                    itemStyle={{ color: '#111827', fontFamily: "'Inter', sans-serif" }}
                   />
                   <Area 
                     type="monotone" 
@@ -628,149 +718,169 @@ export default function AdminAnalyticsPage() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </AnimatedCard>
 
           {/* Order Status Distribution */}
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <AnimatedCard delay={0.5} className="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white font-['Inter']">Order Status</h3>
-              <PieChart className="h-5 w-5 text-slate-400" />
+              <h3 className="text-lg font-semibold text-gray-900 font-['Inter']">Order Status</h3>
+              <PieChart className="h-5 w-5 text-gray-400" />
             </div>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <RePieChart>
-                  <Pie
-                    data={[
-                      { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981' },
-                      { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6' },
-                      { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b' },
-                      { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316' },
-                      { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444' }
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {[
-                      { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981' },
-                      { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6' },
-                      { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b' },
-                      { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316' },
-                      { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444' }
-                    ].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value: any) => [formatNumber(value), 'Orders']}
-                    contentStyle={{ 
-                      backgroundColor: '#0f172a', 
-                      border: '1px solid rgba(255,255,255,0.1)', 
-                      borderRadius: '12px',
-                      color: '#fff'
-                    }}
-                    itemStyle={{ color: '#fff' }}
-                  />
-                </RePieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-4 space-y-2">
-              {[
-                { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981', icon: CheckCircle },
-                { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6', icon: Truck },
-                { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b', icon: Clock },
-                { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316', icon: AlertCircle },
-                { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444', icon: XCircle }
-              ].map((status) => (
-                <div key={status.name} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <status.icon className={`h-4 w-4 mr-2`} style={{ color: status.color }} />
-                    <span className="text-sm text-slate-300 font-['Inter']">{status.name}</span>
+            <div className="flex-1 flex items-center justify-center min-h-0">
+              <div className="flex items-center gap-8 w-full">
+                <div className="relative">
+                  <ResponsiveContainer width={240} height={240}>
+                    <RePieChart>
+                      <Pie
+                        data={[
+                          { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981' },
+                          { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6' },
+                          { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b' },
+                          { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316' },
+                          { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444' }
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={90}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {[
+                          { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981' },
+                          { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6' },
+                          { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b' },
+                          { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316' },
+                          { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444' }
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: any) => [formatNumber(value), 'Orders']}
+                        contentStyle={{ 
+                          backgroundColor: '#ffffff', 
+                          border: '1px solid #e5e7eb', 
+                          borderRadius: '12px',
+                          color: '#111827',
+                          fontFamily: "'Inter', sans-serif"
+                        }}
+                        itemStyle={{ color: '#111827', fontFamily: "'Inter', sans-serif" }}
+                      />
+                    </RePieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <p className="text-2xl font-bold text-gray-900 font-['Inter']">
+                      <AnimatedCounter 
+                        value={analyticsData.orderStatus.delivered + analyticsData.orderStatus.shipped + analyticsData.orderStatus.processing + analyticsData.orderStatus.pending + analyticsData.orderStatus.cancelled} 
+                        duration={1.5} 
+                      />
+                    </p>
+                    <p className="text-sm text-gray-500 font-['Inter']">Total Orders</p>
                   </div>
-                  <span className="text-sm font-medium text-white font-['Inter']">{formatNumber(status.value)}</span>
                 </div>
-              ))}
+                <div className="flex-1 space-y-3">
+                  {[
+                    { name: 'Delivered', value: analyticsData.orderStatus.delivered, color: '#10b981', icon: CheckCircle },
+                    { name: 'Shipped', value: analyticsData.orderStatus.shipped, color: '#3b82f6', icon: Truck },
+                    { name: 'Processing', value: analyticsData.orderStatus.processing, color: '#f59e0b', icon: Clock },
+                    { name: 'Pending', value: analyticsData.orderStatus.pending, color: '#f97316', icon: AlertCircle },
+                    { name: 'Cancelled', value: analyticsData.orderStatus.cancelled, color: '#ef4444', icon: XCircle }
+                  ].map((status) => (
+                    <div key={status.name} className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: status.color }} />
+                        <span className="text-sm text-gray-700 font-['Inter']">{status.name}</span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 font-['Inter']">
+                        <AnimatedCounter value={status.value} duration={1} />
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
+          </AnimatedCard>
         </div>
 
         {/* Top Sellers & Products */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Top Sellers */}
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <AnimatedCard delay={0.6} className="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white font-['Inter']">Top Sellers</h3>
-              <Store className="h-5 w-5 text-slate-400" />
+              <h3 className="text-lg font-semibold text-gray-900 font-['Inter']">Top Sellers</h3>
+              <Store className="h-5 w-5 text-gray-400" />
             </div>
             <div className="space-y-4">
               {analyticsData.topSellers.map((seller, index) => (
-                <div key={seller.id} className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
+                <div key={seller.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center mr-3 border border-blue-500/30">
-                      <span className="text-sm font-medium text-blue-400 font-['Inter']">{index + 1}</span>
+                      <span className="text-sm font-medium text-blue-600 font-['Inter']">{index + 1}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white font-['Inter']">{seller.name}</p>
-                      <p className="text-xs text-slate-500 font-['Inter']">{seller.products} products</p>
+                      <p className="text-sm font-medium text-gray-900 font-['Inter']">{seller.name}</p>
+                      <p className="text-xs text-gray-500 font-['Inter']">{seller.products} products</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-white font-['Inter']">{formatCompactCurrency(seller.revenue)}</p>
+                    <p className="text-sm font-medium text-gray-900 font-['Inter']">
+                      <AnimatedCounter value={seller.revenue} prefix="Rp " duration={1.2} />
+                    </p>
                     <div className="flex items-center justify-end">
                       <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                      <span className="text-xs text-slate-400 font-['Inter']">{seller.rating}</span>
+                      <span className="text-xs text-gray-500 font-['Inter']">{seller.rating}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </AnimatedCard>
 
           {/* Top Products */}
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <AnimatedCard delay={0.7} className="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white font-['Inter']">Top Products</h3>
-              <Package className="h-5 w-5 text-slate-400" />
+              <h3 className="text-lg font-semibold text-gray-900 font-['Inter']">Top Products</h3>
+              <Package className="h-5 w-5 text-gray-400" />
             </div>
             <div className="space-y-4">
               {analyticsData.topProducts.map((product, index) => (
-                <div key={product.id} className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
+                <div key={product.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center mr-3 border border-emerald-500/30">
-                      <span className="text-sm font-medium text-emerald-400 font-['Inter']">{index + 1}</span>
+                      <span className="text-sm font-medium text-emerald-600 font-['Inter']">{index + 1}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white font-['Inter'] line-clamp-1">{product.title}</p>
-                      <p className="text-xs text-slate-500 font-['Inter']">{product.category}</p>
+                      <p className="text-sm font-medium text-gray-900 font-['Inter'] line-clamp-1">{product.title}</p>
+                      <p className="text-xs text-gray-500 font-['Inter']">{product.category}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-white font-['Inter']">{formatNumber(product.sales)} sold</p>
+                    <p className="text-sm font-medium text-gray-900 font-['Inter']">
+                      <AnimatedCounter value={product.sales} suffix=" sold" duration={1} />
+                    </p>
                     <div className="flex items-center justify-end">
                       <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                      <span className="text-xs text-slate-400 font-['Inter']">{product.rating}</span>
+                      <span className="text-xs text-gray-500 font-['Inter']">{product.rating}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </AnimatedCard>
         </div>
 
         {/* Category Performance */}
-        <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8">
+        <AnimatedCard delay={0.8} className="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-md hover:shadow-lg">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-white font-['Inter']">Category Performance</h3>
-            <ChartBar className="h-5 w-5 text-slate-400" />
+            <h3 className="text-lg font-semibold text-gray-900 font-['Inter']">Category Performance</h3>
+            <ChartBar className="h-5 w-5 text-gray-400" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {analyticsData.categoryPerformance.map((category, index) => (
-              <div key={category.category} className="p-4 bg-slate-800/30 rounded-lg">
+              <div key={category.category} className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-white font-['Inter']">{category.category}</h4>
+                  <h4 className="text-sm font-medium text-gray-900 font-['Inter']">{category.category}</h4>
                   <div className="flex items-center">
                     {getGrowthIcon(category.growth)}
                     <span className={`text-xs font-medium ml-1 font-['Inter'] ${getGrowthColor(category.growth)}`}>
@@ -780,64 +890,78 @@ export default function AdminAnalyticsPage() {
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-400 font-['Inter']">Revenue</span>
-                    <span className="font-medium text-white font-['Inter']">{formatCompactCurrency(category.revenue)}</span>
+                    <span className="text-gray-400 font-['Inter']">Revenue</span>
+                    <span className="font-medium text-gray-900 font-['Inter']">
+                      <AnimatedCounter value={category.revenue} prefix="Rp " duration={1.3} />
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-400 font-['Inter']">Orders</span>
-                    <span className="font-medium text-white font-['Inter']">{formatNumber(category.orders)}</span>
+                    <span className="text-gray-400 font-['Inter']">Orders</span>
+                    <span className="font-medium text-gray-900 font-['Inter']">
+                      <AnimatedCounter value={category.orders} duration={1.1} />
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-400 font-['Inter']">Products</span>
-                    <span className="font-medium text-white font-['Inter']">{formatNumber(category.products)}</span>
+                    <span className="text-gray-400 font-['Inter']">Products</span>
+                    <span className="font-medium text-gray-900 font-['Inter']">
+                      <AnimatedCounter value={category.products} duration={0.9} />
+                    </span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </AnimatedCard>
 
         {/* Additional Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6">
+          <AnimatedCard delay={0.9} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-md hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400 font-['Inter']">Avg Order Value</p>
-                <p className="text-xl font-bold text-white font-['Inter']">{formatCurrency(analyticsData.overview.averageOrderValue)}</p>
+                <p className="text-sm text-gray-600 font-['Inter']">Avg Order Value</p>
+                <p className="text-xl font-bold text-gray-900 font-['Inter']">
+                  <AnimatedCounter value={analyticsData.overview.averageOrderValue} prefix="Rp " duration={1.4} />
+                </p>
               </div>
-              <ShoppingCart className="h-8 w-8 text-blue-400" />
+              <ShoppingCart className="h-8 w-8 text-blue-600" />
             </div>
-          </div>
+          </AnimatedCard>
 
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6">
+          <AnimatedCard delay={1.0} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-md hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400 font-['Inter']">Conversion Rate</p>
-                <p className="text-xl font-bold text-white font-['Inter']">{analyticsData.overview.conversionRate}%</p>
+                <p className="text-sm text-gray-600 font-['Inter']">Conversion Rate</p>
+                <p className="text-xl font-bold text-gray-900 font-['Inter']">
+                  <AnimatedCounter value={analyticsData.overview.conversionRate} suffix="%" duration={1.5} />
+                </p>
               </div>
-              <TrendingUp className="h-8 w-8 text-emerald-400" />
+              <TrendingUp className="h-8 w-8 text-emerald-600" />
             </div>
-          </div>
+          </AnimatedCard>
 
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6">
+          <AnimatedCard delay={1.1} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-md hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400 font-['Inter']">Total Sellers</p>
-                <p className="text-xl font-bold text-white font-['Inter']">{formatNumber(analyticsData.overview.totalSellers)}</p>
+                <p className="text-sm text-gray-600 font-['Inter']">Total Sellers</p>
+                <p className="text-xl font-bold text-gray-900 font-['Inter']">
+                  <AnimatedCounter value={analyticsData.overview.totalSellers} duration={1.6} />
+                </p>
               </div>
-              <Store className="h-8 w-8 text-violet-400" />
+              <Store className="h-8 w-8 text-violet-600" />
             </div>
-          </div>
+          </AnimatedCard>
 
-          <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 sm:p-6">
+          <AnimatedCard delay={1.2} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-md hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400 font-['Inter']">Total Products</p>
-                <p className="text-xl font-bold text-white font-['Inter']">{formatNumber(analyticsData.overview.totalProducts)}</p>
+                <p className="text-sm text-gray-600 font-['Inter']">Total Products</p>
+                <p className="text-xl font-bold text-gray-900 font-['Inter']">
+                  <AnimatedCounter value={analyticsData.overview.totalProducts} duration={1.7} />
+                </p>
               </div>
-              <Package className="h-8 w-8 text-orange-400" />
+              <Package className="h-8 w-8 text-orange-600" />
             </div>
-          </div>
+          </AnimatedCard>
         </div>
       </div>
     </div>

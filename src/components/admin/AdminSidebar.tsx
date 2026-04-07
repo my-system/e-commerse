@@ -14,7 +14,10 @@ import {
   TrendingUp,
   Store,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Monitor,
+  Database,
+  UserCog
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -42,7 +45,7 @@ const menuItems = [
     description: 'Overview and analytics'
   },
   {
-    name: 'Products',
+    name: 'Kelola Produk',
     href: '/admin/products',
     icon: Package,
     description: 'Manage products',
@@ -65,16 +68,10 @@ const menuItems = [
     ]
   },
   {
-    name: 'Orders',
-    href: '/admin/orders',
-    icon: ShoppingCart,
-    description: 'View and manage orders'
-  },
-  {
-    name: 'Customers',
-    href: '/admin/customers',
-    icon: Users,
-    description: 'Customer management'
+    name: 'Inventory',
+    href: '/admin/inventory',
+    icon: Package,
+    description: 'Stock management'
   },
   {
     name: 'Analytics',
@@ -83,10 +80,28 @@ const menuItems = [
     description: 'Sales and performance'
   },
   {
-    name: 'Marketplace',
+    name: 'Kelola User',
+    href: '/admin/users',
+    icon: UserCog,
+    description: 'User management'
+  },
+  {
+    name: 'Kontrol Marketplace',
     href: '/admin/marketplace',
     icon: Store,
     description: 'Marketplace settings'
+  },
+  {
+    name: 'Desktop',
+    href: '/admin/desktop',
+    icon: Monitor,
+    description: 'Desktop management'
+  },
+  {
+    name: 'Database',
+    href: '/admin/database',
+    icon: Database,
+    description: 'Database management'
   },
   {
     name: 'Settings',
@@ -98,7 +113,7 @@ const menuItems = [
 
 export default function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps) {
   const pathname = usePathname();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Products']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['Kelola Produk']);
 
   const toggleSubmenu = (itemName: string) => {
     console.log('Toggling submenu:', itemName);
