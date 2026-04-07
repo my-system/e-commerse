@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useInView } from 'framer-motion';
 import { 
   BarChart3, 
   Users, 
@@ -659,8 +660,149 @@ function AnimatedStatCard({ stat, index }: { stat: any; index: number }) {
 
 // Dashboard Content Component
 function DashboardContent() {
+  // Animated Counter Component
+  function AnimatedCounter({ value, prefix = '', suffix = '', duration = 2 }: { 
+    value: string | number; 
+    prefix?: string; 
+    suffix?: string; 
+    duration?: number;
+  }) {
+    const [displayValue, setDisplayValue] = useState(0);
+    const [isVisible, setIsVisible] = useState(false);
+    const ref = useRef<HTMLSpanElement>(null);
+    const inView = useInView(ref, { once: true, margin: "-100px" });
+
+    // Convert string value to number if needed
+    const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.]/g, '')) || 0 : value;
+
+    useEffect(() => {
+      if (inView && !isVisible) {
+        setIsVisible(true);
+        let startTime: number;
+        let startValue = 0;
+        const endValue = numericValue;
+
+        const animate = (currentTime: number) => {
+          if (!startTime) startTime = currentTime;
+          const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
+          
+          // Easing function for smooth animation
+          const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+          const currentValue = Math.floor(startValue + (endValue - startValue) * easeOutQuart);
+          
+          setDisplayValue(currentValue);
+          
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          }
+        };
+
+        requestAnimationFrame(animate);
+      }
+    }, [inView, isVisible, numericValue, duration]);
+
+    return (
+      <span ref={ref}>
+        <span>
+          {prefix}{displayValue.toLocaleString('id-ID')}{suffix}
+        </span>
+      </span>
+    );
+  }
+
+  // Animated Stat Card Component
+  function AnimatedStatCard({ stat, index }: { stat: any; index: number }) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+        whileHover={{ 
+          scale: 1.02, 
+          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" 
+        }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative overflow-hidden group"
+      >
+        {/* Background decoration */}
+        <motion.div
+          className={`absolute top-0 right-0 w-32 h-32 ${stat.color} opacity-5 rounded-full -mr-16 -mt-16`}
+          animate={{ 
+            scale: [1, 1.1, 1],
+            rotate: [0, 180, 360]
+          }}
+          transition={{ 
+            duration: 8, 
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: index * 0.1 + 0.2 }}
+              className="text-sm font-medium text-gray-600 mb-1 font-['Inter']"
+            >
+              {stat.title}
+            </motion.p>
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 + 0.4 }}
+              className="flex items-center space-x-2"
+            >
+              <AnimatedCounter 
+                value={stat.value} 
+                duration={1.5}
+              />
+              {stat.change && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 + 0.8 }}
+                  className={`text-xs font-medium px-2 py-1 rounded-full ${
+                    stat.change.startsWith('+') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {stat.change}
+                </motion.span>
+              )}
+            </motion.div>
+          </div>
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, rotate: -180 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ 
+              duration: 0.6, 
+              delay: index * 0.1 + 0.6,
+              type: "spring"
+            }}
+            whileHover={{ 
+              scale: 1.1, 
+              rotate: [0, -10, 10, 0],
+              transition: { duration: 0.3 }
+            }}
+            className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center text-white shadow-lg relative`}
+          >
+            <stat.icon className="w-6 h-6" />
+            
+            {/* Glow effect on hover */}
+            <motion.div
+              className={`absolute inset-0 ${stat.color} rounded-xl opacity-0 group-hover:opacity-20`}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
-    <div className="p-6 pb-20">
+    <div className="p-6 pb-20 bg-gray-50">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {mockStats.map((stat, index) => (
@@ -683,7 +825,7 @@ function DashboardContent() {
             transition={{ duration: 0.6, delay: 1.4 }}
             className="flex items-center justify-between mb-4"
           >
-            <h3 className="text-lg font-semibold text-gray-900">Revenue Overview</h3>
+            <h3 className="text-lg font-semibold text-gray-900 font-['Inter']">Revenue Overview</h3>
             <motion.div
               animate={{ rotate: [0, 180, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -709,7 +851,7 @@ function DashboardContent() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: 2.0 }}
-                className="text-gray-600"
+                className="text-gray-600 font-['Inter']"
               >
                 Chart placeholder
               </motion.p>
@@ -717,7 +859,7 @@ function DashboardContent() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: 2.2 }}
-                className="text-sm text-gray-500 mt-2"
+                className="text-sm text-gray-500 mt-2 font-['Inter']"
               >
                 Revenue trend over time
               </motion.p>
@@ -738,7 +880,7 @@ function DashboardContent() {
             transition={{ duration: 0.6, delay: 1.6 }}
             className="flex items-center justify-between mb-4"
           >
-            <h3 className="text-lg font-semibold text-gray-900">Recent Activities</h3>
+            <h3 className="text-lg font-semibold text-gray-900 font-['Inter']">Recent Activities</h3>
             <motion.div
               animate={{ rotate: [0, 180, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -751,7 +893,7 @@ function DashboardContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 2.0 }}
-              className="text-gray-600"
+              className="text-gray-600 font-['Inter']"
             >
               Activities placeholder
             </motion.p>
@@ -759,7 +901,7 @@ function DashboardContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 2.2 }}
-              className="text-sm text-gray-500 mt-2"
+              className="text-sm text-gray-500 mt-2 font-['Inter']"
             >
               Recent system activities
             </motion.p>
@@ -1025,7 +1167,7 @@ function SellerDashboardContent() {
   );
 }
 
-export default function HomeDemo() {
+export default function Home() {
   // Inject custom styles for neon border beam effects and analytics preview
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -1037,6 +1179,162 @@ export default function HomeDemo() {
           border-radius: 16px;
         }
 
+        .database-card::before {
+          content: "";
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
+          background: conic-gradient(
+            from 0deg,
+            #eab308,
+            transparent 20%,
+            #eab308 50%,
+            transparent 70%,
+            #eab308 100%
+          );
+          animation: spin 4s linear infinite;
+          border-radius: 16px;
+          z-index: 0;
+          filter: blur(2px);
+        }
+
+        .database-card::after {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: #1f2937;
+          border-radius: 14px;
+          z-index: 1;
+        }
+
+        .database-card-content {
+          position: relative;
+          z-index: 10;
+          background: transparent;
+          border-radius: 14px;
+        }
+
+        .database-card-blue {
+          position: relative;
+          overflow: hidden;
+          border-radius: 16px;
+        }
+
+        .database-card-blue::before {
+          content: "";
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
+          background: conic-gradient(
+            from 0deg,
+            #3b82f6,
+            transparent 20%,
+            #3b82f6 50%,
+            transparent 70%,
+            #3b82f6 100%
+          );
+          animation: spin 3s linear infinite;
+          border-radius: 16px;
+          z-index: 0;
+          filter: blur(2px);
+        }
+
+        .database-card-blue::after {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: #1f2937;
+          border-radius: 14px;
+          z-index: 1;
+        }
+
+        .database-card-purple {
+          position: relative;
+          overflow: hidden;
+          border-radius: 16px;
+        }
+
+        .database-card-purple::before {
+          content: "";
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
+          background: conic-gradient(
+            from 0deg,
+            #a855f7,
+            transparent 20%,
+            #a855f7 50%,
+            transparent 70%,
+            #a855f7 100%
+          );
+          animation: spin 5s linear infinite;
+          border-radius: 16px;
+          z-index: 0;
+          filter: blur(2px);
+        }
+
+        .database-card-purple::after {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: #1f2937;
+          border-radius: 14px;
+          z-index: 1;
+        }
+
+        .ai-healing-large-card {
+          position: relative;
+          overflow: hidden;
+          border-radius: 16px;
+        }
+
+        .ai-healing-large-card::before {
+          content: "";
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
+          background: conic-gradient(
+            from 0deg,
+            #10b981,
+            transparent 20%,
+            #10b981 50%,
+            transparent 70%,
+            #10b981 100%
+          );
+          animation: spin 4s linear infinite;
+          border-radius: 16px;
+          z-index: 0;
+          filter: blur(2px);
+        }
+
+        .ai-healing-large-card::after {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: #1f2937;
+          border-radius: 14px;
+          z-index: 1;
+        }
+
+        .ai-healing-large-content {
+          position: relative;
+          z-index: 10;
+          background: transparent;
+          border-radius: 14px;
+        }
+
+        .ai-healing-large-card:hover::before {
+          animation-duration: 2s;
+        }
+
         .analytics-preview-card {
           position: relative;
           overflow: hidden;
@@ -1046,25 +1344,42 @@ export default function HomeDemo() {
         .analytics-preview-card::before {
           content: "";
           position: absolute;
-          width: 300%;
-          height: 300%;
-          top: -100%;
-          left: -100%;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
           background: conic-gradient(
             from 0deg,
             #3b82f6,
-            #a855f7,
-            #10b981,
-            #3b82f6 25%,
-            transparent 25%,
-            transparent 50%,
-            #3b82f6 50%,
-            #a855f7 75%,
-            #10b981 100%
+            transparent 20%,
+            #a855f7 50%,
+            transparent 70%,
+            #3b82f6 100%
           );
-          animation: spin 5s linear infinite;
-          border-radius: 16px;
+          animation: spin 7s linear infinite;
+          border-radius: 20px;
           z-index: 0;
+          filter: blur(2px);
+        }
+
+        .analytics-preview-card::after {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: #0a1120;
+          border-radius: 18px;
+          z-index: 1;
+        }
+
+        .analytics-preview-content {
+          position: relative;
+          z-index: 10;
+          background: transparent;
+          border-radius: 18px;
+        }
+
+        .analytics-preview-card:hover::before {
+          animation-duration: 3.5s;
         }
 
         .ai-healing-large-card::after {
@@ -1136,6 +1451,14 @@ export default function HomeDemo() {
 
         .database-card:hover::before {
           animation-duration: 2s;
+        }
+
+        .database-card-blue:hover::before {
+          animation-duration: 1.5s;
+        }
+
+        .database-card-purple:hover::before {
+          animation-duration: 2.5s;
         }
       `;
       document.head.appendChild(styleElement);
@@ -1214,10 +1537,10 @@ export default function HomeDemo() {
         }
       `}</style>
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-white">
+      <div className="relative overflow-hidden bg-gray-50">
         {/* Background Glow Effect */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="absolute w-[800px] h-[800px] bg-gradient-radial from-blue-100/30 via-blue-50/20 to-transparent rounded-full blur-3xl" />
+          <div className="absolute w-[800px] h-[800px] bg-gradient-radial from-gray-100/30 via-gray-50/20 to-transparent rounded-full blur-3xl" />
         </div>
 
         {/* Content Container */}
@@ -1242,7 +1565,7 @@ export default function HomeDemo() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-center text-blue-900 mb-6 leading-tight"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-center text-gray-900 mb-6 leading-tight font-['Inter']"
           >
             Satu Platform untuk Seluruh
             <br />
@@ -1254,7 +1577,7 @@ export default function HomeDemo() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg sm:text-xl text-center text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg sm:text-xl text-center text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed font-['Inter']"
           >
             Kelola produk, pantau analitik penjual, dan kendalikan database dalam satu dashboard terintegrasi.
           </motion.p>
@@ -1268,7 +1591,7 @@ export default function HomeDemo() {
           >
             <button
               onClick={() => setActiveDashboard('admin')}
-              className={`px-8 py-4 font-semibold rounded-lg transition-all duration-200 ${
+              className={`px-8 py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
                 activeDashboard === 'admin'
                   ? 'bg-red-600 text-white shadow-lg shadow-red-600/25'
                   : 'bg-white text-red-600 border-2 border-red-600 hover:bg-red-50'
@@ -1281,7 +1604,7 @@ export default function HomeDemo() {
             </button>
             <button
               onClick={() => setActiveDashboard('seller')}
-              className={`px-8 py-4 font-semibold rounded-lg transition-all duration-200 ${
+              className={`px-8 py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
                 activeDashboard === 'seller'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
                   : 'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50'
@@ -1354,6 +1677,241 @@ export default function HomeDemo() {
           </motion.div>
         </div>
       </div>
+
+      {/* Analytics Preview Section */}
+      <section className="py-24 deep-ambient-glow relative" style={{ backgroundColor: '#0a0f1d' }}>
+        {/* Background Glow Effects - Neon Cloud */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Blue/Cyan Glow - Top Left */}
+          <div 
+            className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, rgba(37, 99, 235, 0.2) 40%, transparent 70%)',
+              filter: 'blur(100px)'
+            }}
+          ></div>
+          
+          {/* Purple Glow - Bottom Left */}
+          <div 
+            className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, rgba(168, 85, 247, 0.15) 40%, transparent 70%)',
+              filter: 'blur(90px)'
+            }}
+          ></div>
+          
+          {/* Green/Magenta Glow - Right */}
+          <div 
+            className="absolute top-1/2 right-0 transform -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(219, 39, 119, 0.15) 40%, transparent 70%)',
+              filter: 'blur(110px)'
+            }}
+          ></div>
+          
+          {/* Additional Center Cloud */}
+          <div 
+            className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-[700px] h-[350px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(96, 165, 250, 0.15) 0%, rgba(99, 102, 241, 0.1) 40%, transparent 70%)',
+              filter: 'blur(120px)'
+            }}
+          ></div>
+          
+          {/* Bottom Right Accent */}
+          <div 
+            className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(236, 72, 153, 0.08) 40%, transparent 70%)',
+              filter: 'blur(80px)'
+            }}
+          ></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Marketing Text */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+              viewport={{ once: true }}
+              className="relative z-10"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-6"
+              >
+                <BarChart3 className="w-4 h-4 text-blue-400 mr-2" />
+                <span className="text-sm font-medium text-blue-300">Real-time Analytics</span>
+              </motion.div>
+              
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                viewport={{ once: true }}
+                className="text-4xl md:text-5xl font-bold text-white mb-6 font-['Inter'] leading-tight"
+              >
+                Advanced Analytics Dashboard
+                <motion.span 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                  viewport={{ once: true }}
+                  className="block text-2xl md:text-3xl font-normal text-blue-300 mt-2"
+                >
+                  Real-time insights for data-driven decisions
+                </motion.span>
+              </motion.h2>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="text-lg text-gray-300 mb-8 leading-relaxed max-w-lg"
+              >
+                Monitor key metrics, track performance trends, and gain actionable insights with our powerful analytics engine designed for modern marketplaces.
+              </motion.p>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                viewport={{ once: true }}
+                className="grid grid-cols-2 gap-4 mb-8"
+              >
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-white mb-1">99.9%</div>
+                  <div className="text-sm text-gray-400">Data Accuracy</div>
+                </div>
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-white mb-1">&lt;100ms</div>
+                  <div className="text-sm text-gray-400">Response Time</div>
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                viewport={{ once: true }}
+                className="flex flex-col sm:flex-row gap-4"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(59, 130, 246, 0.3)" }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-lg"
+                >
+                  Explore Analytics
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05, borderColor: "rgba(255, 255, 255, 0.5)" }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-6 py-3 bg-transparent text-white font-semibold rounded-xl border border-white/20 hover:bg-white/10 transition-all duration-200"
+                >
+                  View Documentation
+                </motion.button>
+              </motion.div>
+            </motion.div>
+            
+            {/* Right Column - Analytics Preview */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                viewport={{ once: true }}
+                className="analytics-preview-card relative bg-gray-900/50 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-6 shadow-2xl"
+              >
+                <div className="analytics-preview-content relative z-10">
+                  {/* Analytics Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium text-gray-300">Live Analytics</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                      <div className="w-4 h-4 bg-green-400 rounded-sm"></div>
+                      <div className="w-4 h-4 bg-blue-400 rounded-sm"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-gray-800/50 rounded-xl p-3">
+                      <div className="text-xs text-gray-400 mb-1">Total Revenue</div>
+                      <div className="text-xl font-bold text-white mb-2">$2.4M</div>
+                      <div className="flex items-center text-xs text-green-400">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        +12.5%
+                      </div>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-xl p-3">
+                      <div className="text-xs text-gray-400 mb-1">Active Users</div>
+                      <div className="text-xl font-bold text-white mb-2">48.2K</div>
+                      <div className="flex items-center text-xs text-green-400">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        +8.3%
+                      </div>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-xl p-3">
+                      <div className="text-xs text-gray-400 mb-1">Conversion</div>
+                      <div className="text-xl font-bold text-white mb-2">3.2%</div>
+                      <div className="flex items-center text-xs text-red-400">
+                        <TrendingDown className="w-3 h-3 mr-1" />
+                        -2.1%
+                      </div>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-xl p-3">
+                      <div className="text-xs text-gray-400 mb-1">Avg. Order</div>
+                      <div className="text-xl font-bold text-white mb-2">$156</div>
+                      <div className="flex items-center text-xs text-green-400">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        +5.7%
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Chart Preview */}
+                  <div className="bg-gray-800/50 rounded-xl p-4">
+                    <div className="text-xs text-gray-400 mb-3">Revenue Trend</div>
+                    <div className="flex items-end justify-between h-20 mb-2">
+                      {[40, 65, 45, 80, 55, 90, 75, 95, 85, 100, 70, 88].map((height, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ height: 0 }}
+                          whileInView={{ height: `${height}%` }}
+                          transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+                          viewport={{ once: true }}
+                          className="w-2 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t"
+                          style={{ height: `${height}%` }}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Jan</span>
+                      <span>Jun</span>
+                      <span>Dec</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       {/* Analytics & Growth Section */}
       <section className="py-24 bg-gray-50">
@@ -2986,162 +3544,6 @@ export default function HomeDemo() {
               </button>
             </div>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Analytics Preview Section */}
-      <section className="py-24 deep-ambient-glow relative" style={{ backgroundColor: '#0a0f1d' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Column - Marketing Text */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-              viewport={{ once: true }}
-              className="relative z-10"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="inline-flex items-center px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-6"
-              >
-                <BarChart3 className="w-4 h-4 text-blue-400 mr-2" />
-                <span className="text-sm font-medium text-blue-300">Real-time Analytics</span>
-              </motion.div>
-              
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                viewport={{ once: true }}
-                className="text-4xl md:text-5xl font-bold text-white mb-6 font-['Inter'] leading-tight"
-              >
-                Pantau Bisnis Anda
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-                  Secara Real-time
-                </span>
-              </motion.h2>
-              
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="text-lg text-blue-100 mb-8 font-['Inter'] leading-relaxed"
-              >
-                Analitik mendalam dengan performa tinggi yang divisualisasikan secara elegan. Dapatkan insight real-time untuk mengoptimalkan keputusan bisnis Anda.
-              </motion.p>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                viewport={{ once: true }}
-                className="space-y-4"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-3 h-3 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold font-['Inter']">Dashboard Futuristik</h3>
-                    <p className="text-blue-200 text-sm font-['Inter']">Visualisasi data yang memukau dengan neon effects</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-3 h-3 text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold font-['Inter']">Real-time Monitoring</h3>
-                    <p className="text-blue-200 text-sm font-['Inter']">Update data langsung tanpa delay</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-violet-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-3 h-3 text-violet-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold font-['Inter']">Advanced Analytics</h3>
-                    <p className="text-blue-200 text-sm font-['Inter']">Insight mendalam untuk pertumbuhan bisnis</p>
-                  </div>
-                </div>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                viewport={{ once: true }}
-                className="flex flex-col sm:flex-row gap-4 mt-10"
-              >
-                <motion.button
-                  whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)" }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-lg shadow-blue-600/25 font-['Inter']"
-                >
-                  <span className="flex items-center gap-2">
-                    <Eye className="w-4 h-4" />
-                    Lihat Demo Analytics
-                  </span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 bg-transparent text-white font-bold rounded-xl border-2 border-white/20 hover:bg-white/10 transition-all duration-200 font-['Inter']"
-                >
-                  Pelajari Lebih Lanjut
-                </motion.button>
-              </motion.div>
-            </motion.div>
-            
-            {/* Right Column - Floating Dashboard Mockup */}
-            <motion.div
-              initial={{ opacity: 0, x: 50, scale: 0.8 }}
-              whileInView={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              {/* Floating Effect */}
-              <motion.div
-                animate={{ 
-                  y: [0, -20, 0],
-                  rotate: [0, 1, -1, 0]
-                }}
-                transition={{ 
-                  duration: 6, 
-                  repeat: Infinity, 
-                  ease: "easeInOut" 
-                }}
-                className="relative z-10"
-              >
-                <AnalyticsDashboardPreview />
-              </motion.div>
-              
-              {/* Glow Effect Behind Card */}
-              <motion.div
-                animate={{ 
-                  opacity: [0.3, 0.6, 0.3],
-                  scale: [1, 1.1, 1]
-                }}
-                transition={{ 
-                  duration: 4, 
-                  repeat: Infinity, 
-                  ease: "easeInOut" 
-                }}
-                className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur-3xl -z-10"
-              />
-              
-              {/* Ambient Particles */}
-              <AmbientParticles />
-            </motion.div>
-          </div>
         </div>
       </section>
 

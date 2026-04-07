@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import AdminSidebar from '@/components/admin/AdminSidebar';
 import { Plus, Search, Filter, Edit, Trash2, Eye, Check, X, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -142,7 +141,6 @@ function AnimatedTab({ isActive, children, onClick }: {
 export default function AdminProducts() {
   const { user, isLoggedIn } = useAuth();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -175,7 +173,7 @@ export default function AdminProducts() {
 
   // Parse images safely
   const parseImages = (imagesData: string | string[]): string[] => {
-    if (!imagesData) return [];
+    if (!imagesData) return ['/placeholder.jpg'];
     
     // Convert to string if not already
     const imagesString = String(imagesData);
@@ -185,12 +183,21 @@ export default function AdminProducts() {
       return [imagesString];
     }
     
+    // Check if it's a single URL (http/https or relative)
+    if (imagesString.startsWith('http') || imagesString.startsWith('/') || imagesString.startsWith('images/')) {
+      return [imagesString];
+    }
+    
     try {
       const parsed = JSON.parse(imagesString);
-      return Array.isArray(parsed) ? parsed : [];
+      if (Array.isArray(parsed)) {
+        return parsed.length > 0 ? parsed : ['/placeholder.jpg'];
+      }
+      return [imagesString];
     } catch (error) {
       console.error('Error parsing images:', error);
-      return [];
+      // Return as single image if it's not empty, otherwise placeholder
+      return imagesString.trim() ? [imagesString] : ['/placeholder.jpg'];
     }
   };
 
@@ -202,10 +209,10 @@ export default function AdminProducts() {
       let apiUrl = '';
       if (activeTab === 'marketplace') {
         apiUrl = '/api/marketplace-products';
-        console.log('🔄 Fetching marketplace products...');
+        console.log('Fetching marketplace products...');
       } else {
         apiUrl = '/api/admin/pending-products';
-        console.log('🔄 Fetching pending products...');
+        console.log('Fetching pending products...');
       }
       
       const response = await fetch(apiUrl);
@@ -217,7 +224,7 @@ export default function AdminProducts() {
       const result: ApiResponse = await response.json();
       
       if (result.success && result.products) {
-        console.log(`✅ Fetched ${result.products.length} ${activeTab} products`);
+        console.log(`Successfully fetched ${result.products.length} ${activeTab} products`);
         setProducts(result.products);
         setLastUpdated(new Date());
       } else {
@@ -225,7 +232,19 @@ export default function AdminProducts() {
       }
     } catch (error) {
       console.error(`Error fetching ${activeTab} products:`, error);
-      setError(error instanceof Error ? error.message : 'Unknown error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
+      // Provide more user-friendly error messages
+      if (errorMessage.includes('Failed to fetch')) {
+        setError('Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda.');
+      } else if (errorMessage.includes('HTTP 404')) {
+        setError('Endpoint tidak ditemukan. Silakan hubungi administrator.');
+      } else if (errorMessage.includes('HTTP 500')) {
+        setError('Terjadi kesalahan pada server. Silakan coba lagi beberapa saat.');
+      } else {
+        setError(errorMessage);
+      }
+      
       setProducts([]);
     } finally {
       setLoading(false);
@@ -454,10 +473,8 @@ export default function AdminProducts() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        <AdminSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-        
-        <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
+      <div>
+        <div className="flex-1">
           {/* Header with Tabs */}
           <motion.div 
             initial={{ opacity: 0, y: -30 }}
@@ -576,16 +593,27 @@ export default function AdminProducts() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
-                className="flex items-center gap-2"
+                className="flex items-center justify-between"
               >
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                <div className="flex items-center gap-2">
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                  </motion.div>
+                  <span className="text-red-800 font-medium">Error:</span>
+                  <span className="text-red-700">{error}</span>
+                </div>
+                <motion.button
+                  onClick={handleRefresh}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors text-sm"
                 >
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                </motion.div>
-                <span className="text-red-800 font-medium">Error:</span>
-                <span className="text-red-700">{error}</span>
+                  <RefreshCw className="w-3 h-3" />
+                  Retry
+                </motion.button>
               </motion.div>
             </motion.div>
           )}
@@ -833,13 +861,14 @@ export default function AdminProducts() {
                               alt={product.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.currentTarget.src = '/placeholder.jpg';
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/placeholder-1.jpg';
                               }}
                               whileHover={{ scale: 1.05 }}
                               transition={{ duration: 0.3 }}
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-full h-full flex items-center justify-center bg-gray-200">
                               <motion.div
                                 animate={{ rotate: [0, 360] }}
                                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}

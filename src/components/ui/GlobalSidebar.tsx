@@ -27,7 +27,8 @@ import {
   ChevronRight,
   X,
   UserCircle,
-  Database
+  Database,
+  Monitor
 } from 'lucide-react';
 
 interface MenuItem {
@@ -281,6 +282,12 @@ export default function GlobalSidebar() {
         description: 'Tidak tampil untuk user biasa',
         items: [
           {
+            icon: BarChart3,
+            label: 'Dashboard',
+            href: '/admin/dashboard',
+            description: 'Admin dashboard overview'
+          },
+          {
             icon: Shield,
             label: 'Kelola Produk',
             href: '/admin/products',
@@ -315,6 +322,12 @@ export default function GlobalSidebar() {
             label: 'Database',
             href: '/admin/database',
             description: 'Manajemen basis data sistem'
+          },
+          {
+            icon: Monitor,
+            label: 'Desktop',
+            href: '/admin/desktop',
+            description: 'Desktop management'
           }
         ]
       }
