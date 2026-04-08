@@ -130,7 +130,7 @@ export default function AdminUsersPage() {
         {
           id: '1',
           name: 'Admin System',
-          email: 'admin@ecommerce.com',
+          email: 'yusufdariws097@gmail.com',
           phone: '+6281234567890',
           role: 'admin',
           status: 'active',

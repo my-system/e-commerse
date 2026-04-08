@@ -97,13 +97,13 @@ class DatabaseAutoSetup {
       
       // Seed admin user
       await client.user.upsert({
-        where: { email: 'admin@ecommerce.com' },
-        update: { email: 'admin@ecommerce.com' },
+        where: { email: 'yusufdarwis097@gmail.com' },
+        update: { email: 'yusufdarwis097@gmail.com' },
         create: {
-          email: 'admin@ecommerce.com',
-          name: 'Admin User',
+          email: 'yusufdarwis097@gmail.com',
+          name: 'Yusuf Darwis Admin',
           role: 'ADMIN',
-          password: '$2b$12$somehashedpassword'
+          password: '12345678'
         }
       });
       

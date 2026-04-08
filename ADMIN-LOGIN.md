@@ -2,8 +2,8 @@
 
 ## Default Admin Account
 
-**Email:** `admin@ecommerce.com`  
-**Password:** `admin123`
+**Email:** `yusufdarwis097@gmail.com`  
+**Password:** `12345678`
 
 ## Cara Login Admin:
 
@@ -20,10 +20,10 @@ Jika login tidak berhasil, buka browser console (F12) dan jalankan:
 // Copy dan paste ini di console browser
 function createAdminAccount() {
   const adminUser = {
-    id: 'admin-001',
-    name: 'Admin System',
-    email: 'admin@ecommerce.com',
-    password: 'admin123',
+    id: 'admin-yusuf-001',
+    name: 'Yusuf Darwis Admin',
+    email: 'yusufdarwis097@gmail.com',
+    password: '12345678',
     phone: '+6281234567890',
     role: 'admin',
     avatar: null,
@@ -97,8 +97,8 @@ Setelah login, gunakan link berikut:
 
 ## Security Notes
 
-- Password default: `admin123` (ubah untuk production)
-- Email default: `admin@ecommerce.com`
+- Password default: `12345678` (ubah untuk production)
+- Email default: `yusufdarwis097@gmail.com`
 - Role: `admin` (full access)
 - Data tersimpan di localStorage (untuk demo)
 

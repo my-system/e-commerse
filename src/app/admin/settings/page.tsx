@@ -17,7 +17,7 @@ export default function AdminSettings() {
     general: {
       siteName: 'E-Commerce Platform',
       siteDescription: 'Premium e-commerce marketplace for Indonesian businesses',
-      adminEmail: 'admin@ecommerce.com',
+      adminEmail: '',
       timezone: 'Asia/Jakarta',
       language: 'id-ID',
       currency: 'IDR'

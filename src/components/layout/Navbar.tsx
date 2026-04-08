@@ -12,6 +12,8 @@ import SmartSearchNew from '@/components/ui/SmartSearchNew';
 import AIChatbot from '@/components/ui/AIChatbot';
 import { categories } from '@/data/categories';
 import GlobalSidebar from '@/components/ui/GlobalSidebar';
+import AccountDropdown from '@/components/ui/AccountDropdown';
+import { toast } from 'sonner';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -20,6 +22,18 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
+
+  const isLoggedIn = status === 'authenticated';
+  const user = session?.user;
+
+  const handleLogout = async () => {
+    try {
+      await signOut({ callbackUrl: '/' });
+      toast.success('Logout berhasil');
+    } catch (error) {
+      toast.error('Logout gagal');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,6 +104,12 @@ export default function Navbar() {
                 </Link>
               )}
               
+              <AccountDropdown 
+                user={user as any} 
+                isLoggedIn={isLoggedIn} 
+                onLogin={() => {}} // Login handled by account page
+                onLogout={handleLogout}
+              />
               <button 
                 className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
                 onClick={openCart}
