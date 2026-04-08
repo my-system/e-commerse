@@ -6,7 +6,10 @@ const globalForPrisma = globalThis as unknown as {
 
 // Auto-setup database connection
 async function setupDatabase(): Promise<PrismaClient> {
-  const DATABASE_URL = process.env.DATABASE_URL || 'file:./dev.db';
+  // Use NEON_DATABASE_URL in production, DATABASE_URL in development
+  const DATABASE_URL = process.env.NODE_ENV === 'production' 
+    ? process.env.NEON_DATABASE_URL || process.env.DATABASE_URL
+    : process.env.DATABASE_URL || 'file:./dev.db';
   
   try {
     console.log('🔍 Testing database connection...');

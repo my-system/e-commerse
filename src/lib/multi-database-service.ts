@@ -1,14 +1,14 @@
-// Multi-database service for product approval workflow
+// Approval Workflow Service for product management
 import { Pool } from 'pg';
 import { products } from '@/data/products'; // Fallback to dummy data
 
 // Database connections
 const pendingPool = new Pool({
-  connectionString: process.env.PENDING_DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/ecommerce_pending"
+  connectionString: "postgresql://neondb_owner:npg_Wb35tJcYmLKy@ep-jolly-pine-an0l6t3r-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
 });
 
 const marketplacePool = new Pool({
-  connectionString: process.env.MARKETPLACE_DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/ecommerce_marketplace"
+  connectionString: "postgresql://neondb_owner:npg_Wb35tJcYmLKy@ep-jolly-pine-an0l6t3r-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
 });
 
 export interface Product {
@@ -29,6 +29,8 @@ export interface Product {
   sellerId: string;
   createdAt: string;
   updatedAt: string;
+  approvedAt?: string; // When product was approved
+  rejectedReason?: string; // Why product was rejected
 }
 
 // PENDING DATABASE OPERATIONS
@@ -215,7 +217,8 @@ export class MarketplaceDatabaseService {
     try {
       const client = await marketplacePool.connect();
       try {
-        const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY approved_at DESC', ['approved']);
+        // Use the actual database schema - only get approved products
+        const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY "createdAt" DESC', ['approved']);
         return result.rows.map(row => this.mapRowToProduct(row));
       } finally {
         client.release();
@@ -238,13 +241,116 @@ export class MarketplaceDatabaseService {
       }));
     }
   }
+
+  // Approve pending product and move to marketplace
+  static async approveProduct(productId: string, approvedBy: string): Promise<boolean> {
+    try {
+      // First, get the pending product
+      const pendingClient = await pendingPool.connect();
+      let pendingProduct = null;
+      
+      try {
+        const result = await pendingClient.query('SELECT * FROM products WHERE id = $1', [productId]);
+        if (result.rows.length > 0) {
+          pendingProduct = result.rows[0];
+        }
+      } finally {
+        pendingClient.release();
+      }
+
+      if (!pendingProduct) {
+        console.error('Pending product not found:', productId);
+        return false;
+      }
+
+      // Add to marketplace database
+      const marketplaceClient = await marketplacePool.connect();
+      try {
+        const now = new Date().toISOString();
+        const result = await marketplaceClient.query(`
+          INSERT INTO products (
+            id, title, price, category, description, featured, in_stock,
+            rating, reviews, images, material, care, status, badges, seller_id,
+            approved_at, created_at, updated_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+          RETURNING *
+        `, [
+          pendingProduct.id,
+          pendingProduct.title,
+          pendingProduct.price,
+          pendingProduct.category,
+          pendingProduct.description,
+          pendingProduct.featured,
+          pendingProduct.in_stock,
+          pendingProduct.rating,
+          pendingProduct.reviews,
+          pendingProduct.images,
+          pendingProduct.material,
+          pendingProduct.care,
+          'approved',
+          'Approved',
+          pendingProduct.seller_id,
+          now, // approved_at
+          pendingProduct.created_at,
+          now // updated_at
+        ]);
+
+        console.log(`✅ Product approved: ${result.rows[0].title} by ${approvedBy}`);
+        return true;
+      } finally {
+        marketplaceClient.release();
+      }
+    } catch (error) {
+      console.error('Error approving product:', error);
+      return false;
+    }
+  }
+
+  // Reject pending product
+  static async rejectProduct(productId: string, reason: string, rejectedBy: string): Promise<boolean> {
+    try {
+      const pendingClient = await pendingPool.connect();
+      try {
+        // Update status to rejected in pending database
+        await pendingClient.query(`
+          UPDATE products 
+          SET status = $1, rejected_reason = $2, updated_at = $3 
+          WHERE id = $4
+        `, ['rejected', reason, new Date().toISOString(), productId]);
+
+        console.log(`❌ Product rejected: ${productId} - Reason: ${reason} by ${rejectedBy}`);
+        return true;
+      } finally {
+        pendingClient.release();
+      }
+    } catch (error) {
+      console.error('Error rejecting product:', error);
+      return false;
+    }
+  }
+
+  // Get pending products for admin review
+  static async getPendingProducts(): Promise<Product[]> {
+    try {
+      const client = await pendingPool.connect();
+      try {
+        const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY "createdAt" DESC', ['pending']);
+        return result.rows.map(row => this.mapRowToProduct(row));
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error fetching pending products:', error);
+      return [];
+    }
+  }
   
   // Delete product from marketplace
   static async deleteMarketplaceProduct(productId: string): Promise<boolean> {
     try {
       const client = await marketplacePool.connect();
       try {
-        const result = await client.query('DELETE FROM products WHERE id = $1 AND status = $2', [productId, 'approved']);
+        const result = await client.query('DELETE FROM products WHERE id = $1', [productId]);
         return (result.rowCount || 0) > 0;
       } finally {
         client.release();
@@ -262,16 +368,16 @@ export class MarketplaceDatabaseService {
       price: parseFloat(row.price),
       category: row.category,
       description: row.description || '',
-      featured: row.featured,
-      inStock: row.in_stock,
-      rating: row.rating,
-      reviews: row.reviews,
+      featured: row.featured || false,
+      inStock: row.in_stock !== undefined ? row.in_stock : true,
+      rating: row.rating || 0,
+      reviews: row.reviews || 0,
       images: row.images || '[]',
       material: row.material || '',
       care: row.care || '',
-      status: row.status,
-      badges: row.badges || '[]',
-      sellerId: row.seller_id,
+      status: 'approved', // All products in main database are considered approved
+      badges: 'Approved', // Default badge
+      sellerId: row.seller_id || 'default-seller',
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };

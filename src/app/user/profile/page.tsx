@@ -56,6 +56,8 @@ export default function ModernUserDashboard() {
     bio: 'Passionate about technology and design',
     newsletter: true
   });
+  
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   const [addresses, setAddresses] = useState([
     {
@@ -114,10 +116,16 @@ export default function ModernUserDashboard() {
   ];
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Load profile picture from localStorage
+    const savedProfilePicture = localStorage.getItem('userProfilePicture');
+    if (savedProfilePicture) {
+      setProfilePicture(savedProfilePicture);
+    }
+    
+    // Simulate loading complete
+    setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -135,9 +143,43 @@ export default function ModernUserDashboard() {
     const file = event.target.files?.[0];
     if (file) {
       setIsUploading(true);
-      setTimeout(() => {
+      
+      // Validasi file
+      if (!file.type.startsWith('image/')) {
+        alert('Harap pilih file gambar (JPG, PNG, GIF)');
         setIsUploading(false);
-      }, 2000);
+        return;
+      }
+      
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        alert('Ukuran file terlalu besar. Maksimal 2MB');
+        setIsUploading(false);
+        return;
+      }
+      
+      // Buat URL preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        // Simpan ke localStorage dan state
+        localStorage.setItem('userProfilePicture', imageUrl);
+        setProfilePicture(imageUrl);
+        
+        // Update user context jika perlu
+        // updateUser({ profilePicture: imageUrl });
+        
+        setIsUploading(false);
+        
+        // Refresh untuk menampilkan gambar baru
+        // window.location.reload();
+      };
+      
+      reader.onerror = () => {
+        alert('Gagal membaca file gambar');
+        setIsUploading(false);
+      };
+      
+      reader.readAsDataURL(file);
     }
   };
 
@@ -341,7 +383,9 @@ export default function ModernUserDashboard() {
                       <div className="flex items-center gap-6">
                         <div className="relative group">
                           <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
-                            {user?.avatar ? (
+                            {profilePicture ? (
+                              <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                            ) : user?.avatar ? (
                               <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
                               <User className="w-12 h-12 text-white" />

@@ -2,8 +2,10 @@ import { Pool } from 'pg';
 
 // Database connection pool
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: false, // Disable SSL for local development
+  connectionString: process.env.NODE_ENV === 'production' 
+    ? process.env.NEON_DATABASE_URL || process.env.DATABASE_URL
+    : process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false, // Enable SSL for production
   max: 20, // Maximum number of connections
   idleTimeoutMillis: 30000, // Close idle connections after 30s
   connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established

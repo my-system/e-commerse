@@ -25,6 +25,7 @@
     "deploy:full": "scripts/deploy-vercel.bat"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.4.0",
     "@prisma/client": "^5.19.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0",
@@ -48,6 +49,10 @@
     "eslint-config-next": "16.2.1",
     "next-https": "^1.1.16",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
   }
 }

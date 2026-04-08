@@ -355,7 +355,7 @@ export default function RegisterPage() {
                 <p className="text-gray-600">
                   Sudah punya akun?{' '}
                   <Link 
-                    href="/user/login" 
+                    href="/login" 
                     className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                   >
                     Masuk di sini

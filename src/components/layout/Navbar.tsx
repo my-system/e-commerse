@@ -10,7 +10,6 @@ import { useSidebar } from '@/contexts/SidebarContext';
 import MiniCart from '@/components/ui/MiniCart';
 import SmartSearchNew from '@/components/ui/SmartSearchNew';
 import AIChatbot from '@/components/ui/AIChatbot';
-import AccountDropdown from '@/components/ui/AccountDropdown';
 import { categories } from '@/data/categories';
 import GlobalSidebar from '@/components/ui/GlobalSidebar';
 
@@ -83,7 +82,7 @@ export default function Navbar() {
               {/* Login Button when not logged in */}
               {!isLoggedIn && (
                 <Link
-                  href="/user/login"
+                  href="/login"
                   className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
                 >
                   <User className="h-4 w-4" />
@@ -91,12 +90,6 @@ export default function Navbar() {
                 </Link>
               )}
               
-              <AccountDropdown 
-                user={user as any} 
-                isLoggedIn={isLoggedIn} 
-                onLogin={() => {}} // Login handled by account page
-                onLogout={logout}
-              />
               <button 
                 className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
                 onClick={openCart}
