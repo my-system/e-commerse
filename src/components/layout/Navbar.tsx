@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { Menu, ShoppingCart, User, Search as SearchIcon, ChevronDown, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import MiniCart from '@/components/ui/MiniCart';
 import SmartSearchNew from '@/components/ui/SmartSearchNew';
@@ -17,7 +17,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const { state: cartState, openCart } = useCart();
-  const { user, isLoggedIn, login, logout } = useAuth();
+  const { data: session, status } = useSession();
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
 
@@ -80,7 +80,7 @@ export default function Navbar() {
               <SmartSearchNew className="w-80" />
               
               {/* Login Button when not logged in */}
-              {!isLoggedIn && (
+              {status !== 'authenticated' && (
                 <Link
                   href="/login"
                   className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"

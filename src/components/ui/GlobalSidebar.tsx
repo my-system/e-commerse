@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/contexts/SidebarContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession, signOut } from 'next-auth/react';
 import { 
   Home, 
   ShoppingCart, 
@@ -48,7 +48,7 @@ interface MenuSection {
 
 export default function GlobalSidebar() {
   const { isSidebarOpen, closeSidebar, userRole, setUserRole } = useSidebar();
-  const { user, isLoggedIn, logout } = useAuth();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -61,7 +61,7 @@ export default function GlobalSidebar() {
   };
 
   const handleAuthAction = () => {
-    if (isLoggedIn) {
+    if (status === 'authenticated') {
       // If logged in, go to account page
       closeSidebar();
       router.push('/user');
@@ -472,12 +472,12 @@ export default function GlobalSidebar() {
 
             {/* User Profile Section - Compact */}
             <div className="p-4 border-b border-gray-100 bg-gray-50">
-              {isLoggedIn ? (
+              {status === 'authenticated' ? (
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
-                      {user?.avatar ? (
-                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-xl object-cover" />
+                      {session?.user?.image ? (
+                        <img src={session.user.image} alt={session.user.name || 'User'} className="w-full h-full rounded-xl object-cover" />
                       ) : (
                         <UserCircle className="w-7 h-7 text-white" />
                       )}
@@ -486,10 +486,10 @@ export default function GlobalSidebar() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 text-sm truncate">
-                      {user?.name || 'John Doe'}
+                      {session?.user?.name || 'John Doe'}
                     </h3>
                     <p className="text-xs text-gray-600 truncate">
-                      {user?.email || 'demo@example.com'}
+                      {session?.user?.email || 'demo@example.com'}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="px-2 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs rounded-full font-semibold border border-blue-200/50">
@@ -512,7 +512,7 @@ export default function GlobalSidebar() {
             {/* Navigation Content - Scrollable */}
             <div className="overflow-y-auto max-h-[50vh]">
               {/* Role Switcher - Compact - Only show if logged in */}
-              {isLoggedIn && (
+              {status === 'authenticated' && (
                 <div className="p-4 border-b border-gray-100">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Current Role</span>
@@ -572,7 +572,7 @@ export default function GlobalSidebar() {
                 </div>
 
                 {/* Role-based Menus - Only show if logged in */}
-                {isLoggedIn && roleBasedMenus[userRole]?.map((section) => (
+                {status === 'authenticated' && roleBasedMenus[userRole]?.map((section) => (
                   <div key={section.title} className="mb-3">
                     <div className="px-3 py-2">
                       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -610,7 +610,7 @@ export default function GlobalSidebar() {
                 ))}
 
                 {/* Guest User Info - Only show if not logged in */}
-                {!isLoggedIn && (
+                {status !== 'authenticated' && (
                   <div className="mb-3">
                     <div className="px-3 py-2">
                       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -677,13 +677,13 @@ export default function GlobalSidebar() {
               <button
                 onClick={handleAuthAction}
                 className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium border ${
-                  isLoggedIn 
+                  status === 'authenticated' 
                     ? 'bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-600 border-blue-200/50'
                     : 'bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 text-green-600 border-green-200/50'
                 }`}
               >
-                {isLoggedIn ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
-                <span>{isLoggedIn ? 'Account' : 'Login'}</span>
+                {status === 'authenticated' ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
+                <span>{status === 'authenticated' ? 'Account' : 'Login'}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

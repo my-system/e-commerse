@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Route Testing</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-item { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .loading { color: blue; }
+        a { color: blue; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Route Testing - Login Page Access</h1>
+    
+    <div class="test-item">
+        <h3>1. Test Login Page Direct Access</h3>
+        <a href="/login" target="_blank">Open Login Page</a>
+        <div id="login-test" class="loading">Testing...</div>
+    </div>
+    
+    <div class="test-item">
+        <h3>2. Test Register Page</h3>
+        <a href="/register" target="_blank">Open Register Page</a>
+        <div id="register-test" class="loading">Testing...</div>
+    </div>
+    
+    <div class="test-item">
+        <h3>3. Test Dashboard Page</h3>
+        <a href="/dashboard" target="_blank">Open Dashboard</a>
+        <div id="dashboard-test" class="loading">Testing...</div>
+    </div>
+    
+    <div class="test-item">
+        <h3>4. Test Home Page</h3>
+        <a href="/" target="_blank">Open Home Page</a>
+        <div id="home-test" class="loading">Testing...</div>
+    </div>
+    
+    <div class="test-item">
+        <h3>5. Test Login Page API</h3>
+        <div id="login-api" class="loading">Testing...</div>
+    </div>
+    
+    <script>
+        async function testRoute(route, elementId) {
+            try {
+                const response = await fetch(route, {
+                    method: 'GET',
+                    redirect: 'manual' // Don't follow redirects
+                });
+                
+                const element = document.getElementById(elementId);
+                
+                if (response.status === 200) {
+                    element.innerHTML = `<span class="success">✅ Accessible (${response.status})</span>`;
+                } else if (response.status === 302 || response.status === 307) {
+                    element.innerHTML = `<span class="loading">🔄 Redirecting (${response.status})</span>`;
+                } else {
+                    element.innerHTML = `<span class="error">❌ Not accessible (${response.status})</span>`;
+                }
+            } catch (error) {
+                document.getElementById(elementId).innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        // Test all routes
+        testRoute('/login', 'login-test');
+        testRoute('/register', 'register-test');
+        testRoute('/dashboard', 'dashboard-test');
+        testRoute('/', 'home-test');
+        testRoute('/api/auth/session', 'login-api');
+        
+        // Auto-refresh every 5 seconds
+        setInterval(() => {
+            testRoute('/login', 'login-test');
+            testRoute('/register', 'register-test');
+            testRoute('/dashboard', 'dashboard-test');
+            testRoute('/', 'home-test');
+            testRoute('/api/auth/session', 'login-api');
+        }, 5000);
+    </script>
+</body>
+</html>

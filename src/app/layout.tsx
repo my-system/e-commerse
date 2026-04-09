@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider as SessionProvider } from "@/components/providers/SessionProvider";
 import Navbar from "@/components/layout/Navbar";
 
 const geistSans = Geist({
@@ -99,26 +100,24 @@ export default function RootLayout({
         
         {/* Preload critical images untuk menghilangkan flash */}
         <link rel="preload" href="/placeholder.jpg" as="image" type="image/jpeg" />
-        <link rel="preload" href="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=800&fit=crop" as="image" type="image/jpeg" />
-        <link rel="preload" href="https://images.unsplash.com/photo-1441986300917-64674bd28d4?w=600&h=800&fit=crop" as="image" type="image/jpeg" />
-        <link rel="preload" href="https://images.unsplash.com/photo-1522337390748-732aff93708?w=600&h=800&fit=crop" as="image" type="image/jpeg" />
-        <link rel="preload" href="https://images.unsplash.com/photo-1578632264424-999b267d5d0?w=600&h=800&fit=crop" as="image" type="image/jpeg" />
       </head>
       <body className="min-h-full">
-        <SidebarProvider>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <UserPreferencesProvider>
-                  <Navbar />
-                  <main className="min-h-screen pt-16">
-                    {children}
-                  </main>
-                </UserPreferencesProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
-        </SidebarProvider>
+        <AuthProvider>
+          <SessionProvider>
+            <SidebarProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <UserPreferencesProvider>
+                    <Navbar />
+                    <main className="min-h-screen pt-16">
+                      {children}
+                    </main>
+                  </UserPreferencesProvider>
+                </WishlistProvider>
+              </CartProvider>
+            </SidebarProvider>
+          </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   );
