@@ -322,11 +322,7 @@ export default function ModernUserDashboard() {
                   <div className="flex items-center gap-6">
                     <div className="relative group">
                       <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
-                        {user?.avatar ? (
-                          <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-12 h-12 text-white" />
-                        )}
+                        <User className="w-12 h-12 text-white" />
                       </div>
                       <button
                         onClick={() => fileInputRef.current?.click()}

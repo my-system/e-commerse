@@ -70,10 +70,35 @@ powershell-*.js
 api-*.js
 show-*.js
 
-# Report files (keep only essential ones)
+# Report files (exclude all private reports)
 *-REPORT.md
 DEEP-SCAN-REPORT.md
 DATA-CONSISTENCY-*.md
+LAPORAN-*.md
+MONITORING-*.md
+SYSTEM-*.md
+AUTO-*.md
+IMPLEMENTASI-*.md
+PERBAIKAN-*.md
+DOKUMENTASI-*.md
+RINGKASAN-*.md
+MEKANISME-*.md
+VERCEL-*.md
+DEPLOYMENT-*.md
+AUTHENTICATION-*.md
+DATABASE-*.md
+ENDPOINT-*.md
+ADMIN-*.md
+CLEANUP-*.md
+SELLER-*.md
+MARKETPLACE-*.md
+PRODUCT-*.md
+SYNC-*.md
+HEALTH-*.md
+PRODUCTION-*.md
+README-ROLE-*.md
+CLAUDE-*.md
+AGENTS-*.md
 
 # Environment backups
 .env.local.backup

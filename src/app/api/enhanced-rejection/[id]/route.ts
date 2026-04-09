@@ -13,7 +13,7 @@ export async function POST(
   try {
     console.log(`🚫 [API] Starting enhanced rejection process for product: ${productId}`);
     
-    const result = await syncService.rejectProduct(productId);
+    const result = await syncService.rejectProduct(productId, 'Rejected by admin');
     
     if (result.success) {
       console.log(`✅ [API] Product ${productId} rejection completed successfully`);

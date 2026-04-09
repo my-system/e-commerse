@@ -41,17 +41,17 @@ export class CentralBackupValidator {
 
   constructor() {
     this.backupPool = new Pool({
-      connectionString: process.env.BACKUP_DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/commercedb",
+      connectionString: process.env.DATABASE_URL,
       connectionTimeoutMillis: 30000
     });
     
     this.pendingPool = new Pool({
-      connectionString: process.env.PENDING_DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/ecommerce_pending",
+      connectionString: process.env.DATABASE_URL,
       connectionTimeoutMillis: 30000
     });
     
     this.marketplacePool = new Pool({
-      connectionString: process.env.MARKETPLACE_DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/ecommerce_marketplace",
+      connectionString: process.env.DATABASE_URL,
       connectionTimeoutMillis: 30000
     });
 

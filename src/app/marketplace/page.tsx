@@ -93,7 +93,6 @@ import { formatPrice } from '@/lib/utils';
 import { Filter, X, ShoppingCart, Eye } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { triggerAIMonitoring } from '@/lib/ai-monitoring';
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -187,33 +186,14 @@ export default function MarketplacePage() {
           setAllProducts(realProducts);
           console.log(`SUCCESS: Loaded ${realProducts.length} approved products from marketplace database`);
           
-          // Trigger AI monitoring
-          await triggerAIMonitoring('marketplace_products_loaded', {
-            productCount: realProducts.length,
-            categories: [...new Set(realProducts.map((p: any) => p.category))],
-            avgPrice: realProducts.reduce((sum: number, p: any) => sum + p.price, 0) / realProducts.length
-          });
-          
         } else {
           console.warn('Failed to load marketplace products, using fallback');
           console.warn('API Response:', result);
           setAllProducts([]); // Empty array if API fails
-          
-          // Trigger AI monitoring for failure
-          await triggerAIMonitoring('marketplace_api_failed', {
-            error: result.error || 'Unknown error',
-            response: result
-          });
         }
       } catch (error) {
         console.error('Error fetching marketplace products:', error);
         setAllProducts([]); // Empty array on error
-        
-        // Trigger AI monitoring for exception
-        await triggerAIMonitoring('marketplace_fetch_exception', {
-          error: (error as Error).message,
-          stack: (error as Error).stack
-        });
       } finally {
         setLoading(false);
       }

@@ -3,10 +3,9 @@ import { notFound } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ProductGallery from '@/components/ui/ProductGallery';
-import ProductInfo from '@/components/ui/ProductInfo';
 import ProductCard from '@/components/ui/ProductCard';
 import { formatPrice } from '@/lib/utils';
-import { ShoppingCart, Heart, Star, Truck, Shield, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Star, Truck, Shield, RefreshCw } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import AddToCartClient from '@/components/client/AddToCartClient';
 import WishlistClient from '@/components/client/WishlistClient';
@@ -15,27 +14,18 @@ import Link from 'next/link';
 interface Product {
   id: string;
   title: string;
-  name: string;
   slug: string;
   price: number;
-  originalPrice?: number;
   discount_price?: number;
   description: string;
   category: string;
   rating: number;
   reviews: number;
   inStock: boolean;
-  stock?: number;
   images: string[];
   featured: boolean;
   material?: string;
   care?: string;
-  specifications?: Record<string, string>;
-  variants?: {
-    sizes?: Array<{ id: string; name: string; price: number; inStock: boolean }>;
-    colors?: Array<{ id: string; name: string; value: string; inStock: boolean }>;
-  };
-  sellerId?: string;
   status?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -77,14 +67,7 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
       include: {
         sizes: true,
         colors: true,
-        specs: true,
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
+        specs: true
       }
     });
 
@@ -96,7 +79,6 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
     return {
       id: product.id,
       title: product.title,
-      name: product.title,
       slug: product.slug || '',
       price: product.price,
       discount_price: undefined, // Not available in current schema
@@ -109,21 +91,6 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
       featured: product.featured,
       material: product.material || undefined,
       care: product.care || undefined,
-      variants: {
-        sizes: product.sizes.map(size => ({
-          id: size.id,
-          name: size.name,
-          price: product.price,
-          inStock: size.inStock
-        })),
-        colors: product.colors.map(color => ({
-          id: color.id,
-          name: color.name,
-          value: color.value,
-          inStock: color.inStock
-        }))
-      },
-      sellerId: product.sellerId || undefined,
       status: product.status || 'PENDING',
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString()
@@ -153,7 +120,6 @@ async function getRelatedProducts(category: string, currentProductId: string): P
     return products.map(product => ({
       id: product.id,
       title: product.title,
-      name: product.title,
       slug: product.slug || '',
       price: product.price,
       discount_price: undefined, // Not available in current schema
@@ -166,21 +132,6 @@ async function getRelatedProducts(category: string, currentProductId: string): P
       featured: product.featured,
       material: product.material || undefined,
       care: product.care || undefined,
-      variants: {
-        sizes: product.sizes.map(size => ({
-          id: size.id,
-          name: size.name,
-          price: product.price,
-          inStock: size.inStock
-        })),
-        colors: product.colors.map(color => ({
-          id: color.id,
-          name: color.name,
-          value: color.value,
-          inStock: color.inStock
-        }))
-      },
-      sellerId: product.sellerId || undefined,
       status: product.status || 'PENDING',
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString()
@@ -308,11 +259,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
               }`}>
                 {product.inStock ? 'Tersedia' : 'Habis'}
               </span>
-              {product.stock && (
-                <span className="text-sm text-gray-500">
-                  ({product.stock} unit tersedia)
-                </span>
-              )}
             </div>
 
             {/* Short Description */}
@@ -338,10 +284,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
               >
                 Beli Sekarang
               </Link>
+              
+              <WishlistClient product={product} />
             </div>
-
-            {/* Wishlist Button */}
-            <WishlistClient product={product} />
 
             {/* Product Features */}
             <div className="border-t pt-6">
@@ -386,7 +331,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           </div>
           
           {/* Product Specifications */}
-          {(product.material || product.specifications) && (
+          {(product.material) && (
             <div className="mt-8 border-t pt-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Spesifikasi Produk</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -403,13 +348,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     <span className="text-sm text-gray-600 ml-2">{product.care}</span>
                   </div>
                 )}
-                
-                {product.specifications && Object.entries(product.specifications).map(([key, value]) => (
-                  <div key={key}>
-                    <span className="text-sm font-medium text-gray-700">{key}:</span>
-                    <span className="text-sm text-gray-600 ml-2">{value}</span>
-                  </div>
-                ))}
               </div>
             </div>
           )}

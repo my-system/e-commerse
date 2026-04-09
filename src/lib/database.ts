@@ -1,9 +1,5 @@
 // Centralized Database Configuration & Connection
 import { PrismaClient } from '@prisma/client';
-import { validateOnStartup } from './env-validation';
-
-// Validate environment on startup
-validateOnStartup();
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

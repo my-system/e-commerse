@@ -13,7 +13,7 @@ export async function POST(
   try {
     console.log(`🚫 [API] Memulai proses penolakan tingkat lanjut untuk produk: ${productId}`);
     
-    const result = await syncService.rejectProduct(productId);
+    const result = await syncService.rejectProduct(productId, 'Ditolak oleh admin');
     
     if (result.success) {
       console.log(`✅ [API] Produk ${productId} berhasil ditolak`);

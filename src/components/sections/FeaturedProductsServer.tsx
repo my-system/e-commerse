@@ -47,5 +47,5 @@ async function getFeaturedProducts() {
 export default async function FeaturedProductsServer() {
   const featuredProducts = await getFeaturedProducts();
   
-  return <FeaturedProductsDB products={featuredProducts} />;
+  return <FeaturedProductsDB />;
 }

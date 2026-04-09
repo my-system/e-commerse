@@ -4,9 +4,16 @@ import { MarketplaceDatabaseService } from '@/lib/multi-database-service';
 // GET - Fetch approved products for marketplace
 export async function GET(request: NextRequest) {
   try {
+    // Log environment variables for debugging
+    console.log('🔧 Environment Check:');
+    console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? '✅ Set' : '❌ Not set'}`);
+    console.log(`NEON_DATABASE_URL: ${process.env.NEON_DATABASE_URL ? '✅ Set' : '❌ Not set'}`);
+    
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
+    
+    console.log(`📋 API Request - Category: ${category}, Featured: ${featured}`);
     
     let products = await MarketplaceDatabaseService.getMarketplaceProducts();
     

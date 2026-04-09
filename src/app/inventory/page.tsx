@@ -50,7 +50,7 @@ export default function InventoryPage() {
 
   // Mock inventory data
   useEffect(() => {
-    if (!isLoggedIn || user?.role !== 'admin') {
+    if (!isLoggedIn || user?.role !== 'ADMIN') {
       router.push('/access-denied');
       return;
     }

@@ -385,8 +385,6 @@ export default function ModernUserDashboard() {
                           <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
                             {profilePicture ? (
                               <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
-                            ) : user?.avatar ? (
-                              <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
                               <User className="w-12 h-12 text-white" />
                             )}

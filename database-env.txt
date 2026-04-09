@@ -1,5 +1,5 @@
 # Database Connection String
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ecommercedb"
+DATABASE_URL="postgresql://neondb_owner:npg_3H8vY5B8fR@ep-soft-meadow-xyz123456.us-east-1.aws.neon.tech:5432/neondb?sslmode=require"
 
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"

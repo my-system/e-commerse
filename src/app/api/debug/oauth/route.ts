@@ -11,8 +11,7 @@ export async function GET() {
         providers: authOptions.providers?.map(p => ({
           id: p.id,
           name: p.name,
-          type: p.type,
-          version: p.version
+          type: p.type
         })),
         session: authOptions.session,
         callbacks: {
@@ -35,7 +34,7 @@ export async function GET() {
     return NextResponse.json(debug);
   } catch (error) {
     return NextResponse.json(
-      { error: 'Debug endpoint failed', details: error.message },
+      { error: 'Debug endpoint failed', details: (error as Error).message },
       { status: 500 }
     );
   }

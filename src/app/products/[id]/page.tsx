@@ -344,10 +344,10 @@ export default function ProductDetailPage() {
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
-                  onQuickView={handleQuickView}
-                  onAddToCart={handleRelatedAddToCart}
-                  onToggleWishlist={handleRelatedToggleWishlist}
-                  isWishlisted={wishlist.includes(relatedProduct.id)}
+                  onQuickView={() => {}}
+                  onAddToCart={() => {}}
+                  onToggleWishlist={() => {}}
+                  isWishlisted={false}
                 />
               ))}
             </div>

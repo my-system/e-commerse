@@ -38,6 +38,7 @@ async function getFeaturedProducts() {
       description: product.description || undefined,
       material: product.material || undefined,
       care: product.care || undefined,
+      reviews: product.reviewCount, // Add missing reviews property
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString()
     }));
@@ -78,7 +79,7 @@ export default async function HomePage() {
       </section>
 
       {/* Featured Products Section */}
-      <FeaturedProductsDB products={featuredProducts} />
+      <FeaturedProductsDB />
     </main>
   );
 }
