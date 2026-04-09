@@ -1,7 +1,26 @@
 "use client";
 
 import { useState } from 'react';
-import { Product } from '@/data/products';
+// Product interface matching database schema
+interface Product {
+  id: string;
+  title: string;
+  name?: string;
+  price: number;
+  images: string | string[];
+  image?: string;
+  category: string;
+  description?: string;
+  featured?: boolean;
+  inStock?: boolean;
+  rating?: number;
+  reviews?: number;
+  slug?: string;
+  sellerId?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 import { formatPrice } from '@/lib/utils';
 import { X, ShoppingCart, Heart, Star, Minus, Plus, Eye } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
@@ -21,13 +40,23 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
 
   if (!product || !isOpen) return null;
 
+  // Parse images from database (string) or use array
+  const parsedImages = typeof product.images === 'string' 
+    ? JSON.parse(product.images || '[]') 
+    : (product.images || []);
+  const currentImage = parsedImages[selectedImageIndex];
+
   const handleAddToCart = () => {
+    const parsedImages = typeof product.images === 'string' 
+      ? JSON.parse(product.images || '[]') 
+      : (product.images || []);
+    const currentImage = parsedImages[selectedImageIndex];
     addItem({
       id: Date.now().toString(),
       productId: product.id,
       title: product.title,
       price: product.price,
-      image: product.images[selectedImageIndex],
+      image: currentImage,
       quantity,
     });
     onClose();
@@ -42,7 +71,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
         productId: product.id,
         title: product.title,
         price: product.price,
-        image: product.images[selectedImageIndex],
+        image: currentImage,
       });
     }
   };
@@ -76,16 +105,16 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                 {/* Main Image */}
                 <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
                   <img
-                    src={product.images[selectedImageIndex]}
+                    src={currentImage}
                     alt={product.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
 
                 {/* Thumbnail Images */}
-                {product.images.length > 1 && (
+                {parsedImages.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto">
-                    {product.images.map((image, index) => (
+                    {parsedImages.map((image: string, index: number) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}

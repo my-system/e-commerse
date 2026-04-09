@@ -1,7 +1,34 @@
 "use client";
 
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Product, ProductVariant } from '@/data/products';
+// Product interface matching database schema
+interface Product {
+  id: string;
+  title: string;
+  name?: string;
+  price: number;
+  images: string | string[];
+  image?: string;
+  category: string;
+  description?: string;
+  featured?: boolean;
+  inStock?: boolean;
+  rating?: number;
+  reviews?: number;
+  slug?: string;
+  sellerId?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface ProductVariant {
+  id: string;
+  name: string;
+  value: string;
+  price?: number;
+  inStock: boolean;
+}
 
 export interface CartItem {
   id: string;

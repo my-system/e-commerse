@@ -28,7 +28,7 @@ async function main() {
       featured: true,
       inStock: true,
       rating: 4.5,
-      reviews: 234,
+      reviewCount: 234,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&h=600&fit=crop',
@@ -63,7 +63,7 @@ async function main() {
       featured: true,
       inStock: true,
       rating: 4.7,
-      reviews: 189,
+      reviewCount: 189,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1598626773755-6b2f7c5c0b2a?w=800&h=600&fit=crop',
@@ -94,7 +94,7 @@ async function main() {
       featured: true,
       inStock: true,
       rating: 4.8,
-      reviews: 312,
+      reviewCount: 312,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1591047139829-a91d1cda5495?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1551698618-1dcef5824279?w=800&h=600&fit=crop',
@@ -129,7 +129,7 @@ async function main() {
       featured: false,
       inStock: true,
       rating: 4.3,
-      reviews: 156,
+      reviewCount: 156,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&h=600&fit=crop',
@@ -164,7 +164,7 @@ async function main() {
       featured: false,
       inStock: true,
       rating: 4.6,
-      reviews: 98,
+      reviewCount: 98,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1598626773755-6b2f7c5c0b2a?w=800&h=600&fit=crop',
@@ -195,7 +195,7 @@ async function main() {
       featured: false,
       inStock: true,
       rating: 4.4,
-      reviews: 267,
+      reviewCount: 267,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1551698618-1dcef5824279?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1544982994-5e9b645af3d1?w=800&h=600&fit=crop',

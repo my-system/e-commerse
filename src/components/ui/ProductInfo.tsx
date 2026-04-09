@@ -1,7 +1,41 @@
 "use client";
 
 import { useState } from 'react';
-import { Product, ProductVariant } from '@/data/products';
+// Product interface matching database schema
+interface Product {
+  id: string;
+  title: string;
+  name?: string;
+  price: number;
+  images: string | string[];
+  image?: string;
+  category: string;
+  description?: string;
+  featured?: boolean;
+  inStock?: boolean;
+  rating?: number;
+  reviews?: number;
+  slug?: string;
+  sellerId?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  material?: string;
+  care?: string;
+  specifications?: Record<string, string>;
+  variants?: {
+    sizes?: Array<{ id: string; name: string; value: string; price?: number; inStock: boolean }>;
+    colors?: Array<{ id: string; name: string; value: string; inStock: boolean }>;
+  };
+}
+
+interface ProductVariant {
+  id: string;
+  name: string;
+  value: string;
+  price?: number;
+  inStock: boolean;
+}
 import { formatPrice } from '@/lib/utils';
 import VariantSelector from './VariantSelector';
 import QuantitySelector from './QuantitySelector';
@@ -255,7 +289,7 @@ export default function ProductInfo({
           
           {product.specifications && (
             <div className="space-y-2">
-              {Object.entries(product.specifications).map(([key, value]) => (
+              {Object.entries(product.specifications).map(([key, value]: [string, string]) => (
                 <div key={key} className="flex">
                   <span className="text-sm font-medium text-gray-700 w-32">{key}:</span>
                   <span className="text-sm text-gray-600">{value}</span>

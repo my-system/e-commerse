@@ -26,21 +26,21 @@ interface FilterState {
   sortBy: string;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  count?: number;
+}
+
 interface ModernSidebarFilterProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onReset: () => void;
   className?: string;
+  categories?: Category[];
 }
 
-const categories = [
-  { id: 'fashion', name: 'Fashion', count: 245 },
-  { id: 'shoes', name: 'Shoes', count: 128 },
-  { id: 'accessories', name: 'Accessories', count: 89 },
-  { id: 'bags', name: 'Bags', count: 67 },
-  { id: 'jewelry', name: 'Jewelry', count: 34 },
-  { id: 'electronics', name: 'Electronics', count: 156 }
-];
+// Categories will be passed as props to make them dynamic
 
 const pricePresets = [
   { label: '< Rp 50.000', min: 0, max: 50000 },
@@ -107,8 +107,9 @@ function CollapsibleSection({ title, children, defaultOpen = false, icon }: Coll
 export default function ModernSidebarFilter({ 
   filters, 
   onFiltersChange, 
-  onReset,
-  className = "" 
+  onReset, 
+  className,
+  categories = []
 }: ModernSidebarFilterProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 

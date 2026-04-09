@@ -6,13 +6,94 @@ import AppLayout from '@/components/layout/AppLayout';
 import ProductCard from '@/components/ui/ProductCard';
 import { ProductCardModern } from '@/components/mobile/ProductCardModern';
 import MarketplaceFilter from '@/components/filters/ModernSidebarFilter';
-import { products } from '@/data/products';
-import { categories } from '@/data/categories';
-import { filterProducts, sortProducts, paginateProducts, getTotalPages, generateMoreProducts } from '@/lib/product-utils';
+// Product interface matching database schema
+interface Product {
+  id: string;
+  title: string;
+  name?: string;
+  price: number;
+  images: string | string[];
+  image?: string;
+  category: string;
+  description?: string;
+  featured?: boolean;
+  inStock?: boolean;
+  rating?: number;
+  reviews?: number;
+  slug?: string;
+  sellerId?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Categories interface
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+}
+// Local utility functions to handle database schema
+const filterProducts = (products: Product[], filters: FilterState): Product[] => {
+  return products.filter(product => {
+    // Category filter
+    if (filters.categories.length > 0 && !filters.categories.includes(product.category)) {
+      return false;
+    }
+    
+    // Price filter
+    if (product.price < filters.priceRange.min || product.price > filters.priceRange.max) {
+      return false;
+    }
+    
+    // Rating filter
+    if (filters.rating !== null && (product.rating || 0) < filters.rating) {
+      return false;
+    }
+    
+    // Stock filter
+    if (filters.inStockOnly && !product.inStock) {
+      return false;
+    }
+    
+    return true;
+  });
+};
+
+const sortProducts = (products: Product[], sortBy: string): Product[] => {
+  const sorted = [...products];
+  
+  switch (sortBy) {
+    case 'price-low':
+      return sorted.sort((a, b) => a.price - b.price);
+    case 'price-high':
+      return sorted.sort((a, b) => b.price - a.price);
+    case 'rating':
+      return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    case 'featured':
+    default:
+      return sorted.sort((a, b) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return 0;
+      });
+  }
+};
+
+const paginateProducts = (products: Product[], page: number, perPage: number): Product[] => {
+  const startIndex = (page - 1) * perPage;
+  return products.slice(startIndex, startIndex + perPage);
+};
+
+const getTotalPages = (totalItems: number, perPage: number): number => {
+  return Math.ceil(totalItems / perPage);
+};
 import { formatPrice } from '@/lib/utils';
 import { Filter, X, ShoppingCart, Eye } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { triggerAIMonitoring } from '@/lib/ai-monitoring';
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -47,20 +128,29 @@ export default function MarketplacePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Fetch real products from marketplace API
   useEffect(() => {
     const fetchRealProducts = async () => {
       try {
         setLoading(true);
+        console.log('Starting marketplace products fetch...');
+        
         const response = await fetch('/api/marketplace-products');
+        console.log('API Response status:', response.status);
+        
         const result = await response.json();
+        console.log('API Response data:', result);
         
         if (result.success && result.products) {
+          console.log(`Raw products from API: ${result.products.length}`);
+          console.log('Sample product:', result.products[0]);
+          
           // Convert real products to match dummy product structure
           const realProducts = result.products.map((product: any) => {
             let imageUrl = '/placeholder.jpg';
@@ -74,7 +164,7 @@ export default function MarketplacePage() {
               }
             }
             
-            return {
+            const convertedProduct = {
               id: product.id,
               name: product.title,
               price: product.price,
@@ -82,24 +172,48 @@ export default function MarketplacePage() {
               category: product.category,
               description: product.description || '',
               rating: product.rating,
-              reviews: product.reviews,
+              reviews: product.reviewCount || product.reviews || 0,
               inStock: product.inStock,
               featured: product.featured,
-              sellerId: product.sellerId,
+              sellerId: product.sellerId || 'unknown',
               isRealProduct: true // Flag to identify real products
             };
+            
+            console.log(`Converted product: ${convertedProduct.name} - ${convertedProduct.price}`);
+            return convertedProduct;
           });
           
           // ONLY use real products from database (no dummy products)
           setAllProducts(realProducts);
-          console.log(`✅ Loaded ${realProducts.length} approved products from marketplace database`);
+          console.log(`SUCCESS: Loaded ${realProducts.length} approved products from marketplace database`);
+          
+          // Trigger AI monitoring
+          await triggerAIMonitoring('marketplace_products_loaded', {
+            productCount: realProducts.length,
+            categories: [...new Set(realProducts.map((p: any) => p.category))],
+            avgPrice: realProducts.reduce((sum: number, p: any) => sum + p.price, 0) / realProducts.length
+          });
+          
         } else {
-          console.warn('❌ Failed to load marketplace products, using fallback');
+          console.warn('Failed to load marketplace products, using fallback');
+          console.warn('API Response:', result);
           setAllProducts([]); // Empty array if API fails
+          
+          // Trigger AI monitoring for failure
+          await triggerAIMonitoring('marketplace_api_failed', {
+            error: result.error || 'Unknown error',
+            response: result
+          });
         }
       } catch (error) {
-        console.error('❌ Error fetching marketplace products:', error);
+        console.error('Error fetching marketplace products:', error);
         setAllProducts([]); // Empty array on error
+        
+        // Trigger AI monitoring for exception
+        await triggerAIMonitoring('marketplace_fetch_exception', {
+          error: (error as Error).message,
+          stack: (error as Error).stack
+        });
       } finally {
         setLoading(false);
       }
@@ -341,6 +455,7 @@ export default function MarketplacePage() {
                     filters={filters}
                     onFiltersChange={handleFilterChange}
                     onReset={() => handleFilterChange(initialFilters)}
+                    categories={categories}
                   />
                 </div>
               </div>

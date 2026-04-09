@@ -6,9 +6,8 @@ interface User {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  role: 'user' | 'seller' | 'admin';
-  avatar?: string | null;
+  role: 'USER' | 'SELLER' | 'ADMIN';
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
 }
 
@@ -108,39 +107,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      // Get users from localStorage
-      const usersData = localStorage.getItem(STORAGE_KEYS.USERS);
-      const users = usersData ? JSON.parse(usersData) : [];
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // Find user by email
-      const user = users.find((u: any) => u.email === email);
+      const data = await response.json();
 
-      if (!user) {
-        showToast('Email tidak ditemukan. Silakan daftar terlebih dahulu.', 'error');
-        return { success: false, message: 'Email tidak ditemukan' };
+      if (!data.success) {
+        showToast(data.message || 'Login gagal', 'error');
+        return { success: false, message: data.message };
       }
 
-      // Check password (in real app, this would be hashed)
-      if (user.password !== password) {
-        showToast('Password salah. Silakan coba lagi.', 'error');
-        return { success: false, message: 'Password salah' };
-      }
-
-      // Remove password from user object before storing
-      const { password: _, ...userWithoutPassword } = user;
-
-      // Save user to localStorage
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userWithoutPassword));
+      // Save user to localStorage for session persistence
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
       localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
 
       // Update state
       setState({
-        user: userWithoutPassword,
+        user: data.user,
         isLoggedIn: true,
         isLoading: false
       });
 
-      showToast(`Selamat datang kembali, ${user.name}!`, 'success');
+      showToast(`Selamat datang kembali, ${data.user.name}!`, 'success');
       return { success: true };
 
     } catch (error) {
@@ -171,42 +164,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const register = async (userData: { name: string; email: string; password: string }): Promise<{ success: boolean; message?: string }> => {
     try {
-      // Get existing users
-      const usersData = localStorage.getItem(STORAGE_KEYS.USERS);
-      const users = usersData ? JSON.parse(usersData) : [];
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
 
-      // Check if email already exists
-      const existingUser = users.find((u: any) => u.email === userData.email);
-      if (existingUser) {
-        showToast('Email sudah terdaftar. Silakan gunakan email lain.', 'error');
-        return { success: false, message: 'Email sudah terdaftar' };
+      const data = await response.json();
+
+      if (!data.success) {
+        showToast(data.message || 'Registrasi gagal', 'error');
+        return { success: false, message: data.message };
       }
 
-      // Create new user
-      const newUser: User = {
-        id: Date.now().toString(),
-        name: userData.name,
-        email: userData.email,
-        phone: '', // Will be filled later
-        role: 'user',
-        avatar: null,
-        createdAt: new Date().toISOString()
-      };
-
-      // Save user with password (in real app, password would be hashed)
-      const userWithPassword = { ...newUser, password: userData.password };
-      users.push(userWithPassword);
-
-      // Save to localStorage
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-
       // Auto login after registration
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
       localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
 
       // Update state
       setState({
-        user: newUser,
+        user: data.user,
         isLoggedIn: true,
         isLoading: false
       });

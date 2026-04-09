@@ -375,7 +375,9 @@ export default function FeaturedProductsDB({ products }: { products: DBProduct[]
           </div>
         )}
       
-      {/* Toast Notification */}
+        </div>
+
+        {/* Toast Notification */}
       {toast && (
         <Toast
           message={toast.message}

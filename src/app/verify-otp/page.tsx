@@ -11,6 +11,7 @@ import {
   RefreshCw,
   ShoppingBag
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function VerifyOTPPage() {
   const [otp, setOtp] = useState(['', '', '', '', '', '', '']);
@@ -83,11 +84,13 @@ export default function VerifyOTPPage() {
     
     const otpString = otp.join('');
     if (otpString.length !== 6) {
+      toast.error('Please enter all 6 digits');
       setError('Please enter all 6 digits');
       return;
     }
 
     if (!pendingUser) {
+      toast.error('User data not found. Please register again.');
       setError('User data not found. Please register again.');
       return;
     }
@@ -112,15 +115,18 @@ export default function VerifyOTPPage() {
       const data = await response.json();
 
       if (data.success) {
+        toast.success('Account verified successfully!');
         setSuccess(true);
         sessionStorage.removeItem('pendingUser');
         setTimeout(() => {
           router.push('/login');
         }, 2000);
       } else {
+        toast.error(data.error || 'Invalid verification code');
         setError(data.error || 'Invalid verification code');
       }
     } catch (error) {
+      toast.error('Failed to verify code. Please try again.');
       setError('Failed to verify code. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -145,6 +151,7 @@ export default function VerifyOTPPage() {
       const data = await response.json();
 
       if (data.success) {
+        toast.success('Verification code sent successfully!');
         setTimeLeft(600); // Reset timer
         setOtp(['', '', '', '', '', '']);
         setError('');
@@ -153,9 +160,11 @@ export default function VerifyOTPPage() {
           alert(`Development Mode - New OTP: ${data.otp}`);
         }
       } else {
+        toast.error(data.error || 'Failed to resend code');
         setError(data.error || 'Failed to resend code');
       }
     } catch (error) {
+      toast.error('Failed to resend code');
       setError('Failed to resend code');
     } finally {
       setIsSubmitting(false);

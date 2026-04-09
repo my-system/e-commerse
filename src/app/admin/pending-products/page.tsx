@@ -537,9 +537,9 @@ export default function PendingProductsPage() {
                 </div>
               </motion.div>
             </motion.div>
-          </AnimatePresence>
         )}
       </AnimatePresence>
+    </div>
     </div>
   );
 }

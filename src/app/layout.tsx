@@ -7,7 +7,8 @@ import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import Navbar from "@/components/layout/Navbar";
-import Providers from "@/components/providers/SessionProvider";
+import ClientSessionProviders from "@/components/SessionClientWrapper";
+import { Toaster } from 'sonner';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -106,7 +107,7 @@ export default function RootLayout({
         <link rel="preload" href="https://images.unsplash.com/photo-1578632264424-999b267d5d0?w=600&h=800&fit=crop" as="image" type="image/jpeg" />
       </head>
       <body className="min-h-full">
-        <Providers>
+        <ClientSessionProviders>
           <SidebarProvider>
             <AuthProvider>
               <CartProvider>
@@ -116,12 +117,25 @@ export default function RootLayout({
                     <main className="min-h-screen pt-16">
                       {children}
                     </main>
+                    <Toaster 
+                      position="top-right"
+                      richColors
+                      closeButton
+                      toastOptions={{
+                        style: {
+                          background: 'rgba(0, 0, 0, 0.8)',
+                          color: '#fff',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          backdropFilter: 'blur(8px)',
+                        },
+                      }}
+                    />
                   </UserPreferencesProvider>
                 </WishlistProvider>
               </CartProvider>
             </AuthProvider>
           </SidebarProvider>
-        </Providers>
+        </ClientSessionProviders>
       </body>
     </html>
   );

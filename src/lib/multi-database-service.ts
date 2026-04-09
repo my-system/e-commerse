@@ -1,14 +1,23 @@
 // Approval Workflow Service for product management
 import { Pool } from 'pg';
+import { checkDatabaseHealth } from './database';
 import { products } from '@/data/products'; // Fallback to dummy data
 
-// Database connections
+// Database connections - using centralized configuration
+const DATABASE_URL = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL or NEON_DATABASE_URL environment variable is required');
+}
+
 const pendingPool = new Pool({
-  connectionString: "postgresql://neondb_owner:npg_Wb35tJcYmLKy@ep-jolly-pine-an0l6t3r-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
+  connectionString: DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
 const marketplacePool = new Pool({
-  connectionString: "postgresql://neondb_owner:npg_Wb35tJcYmLKy@ep-jolly-pine-an0l6t3r-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
+  connectionString: DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
 export interface Product {
@@ -160,6 +169,11 @@ export class PendingDatabaseService {
       return false;
     }
   }
+
+  // Delete pending product (alias for consistency)
+  static async deletePendingProduct(id: string): Promise<boolean> {
+    return this.deleteProduct(id);
+  }
   
   private static mapRowToProduct(row: any): Product {
     return {
@@ -217,15 +231,33 @@ export class MarketplaceDatabaseService {
     try {
       const client = await marketplacePool.connect();
       try {
+        console.log('MarketplaceDatabaseService: Fetching approved products...');
+        
         // Use the actual database schema - only get approved products
         const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY "createdAt" DESC', ['approved']);
-        return result.rows.map(row => this.mapRowToProduct(row));
+        
+        console.log(`MarketplaceDatabaseService: Found ${result.rows.length} approved products`);
+        
+        if (result.rows.length === 0) {
+          console.warn('MarketplaceDatabaseService: No approved products found');
+        }
+        
+        const mappedProducts = result.rows.map(row => this.mapRowToProduct(row));
+        console.log('MarketplaceDatabaseService: Successfully mapped products');
+        
+        return mappedProducts;
       } finally {
         client.release();
       }
     } catch (error) {
-      console.warn('Database connection failed, using fallback data:', error);
+      console.error('MarketplaceDatabaseService: Database connection failed:', error);
+      console.error('MarketplaceDatabaseService: Error details:', {
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      });
+      
       // Fallback to dummy data if database fails
+      console.log('MarketplaceDatabaseService: Using fallback data...');
       return products.filter(p => p.featured !== undefined).map(p => ({
         ...p,
         featured: p.featured || false,

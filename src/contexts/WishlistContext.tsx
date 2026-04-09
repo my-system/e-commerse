@@ -1,7 +1,26 @@
 "use client";
 
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Product } from '@/data/products';
+// Product interface matching database schema
+interface Product {
+  id: string;
+  title: string;
+  name?: string;
+  price: number;
+  images: string | string[];
+  image?: string;
+  category: string;
+  description?: string;
+  featured?: boolean;
+  inStock?: boolean;
+  rating?: number;
+  reviews?: number;
+  slug?: string;
+  sellerId?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export interface WishlistItem {
   id: string;

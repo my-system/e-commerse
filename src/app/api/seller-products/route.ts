@@ -1,17 +1,17 @@
-// Enhanced Seller Products API dengan 3-Database System
+// Enhanced Seller Products API with Neon PostgreSQL
 import { NextRequest, NextResponse } from 'next/server';
-import { PendingDatabaseService } from '@/lib/tri-database-service';
+import { PendingDatabaseService } from '@/lib/multi-database-service';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get products dari Database A (Pending) - sesuai mekanisme seller
+    // Get products from Pending Database - using Neon PostgreSQL
     const products = await PendingDatabaseService.getPendingProducts();
     
     return NextResponse.json({
       success: true,
       products,
       total: products.length,
-      message: 'Products retrieved from Pending Database (Database A)'
+      message: 'Products retrieved from Pending Database using Neon PostgreSQL'
     });
   } catch (error: any) {
     console.error('Error fetching seller products:', error);
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Create new product untuk seller - masuk ke Database A (Pending)
+    // Create new product for seller - add to Pending Database
     const newProduct = {
       title: body.title,
       price: parseFloat(body.price),
@@ -58,16 +58,16 @@ export async function POST(request: NextRequest) {
       sellerId: body.sellerId || 'mock-seller-id' // Dari auth system
     };
 
-    // Save ke Database A (Pending) menggunakan 3-database system
+    // Save to Pending Database using Neon PostgreSQL
     const savedProduct = await PendingDatabaseService.addProduct(newProduct);
     
-    console.log(`✅ Seller product added to Database A (Pending): ${savedProduct.id}`);
+    console.log(`✅ Seller product added to Pending Database: ${savedProduct.id}`);
     
     return NextResponse.json({
       success: true,
       product: savedProduct,
-      message: 'Product added to Pending Database (Database A) - waiting for admin approval',
-      workflow: 'Product will follow: A → C (backup) → B (marketplace) upon approval',
+      message: 'Product added to Pending Database using Neon PostgreSQL - waiting for admin approval',
+      workflow: 'Product will move from Pending to Marketplace upon approval',
       detailPageUrl: `/database-products/${savedProduct.id}`,
       note: 'Product detail page automatically created and accessible'
     });
@@ -100,7 +100,7 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Get products by seller dari Database A (Pending)
+    // Get products by seller from Pending Database
     const allProducts = await PendingDatabaseService.getPendingProducts();
     const sellerProducts = allProducts.filter(p => p.sellerId === sellerId);
     
@@ -109,7 +109,7 @@ export async function PUT(request: NextRequest) {
       products: sellerProducts,
       total: sellerProducts.length,
       sellerId,
-      message: `Retrieved ${sellerProducts.length} products for seller ${sellerId} from Pending Database`
+      message: `Retrieved ${sellerProducts.length} products for seller ${sellerId} from Pending Database using Neon PostgreSQL`
     });
     
   } catch (error: any) {

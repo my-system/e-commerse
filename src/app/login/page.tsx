@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { 
   Mail, 
   Lock, 
@@ -16,16 +18,25 @@ import {
   ShoppingBag,
   Chrome
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { loginSchema, LoginFormData } from '@/lib/validation/schemas';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loginError, setLoginError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   
   const router = useRouter();
+
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    formState: { errors, isDirty },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onChange',
+  });
 
   // Check if user is already logged in (disabled in development for testing)
   useEffect(() => {
@@ -51,34 +62,29 @@ export default function LoginPage() {
     checkSession();
   }, [router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email || !password) {
-      setLoginError('Email and password are required');
-      return;
-    }
-
+  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     try {
       setIsSubmitting(true);
-      setLoginError('');
       
       const result = await signIn('credentials', {
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
       if (result?.error) {
-        setLoginError(result.error);
+        toast.error(result.error);
+        setError('root', { message: result.error });
       } else {
+        toast.success('Login successful! Redirecting...');
         setSuccessMessage('Login successful! Redirecting...');
         setTimeout(() => {
           router.push('/dashboard');
         }, 1500);
       }
     } catch (error) {
-      setLoginError('An error occurred during login');
+      toast.error('An error occurred during login');
+      setError('root', { message: 'An error occurred during login' });
     } finally {
       setIsSubmitting(false);
     }
@@ -89,7 +95,8 @@ export default function LoginPage() {
       setIsSubmitting(true);
       await signIn('google', { callbackUrl: '/dashboard' });
     } catch (error) {
-      setLoginError('Failed to login with Google');
+      toast.error('Failed to login with Google');
+      setError('root', { message: 'Failed to login with Google' });
       setIsSubmitting(false);
     }
   };
@@ -133,8 +140,12 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full py-3 bg-white/10 border border-white/20 text-white rounded-xl hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-3 mb-6"
           >
-            <Chrome className="w-5 h-5" />
-            Continue with Google
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Chrome className="w-5 h-5" />
+            )}
+            {isSubmitting ? 'Connecting...' : 'Continue with Google'}
           </button>
 
           <div className="relative mb-6">
@@ -146,7 +157,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-6">
             {/* Email Field */}
             <div>
               <label className="block text-white/80 text-sm font-medium mb-2">
@@ -156,12 +167,19 @@ export default function LoginPage() {
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register('email')}
                   placeholder="john@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:bg-white/20 transition-all"
+                  className={`w-full pl-10 pr-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/50 focus:outline-none focus:bg-white/20 transition-all ${
+                    errors.email ? 'border-red-400' : 'border-white/20 focus:border-purple-400'
+                  }`}
                 />
               </div>
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -173,10 +191,11 @@ export default function LoginPage() {
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register('password')}
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:bg-white/20 transition-all"
+                  className={`w-full pl-10 pr-12 py-3 bg-white/10 border rounded-xl text-white placeholder-white/50 focus:outline-none focus:bg-white/20 transition-all ${
+                    errors.password ? 'border-red-400' : 'border-white/20 focus:border-purple-400'
+                  }`}
                 />
                 <button
                   type="button"
@@ -186,14 +205,20 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             {/* Login Error */}
-            {loginError && (
+            {errors.root && (
               <div className="bg-red-500/20 border border-red-400/30 rounded-xl p-4">
                 <p className="text-red-400 text-sm flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
-                  {loginError}
+                  {errors.root.message}
                 </p>
               </div>
             )}

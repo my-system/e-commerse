@@ -2,7 +2,26 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Search as SearchIcon, X } from 'lucide-react';
-import { products } from '@/data/products';
+// Product interface matching database schema
+interface Product {
+  id: string;
+  title: string;
+  name?: string;
+  price: number;
+  images: string | string[];
+  image?: string;
+  category: string;
+  description?: string;
+  featured?: boolean;
+  inStock?: boolean;
+  rating?: number;
+  reviews?: number;
+  slug?: string;
+  sellerId?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 import Link from 'next/link';
 
 interface SearchItem {
@@ -18,6 +37,7 @@ export default function Search() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,10 +50,26 @@ export default function Search() {
     };
   };
 
-  // Search function
-  const performSearch = (searchQuery: string) => {
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/marketplace-products');
+        const data = await response.json();
+        setProducts(data.products || []);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
+
+  // Search function with debouncing
+  const debouncedSearch = debounce((searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
+      setIsSearching(false);
       return;
     }
 
@@ -42,26 +78,23 @@ export default function Search() {
     // Simulate API delay
     setTimeout(() => {
       const filteredProducts = products
-        .filter(product => 
+        .filter((product: Product) => 
           product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           product.category.toLowerCase().includes(searchQuery.toLowerCase())
         )
         .slice(0, 8) // Limit to 8 results
-        .map(product => ({
+        .map((product: Product) => ({
           id: product.id,
           title: product.title,
           price: product.price,
-          image: product.images[0],
+          image: typeof product.images === 'string' ? JSON.parse(product.images || '[]')[0] : (product.images?.[0] || product.image || '/placeholder.jpg'),
           category: product.category
         }));
-
+      
       setResults(filteredProducts);
       setIsSearching(false);
     }, 300);
-  };
-
-  // Debounced search
-  const debouncedSearch = debounce(performSearch, 300);
+  }, 300);
 
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

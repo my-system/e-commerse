@@ -1,8 +1,8 @@
 import { NextAuthOptions } from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -12,8 +12,8 @@ export const authOptions: NextAuthOptions = {
   providers: [
     // Google OAuth Provider
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id-here',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret-here',
     }),
     
     // Credentials Provider for Email & Password
@@ -88,7 +88,6 @@ export const authOptions: NextAuthOptions = {
   
   pages: {
     signIn: '/login',
-    signUp: '/register',
     error: '/auth/error',
   },
   

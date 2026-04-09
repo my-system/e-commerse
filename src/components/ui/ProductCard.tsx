@@ -2,7 +2,26 @@
 
 import { useState, memo } from 'react';
 import Link from 'next/link';
-import { Product } from '@/data/products';
+// Product interface for real database data
+interface Product {
+  id: string;
+  title: string;
+  name?: string;
+  price: number;
+  images: string | string[];
+  image?: string;
+  category: string;
+  description?: string;
+  featured?: boolean;
+  inStock?: boolean;
+  rating?: number;
+  reviews?: number;
+  slug?: string;
+  sellerId?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 import { formatPrice } from '@/lib/utils';
 import { ShoppingCart, Eye, Heart, X, Check } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -46,13 +65,11 @@ export default function ProductCard({
 
   const productInWishlist = isInWishlist(product.id);
   
-  // Parse images if it's a string or use single image for real products
-  const parsedImages = product.image 
-    ? [product.image] 
-    : typeof product.images === 'string' 
-      ? JSON.parse(product.images || '[]') 
-      : product.images;
-  const firstImage = parsedImages[0] || '/placeholder.jpg';
+  // Parse images from database (string) or use array
+  const parsedImages = typeof product.images === 'string' 
+    ? JSON.parse(product.images || '[]') 
+    : (product.images || []);
+  const firstImage = parsedImages[0] || product.image || '/placeholder.jpg';
 
   const showNotification = (type: 'cart' | 'wishlist', message: string) => {
     setNotification({ type, message });
@@ -123,7 +140,7 @@ export default function ProductCard({
         productId: product.id,
         title: product.title,
         price: product.price,
-        image: product.images[0]
+        image: firstImage
       });
       showNotification('wishlist', 'Added to Wishlist');
     }
