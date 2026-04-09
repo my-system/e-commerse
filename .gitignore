@@ -47,3 +47,33 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Backup files
+*.backup
+*.bak
+
+# Test and utility scripts (in root)
+test-*.js
+check-*.js
+debug-*.js
+monitoring-*.js
+add-*.js
+fix-*.js
+migrate-*.js
+verify-*.js
+view-*.js
+detail-*.js
+enhanced-*.js
+database-*.js
+file-*.js
+powershell-*.js
+api-*.js
+show-*.js
+
+# Report files (keep only essential ones)
+*-REPORT.md
+DEEP-SCAN-REPORT.md
+DATA-CONSISTENCY-*.md
+
+# Environment backups
+.env.local.backup

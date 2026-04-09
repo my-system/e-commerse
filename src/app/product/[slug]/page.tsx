@@ -1,16 +1,16 @@
-"use client";
-
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ProductGallery from '@/components/ui/ProductGallery';
 import ProductInfo from '@/components/ui/ProductInfo';
 import ProductCard from '@/components/ui/ProductCard';
 import { formatPrice } from '@/lib/utils';
-import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart, Heart, Star, Truck, Shield, RefreshCw, ArrowLeft } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
+import AddToCartClient from '@/components/client/AddToCartClient';
+import WishlistClient from '@/components/client/WishlistClient';
+import Link from 'next/link';
 
 interface Product {
   id: string;
@@ -41,199 +41,164 @@ interface Product {
   updatedAt?: string;
 }
 
-export default function ProductDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const slug = params.slug as string;
-  const { addItem } = useCart();
+interface PageProps {
+  params: {
+    slug: string;
+  };
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const product = await getProductBySlug(params.slug);
   
-  const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<{
-    size?: string;
-    color?: string;
-    quantity: number;
-  }>({ quantity: 1 });
-
-  // Fetch product by slug
-  useEffect(() => {
-    const fetchProductBySlug = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Try to fetch product by slug from API
-        const response = await fetch(`/api/products/slug/${slug}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.success && data.product) {
-            console.log('✅ Product found by slug:', data.product);
-            setProduct(data.product);
-            
-            // Fetch related products
-            await fetchRelatedProducts(data.product.category, data.product.id);
-            setIsLoading(false);
-            return;
-          }
-        }
-        
-        console.log('❌ Product not found by slug, trying ID fallback...');
-        
-        // Fallback: try to find by ID if slug matches ID pattern
-        const idResponse = await fetch(`/api/products/${slug}`);
-        if (idResponse.ok) {
-          const data = await idResponse.json();
-          if (data.success && data.product) {
-            console.log('✅ Product found by ID fallback:', data.product);
-            setProduct(data.product);
-            await fetchRelatedProducts(data.product.category, data.product.id);
-            setIsLoading(false);
-            return;
-          }
-        }
-        
-        console.log('❌ Product not found anywhere');
-        setProduct(null);
-        setIsLoading(false);
-        
-      } catch (error) {
-        console.error('Error fetching product:', error);
-        setProduct(null);
-        setIsLoading(false);
-      }
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+      description: 'The product you are looking for does not exist.'
     };
-    
-    if (slug) {
-      fetchProductBySlug();
-    }
-  }, [slug]);
-
-  const fetchRelatedProducts = async (category: string, currentProductId: string) => {
-    try {
-      const response = await fetch(`/api/products?category=${category}&limit=6`);
-      if (response.ok) {
-        const data = await response.json();
-        const related = data.data?.filter((p: Product) => p.id !== currentProductId).slice(0, 4) || [];
-        setRelatedProducts(related);
-      }
-    } catch (error) {
-      console.error('Error fetching related products:', error);
-    }
-  };
-
-  const handleAddToCart = async () => {
-    if (!product) return;
-    
-    const cartItem = {
-      id: `${product.id}-${selectedVariant.size || 'default'}-${selectedVariant.color || 'default'}`,
-      productId: product.id,
-      title: product.title,
-      price: product.discount_price || product.price,
-      image: product.images[0],
-      quantity: selectedVariant.quantity,
-      slug: product.slug
-    };
-    
-    addItem(cartItem);
-    
-    // Show success message
-    alert(`${product.title} x${selectedVariant.quantity} ditambahkan ke keranjang!`);
-  };
-
-  const handleBuyNow = async () => {
-    await handleAddToCart();
-    router.push('/checkout');
-  };
-
-  const handleToggleWishlist = () => {
-    if (!product) return;
-    
-    setWishlist(prev => 
-      prev.includes(product.id)
-        ? prev.filter(id => id !== product.id)
-        : [...prev, product.id]
-    );
-  };
-
-  const handleQuickView = (relatedProduct: Product) => {
-    router.push(`/product/${relatedProduct.slug}`);
-  };
-
-  const handleRelatedAddToCart = (relatedProduct: Product) => {
-    const cartItem = {
-      id: relatedProduct.id,
-      productId: relatedProduct.id,
-      title: relatedProduct.title,
-      price: relatedProduct.price,
-      image: relatedProduct.images[0],
-      quantity: 1,
-      slug: relatedProduct.slug
-    };
-    
-    addItem(cartItem);
-    console.log('Added to cart:', relatedProduct.title);
-  };
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="animate-pulse">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="bg-gray-200 rounded-lg aspect-square" />
-              <div className="space-y-6">
-                <div className="h-8 bg-gray-200 rounded w-3/4" />
-                <div className="h-6 bg-gray-200 rounded w-1/2" />
-                <div className="h-4 bg-gray-200 rounded w-full" />
-                <div className="h-4 bg-gray-200 rounded w-full" />
-                <div className="h-12 bg-gray-200 rounded" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
   }
+
+  return {
+    title: product.title,
+    description: product.description?.substring(0, 160) || `Buy ${product.title} at ${formatPrice(product.price)}`,
+    openGraph: {
+      title: product.title,
+      description: product.description?.substring(0, 160) || `Buy ${product.title} at ${formatPrice(product.price)}`,
+      images: product.images[0] ? [product.images[0]] : [],
+    },
+  };
+}
+
+// Fetch product by slug from database
+async function getProductBySlug(slug: string): Promise<Product | null> {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { slug },
+      include: {
+        sizes: true,
+        colors: true,
+        specs: true,
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (!product) {
+      return null;
+    }
+
+    // Transform database product to expected format
+    return {
+      id: product.id,
+      title: product.title,
+      name: product.title,
+      slug: product.slug || '',
+      price: product.price,
+      discount_price: product.discount_price || undefined,
+      description: product.description || '',
+      category: product.category,
+      rating: product.rating,
+      reviews: product.reviewCount,
+      inStock: product.inStock,
+      images: JSON.parse(product.images || '[]'),
+      featured: product.featured,
+      material: product.material || undefined,
+      care: product.care || undefined,
+      variants: {
+        sizes: product.sizes.map(size => ({
+          id: size.id,
+          name: size.name,
+          price: product.price,
+          inStock: size.inStock
+        })),
+        colors: product.colors.map(color => ({
+          id: color.id,
+          name: color.name,
+          value: color.value,
+          inStock: color.inStock
+        }))
+      },
+      sellerId: product.sellerId || undefined,
+      status: product.status || 'PENDING',
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString()
+    };
+  } catch (error) {
+    console.error('Error fetching product by slug:', error);
+    return null;
+  }
+}
+
+// Fetch related products
+async function getRelatedProducts(category: string, currentProductId: string): Promise<Product[]> {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        category,
+        status: 'APPROVED',
+        id: { not: currentProductId }
+      },
+      take: 4,
+      include: {
+        sizes: true,
+        colors: true
+      }
+    });
+
+    return products.map(product => ({
+      id: product.id,
+      title: product.title,
+      name: product.title,
+      slug: product.slug || '',
+      price: product.price,
+      discount_price: product.discount_price || undefined,
+      description: product.description || '',
+      category: product.category,
+      rating: product.rating,
+      reviews: product.reviewCount,
+      inStock: product.inStock,
+      images: JSON.parse(product.images || '[]'),
+      featured: product.featured,
+      material: product.material || undefined,
+      care: product.care || undefined,
+      variants: {
+        sizes: product.sizes.map(size => ({
+          id: size.id,
+          name: size.name,
+          price: product.price,
+          inStock: size.inStock
+        })),
+        colors: product.colors.map(color => ({
+          id: color.id,
+          name: color.name,
+          value: color.value,
+          inStock: color.inStock
+        }))
+      },
+      sellerId: product.sellerId || undefined,
+      status: product.status || 'PENDING',
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString()
+    }));
+  } catch (error) {
+    console.error('Error fetching related products:', error);
+    return [];
+  }
+}
+
+// Main page component
+export default async function ProductDetailPage({ params }: PageProps) {
+  const product = await getProductBySlug(params.slug);
+  const relatedProducts = await getRelatedProducts(product?.category || '', product?.id || '');
 
   // Product not found
   if (!product) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <div className="mb-8">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <ShoppingCart className="w-12 h-12 text-gray-400" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Produk Tidak Ditemukan</h1>
-              <p className="text-gray-600 mb-8">Maaf, produk yang Anda cari tidak tersedia atau telah dihapus.</p>
-            </div>
-            <div className="space-x-4">
-              <button
-                onClick={() => router.push('/marketplace')}
-                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              >
-                Kembali ke Shop
-              </button>
-              <button
-                onClick={() => router.back()}
-                className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
-              >
-                Kembali
-              </button>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
+    return notFound();
   }
 
   return (
