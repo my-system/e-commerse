@@ -30,6 +30,10 @@ export async function GET(request: NextRequest) {
       success: true,
       products: products,
       total: products.length
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0'
+      }
     });
   } catch (error) {
     console.error('Error fetching marketplace products:', error);

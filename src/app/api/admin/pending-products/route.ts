@@ -1,16 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MarketplaceDatabaseService, ApprovalWorkflowService, PendingDatabaseService } from '@/lib/multi-database-service';
+import { PrismaClient } from '@prisma/client';
+import { ApprovalWorkflowService, MarketplaceDatabaseService, PendingDatabaseService } from '@/lib/multi-database-service';
+
+const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
-    // Get pending products for admin review
-    const products = await MarketplaceDatabaseService.getPendingProducts();
+    // Get pending products for admin review using Prisma directly
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'PENDING'
+      },
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        category: true,
+        description: true,
+        featured: true,
+        inStock: true,
+        rating: true,
+        reviews: true,
+        images: true,
+        material: true,
+        care: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        sellerId: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
     
     return NextResponse.json({
       success: true,
       products,
       total: products.length,
       message: 'Pending products retrieved for admin review'
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0'
+      }
     });
   } catch (error: any) {
     console.error('Error fetching pending products:', error);
@@ -44,10 +76,25 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'approve':
-        success = await ApprovalWorkflowService.approveProduct(productId);
-        message = success 
-          ? 'Product approved and moved to marketplace successfully'
-          : 'Failed to approve product';
+        try {
+          // Direct update status in Neon database using Prisma
+          const updatedProduct = await prisma.product.update({
+            where: { id: productId },
+            data: { 
+              status: 'APPROVED',
+              approvedAt: new Date(),
+              updatedAt: new Date()
+            }
+          });
+          
+          console.log(`Product ${productId} approved successfully in Neon database`);
+          success = true;
+          message = 'Product approved successfully';
+        } catch (error) {
+          console.error('Error approving product in Neon:', error);
+          success = false;
+          message = 'Failed to approve product in database';
+        }
         break;
 
       case 'reject':
@@ -60,10 +107,25 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        success = await ApprovalWorkflowService.rejectProduct(productId);
-        message = success 
-          ? `Product rejected: ${reason}`
-          : 'Failed to reject product';
+        try {
+          // Direct update status in Neon database using Prisma
+          const updatedProduct = await prisma.product.update({
+            where: { id: productId },
+            data: { 
+              status: 'REJECTED',
+              rejectedAt: new Date(),
+              updatedAt: new Date()
+            }
+          });
+          
+          console.log(`Product ${productId} rejected successfully in Neon database`);
+          success = true;
+          message = `Product rejected: ${reason}`;
+        } catch (error) {
+          console.error('Error rejecting product in Neon:', error);
+          success = false;
+          message = 'Failed to reject product in database';
+        }
         break;
 
       default:
@@ -77,8 +139,35 @@ export async function POST(request: NextRequest) {
     }
 
     if (success) {
-      // Get updated products list
-      const updatedProducts = await MarketplaceDatabaseService.getPendingProducts();
+      // Get updated products list using Prisma directly
+      const updatedProducts = await prisma.product.findMany({
+        where: {
+          status: 'PENDING'
+        },
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          category: true,
+          description: true,
+          featured: true,
+          inStock: true,
+          rating: true,
+          reviews: true,
+          images: true,
+          material: true,
+          care: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          sellerId: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+      
+      await prisma.$disconnect();
       
       return NextResponse.json({
         success: true,
@@ -86,6 +175,7 @@ export async function POST(request: NextRequest) {
         products: updatedProducts
       });
     } else {
+      await prisma.$disconnect();
       return NextResponse.json(
         { 
           success: false, 
@@ -97,6 +187,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Error processing admin action:', error);
+    await prisma.$disconnect();
     return NextResponse.json(
       { 
         success: false, 

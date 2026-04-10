@@ -1702,62 +1702,10 @@ export default function Home() {
           animation-duration: 3.5s;
         }
 
-        .ai-healing-large-card::after {
-          content: "";
-          position: absolute;
-          inset: 2px;
-          background: #0f172a;
-          border-radius: 14px;
-          z-index: 1;
-        }
-
-        .ai-healing-large-content {
-          position: relative;
-          z-index: 10;
-          background: transparent;
-          border-radius: 14px;
-        }
-
         .technical-specs-card {
           position: relative;
           overflow: hidden;
           border-radius: 16px;
-        }
-
-        .technical-specs-card::before {
-          content: "";
-          position: absolute;
-          width: 200%;
-          height: 200%;
-          top: -50%;
-          left: -50%;
-          background: conic-gradient(
-            from 0deg,
-            #6366f1,
-            transparent 20%,
-            #6366f1 50%,
-            transparent 70%,
-            #6366f1 100%
-          );
-          animation: spin 6s linear infinite;
-          border-radius: 16px;
-          z-index: 0;
-        }
-
-        .technical-specs-card::after {
-          content: "";
-          position: absolute;
-          inset: 2px;
-          background: #0f172a;
-          border-radius: 14px;
-          z-index: 1;
-        }
-
-        .technical-specs-content {
-          position: relative;
-          z-index: 10;
-          background: transparent;
-          border-radius: 14px;
         }
 
         @keyframes spin {
@@ -3252,9 +3200,42 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.7 }}
               viewport={{ once: true }}
-              className="technical-specs-card bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-6"
+              className="technical-specs-card relative overflow-hidden rounded-2xl z-10"
+              style={{
+                background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)'
+              }}
             >
-              <div className="technical-specs-content">
+              {/* Spinning Border Animation - Purple */}
+              <div
+                className="absolute animate-spin"
+                style={{
+                  top: '-50%',
+                  left: '-50%',
+                  width: '200%',
+                  height: '200%',
+                  background: 'conic-gradient(from 0deg, #8b5cf6, transparent 20%, #8b5cf6 50%, transparent 70%, #8b5cf6 100%)',
+                  filter: 'blur(2px)',
+                  animationDuration: '4s',
+                  zIndex: 0
+                }}
+              />
+              
+              {/* Inner Mask */}
+              <div 
+                className="absolute"
+                style={{
+                  top: '2px',
+                  left: '2px',
+                  right: '2px',
+                  bottom: '2px',
+                  background: '#1f2937',
+                  borderRadius: '14px',
+                  zIndex: 1
+                }}
+              />
+              
+              {/* Content */}
+              <div className="technical-specs-content relative p-6" style={{ zIndex: 10 }}>
                 <div className="flex items-center mb-6">
                   <div className="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center mr-3">
                     <Code className="w-6 h-6 text-indigo-500" />

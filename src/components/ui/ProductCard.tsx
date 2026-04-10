@@ -150,7 +150,7 @@ export default function ProductCard({
 
   return (
     <div
-      className={`group relative bg-white rounded-[16px] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_32px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400 ease-out ${
+      className={`group relative bg-white rounded-[16px] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_32px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400 ease-out flex flex-col h-full ${
         isLoading ? 'pointer-events-none opacity-75' : ''
       }`}
       onMouseEnter={() => !isLoading && setIsHovered(true)}
@@ -213,18 +213,20 @@ export default function ProductCard({
       )}
 
       {/* Product Info */}
-      <div className="p-4 flex flex-col h-full bg-white relative">
+      <div className="p-4 flex flex-col flex-grow bg-white relative">
         {/* Category */}
         <div className="text-[10px] text-gray-500 mb-2 uppercase tracking-[0.5px] font-light">
           {product.category}
         </div>
         
         {/* Product Name - Clickable */}
-        <Link href={`/product/${(product as any).slug || generateSlug(product.name || product.title || '')}`}>
-          <h3 className="text-sm font-medium text-[#2d3436] mb-2 line-clamp-2 cursor-pointer hover:text-black transition-colors duration-300 leading-tight">
-            {product.name || product.title}
-          </h3>
-        </Link>
+        <div className="flex-grow">
+          <Link href={`/product/${(product as any).slug || generateSlug(product.name || product.title || '')}`}>
+            <h3 className="text-sm font-medium text-[#2d3436] mb-2 line-clamp-2 cursor-pointer hover:text-black transition-colors duration-300 leading-tight">
+              {product.name || product.title}
+            </h3>
+          </Link>
+        </div>
         
         {/* Price & Cart Icon */}
         <div className="flex items-center justify-between">

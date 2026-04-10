@@ -12,6 +12,11 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  
+  // Ensure we have at least one image, use placeholder if empty
+  const safeImages = images && images.length > 0 
+    ? images 
+    : ['/placeholder.jpg'];
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -35,11 +40,11 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
   };
 
   const nextImage = () => {
-    setSelectedImage((prev) => (prev + 1) % images.length);
+    setSelectedImage((prev) => (prev + 1) % safeImages.length);
   };
 
   const prevImage = () => {
-    setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+    setSelectedImage((prev) => (prev - 1 + safeImages.length) % safeImages.length);
   };
 
   return (
@@ -53,9 +58,13 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
           onMouseLeave={handleMouseLeave}
         >
           <img
-            src={images[selectedImage]}
+            src={safeImages[selectedImage]}
             alt={`${productName} - Image ${selectedImage + 1}`}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback to placeholder if image fails to load
+              (e.target as HTMLImageElement).src = '/placeholder.jpg';
+            }}
           />
           
           {/* Zoom Overlay */}
@@ -63,7 +72,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                backgroundImage: `url(${images[selectedImage]})`,
+                backgroundImage: `url(${safeImages[selectedImage]})`,
                 backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                 backgroundSize: '200%',
                 backgroundRepeat: 'no-repeat',
@@ -73,7 +82,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
         </div>
 
         {/* Navigation Buttons */}
-        {images.length > 1 && (
+        {safeImages.length > 1 && (
           <>
             <button
               onClick={prevImage}
@@ -96,17 +105,17 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
         </div>
 
         {/* Image Counter */}
-        {images.length > 1 && (
+        {safeImages.length > 1 && (
           <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-xs rounded-full">
-            {selectedImage + 1} / {images.length}
+            {selectedImage + 1} / {safeImages.length}
           </div>
         )}
       </div>
 
       {/* Thumbnail Gallery */}
-      {images.length > 1 && (
+      {safeImages.length > 1 && (
         <div className="grid grid-cols-4 gap-2">
-          {images.map((image, index) => (
+          {safeImages.map((image, index) => (
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
@@ -120,6 +129,10 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
                 src={image}
                 alt={`${productName} - Thumbnail ${index + 1}`}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to placeholder if thumbnail fails to load
+                  (e.target as HTMLImageElement).src = '/placeholder.jpg';
+                }}
               />
               {selectedImage === index && (
                 <div className="absolute inset-0 bg-blue-600/20 pointer-events-none" />

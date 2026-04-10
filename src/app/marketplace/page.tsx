@@ -152,21 +152,45 @@ export default function MarketplacePage() {
           
           // Convert real products to match dummy product structure
           const realProducts = result.products.map((product: any) => {
-            let imageUrl = '/placeholder.jpg';
+            // Universal placeholder image from Unsplash based on category
+            const getPlaceholderImage = (category: string) => {
+              const categoryMap: { [key: string]: string } = {
+                'fashion': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop',
+                'electronics': 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=400&fit=crop',
+                'accessories': 'https://images.unsplash.com/photo-1524863479829-916d8e77f114?w=400&h=400&fit=crop',
+                'home': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop',
+                'beauty': 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop',
+                'sports': 'https://images.unsplash.com/photo-1551698618-1dcef662d9f0?w=400&h=400&fit=crop',
+                'books': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+                'toys': 'https://images.unsplash.com/photo-1517428774926-6830c755c4d2?w=400&h=400&fit=crop'
+              };
+              return categoryMap[category.toLowerCase()] || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop';
+            };
+
+            let imageUrl = getPlaceholderImage(product.category || 'fashion');
             if (product.images) {
               try {
                 const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
-                imageUrl = Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0] : '/placeholder.jpg';
+                const firstImage = Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0] : null;
+                // Validate image URL - if it's invalid or placeholder, use our beautiful Unsplash image
+                if (firstImage && firstImage !== '/placeholder.jpg' && firstImage !== 'placeholder.jpg' && firstImage.startsWith('http')) {
+                  imageUrl = firstImage;
+                }
               } catch (error) {
                 console.warn('Failed to parse product images:', error);
-                imageUrl = '/placeholder.jpg';
               }
+            }
+
+            // Price normalization - multiply by 15,000 if price is below 1000 (USD to Rupiah conversion)
+            let normalizedPrice = product.price || 0;
+            if (normalizedPrice < 1000) {
+              normalizedPrice = normalizedPrice * 15000;
             }
             
             const convertedProduct = {
               id: product.id,
               name: product.title,
-              price: product.price,
+              price: normalizedPrice,
               image: imageUrl,
               category: product.category,
               description: product.description || '',
@@ -175,10 +199,11 @@ export default function MarketplacePage() {
               inStock: product.inStock,
               featured: product.featured,
               sellerId: product.sellerId || 'unknown',
-              isRealProduct: true // Flag to identify real products
+              isRealProduct: true, // Flag to identify real products
+              slug: product.slug || product.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
             };
             
-            console.log(`Converted product: ${convertedProduct.name} - ${convertedProduct.price}`);
+            console.log(`Converted product: ${convertedProduct.name} - Rp ${convertedProduct.price.toLocaleString('id-ID')}`);
             return convertedProduct;
           });
           
@@ -372,12 +397,13 @@ export default function MarketplacePage() {
             {/* Products Grid - Main Content */}
             <div className="flex-1 min-w-0 transition-all duration-400 ease-out overflow-hidden">
               {/* Products Grid */}
-              <div className="grid gap-4 transition-all duration-400 ease-out px-2 pb-8" style={{
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              <div className="grid gap-6 transition-all duration-400 ease-out px-2 pb-8" style={{
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gridAutoRows: '1fr',
                 transition: 'all 0.4s ease-in-out'
               }}>
                 {paginatedProducts.map((product) => (
-                  <div key={product.id} className="h-full">
+                  <div key={product.id} className="flex flex-col h-full">
                     <ProductCard
                       product={product}
                       onAddToCart={handleAddToCart}
@@ -560,26 +586,28 @@ export default function MarketplacePage() {
 
         {/* Products Grid - Mobile */}
         <div className="px-4 py-4 pb-20">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4" style={{ gridAutoRows: '1fr' }}>
             {paginatedProducts.map((product) => (
-              <ProductCardModern
-                key={`product-${product.id}`} // Pastikan key unik dan stabil
-                product={{
-                  id: product.id,
-                  name: product.name || product.title || 'Unknown Product',
-                  title: product.title || product.name,
-                  description: product.description || '',
-                  price: product.price,
-                  originalPrice: (product as any).originalPrice,
-                  discount: (product as any).discount,
-                  rating: product.rating,
-                  reviews: product.reviews,
-                  image: product.image || (product as any).images?.[0],
-                  images: (product as any).images,
-                  isNew: (product as any).isNew,
-                  category: product.category
-                }}
-              />
+              <div key={`product-${product.id}`} className="flex flex-col h-full">
+                <ProductCardModern
+                  product={{
+                    id: product.id,
+                    name: product.name || product.title || 'Unknown Product',
+                    title: product.title || product.name,
+                    description: product.description || '',
+                    price: product.price,
+                    originalPrice: (product as any).originalPrice,
+                    discount: (product as any).discount,
+                    rating: product.rating,
+                    reviews: product.reviews,
+                    image: product.image || (product as any).images?.[0],
+                    images: (product as any).images,
+                    isNew: (product as any).isNew,
+                    category: product.category,
+                    slug: product.slug
+                  }}
+                />
+              </div>
             ))}
           </div>
         </div>

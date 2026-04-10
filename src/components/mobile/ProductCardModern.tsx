@@ -72,9 +72,16 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
     window.location.href = `/product/${slug}`
   }
 
+  const handleProductNavigation = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // Navigate to product detail page
+    const slug = product.slug || generateSlug(productName)
+    window.location.href = `/product/${slug}`
+  }
+
   return (
     <div 
-      className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_32px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400 ease-out overflow-hidden cursor-pointer group"
+      className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_32px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400 ease-out overflow-hidden cursor-pointer group flex flex-col h-full"
       onClick={handleProductClick}
     >
       {/* Product Image - Mobile Optimized */}
@@ -122,10 +129,13 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
       </div>
 
       {/* Product Info - Mobile Optimized */}
-      <div className="p-3 space-y-2 bg-white relative">
+      <div className="p-3 space-y-2 bg-white relative flex flex-col flex-grow">
         {/* Product Name - Clear Typography */}
-        <div className="min-h-[2rem]">
-          <h3 className="text-sm font-medium text-[#2d3436] line-clamp-2 leading-tight">
+        <div className="flex-grow min-h-[2rem]">
+          <h3 
+            className="text-sm font-medium text-[#2d3436] line-clamp-2 leading-tight hover:text-black transition-colors duration-300 cursor-pointer"
+            onClick={handleProductNavigation}
+          >
             {productName}
           </h3>
         </div>

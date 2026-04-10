@@ -20,7 +20,7 @@ interface Product {
   images: string;
   material?: string;
   care?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'PENDING' | 'APPROVED' | 'REJECTED';
   badges: string | string[];
   sellerId: string;
   createdAt: string;
@@ -204,9 +204,9 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      setError(null);
       
-      let apiUrl = '';
+      let apiUrl: string;
+      
       if (activeTab === 'marketplace') {
         apiUrl = '/api/marketplace-products';
         console.log('Fetching marketplace products...');
@@ -216,36 +216,22 @@ export default function AdminProducts() {
       }
       
       const response = await fetch(apiUrl);
+      const data: ApiResponse = await response.json();
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result: ApiResponse = await response.json();
-      
-      if (result.success && result.products) {
-        console.log(`Successfully fetched ${result.products.length} ${activeTab} products`);
-        setProducts(result.products);
-        setLastUpdated(new Date());
+      if (data.success && data.products) {
+        setProducts(data.products);
+        console.log(`Loaded ${data.products.length} products`);
+        
+        // Log status distribution for debugging
+        const statusCount = data.products.reduce((acc: Record<string, number>, product) => {
+          acc[product.status] = (acc[product.status] || 0) + 1;
+          return acc;
+        }, {});
+        console.log('Product status distribution:', statusCount);
       } else {
-        throw new Error(result.error || `Failed to fetch ${activeTab} products`);
+        setError(data.error || 'Failed to load products');
+        setProducts([]);
       }
-    } catch (error) {
-      console.error(`Error fetching ${activeTab} products:`, error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      // Provide more user-friendly error messages
-      if (errorMessage.includes('Failed to fetch')) {
-        setError('Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda.');
-      } else if (errorMessage.includes('HTTP 404')) {
-        setError('Endpoint tidak ditemukan. Silakan hubungi administrator.');
-      } else if (errorMessage.includes('HTTP 500')) {
-        setError('Terjadi kesalahan pada server. Silakan coba lagi beberapa saat.');
-      } else {
-        setError(errorMessage);
-      }
-      
-      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -394,7 +380,8 @@ export default function AdminProducts() {
     // Find product and generate slug
     const product = products.find(p => p.id === productId);
     if (product) {
-      const slug = product.title
+      // Use slug if available, otherwise generate from title
+      const slug = product.slug || product.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
@@ -417,17 +404,28 @@ export default function AdminProducts() {
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesStatus = selectedStatus === 'all' || product.status === selectedStatus;
+    
+    // For pending tab, only show PENDING products regardless of status filter
+    let matchesStatus = false;
+    if (activeTab === 'pending') {
+      matchesStatus = product.status === 'PENDING' || product.status === 'pending';
+    } else {
+      matchesStatus = selectedStatus === 'all' || product.status === selectedStatus;
+    }
+    
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
+      case 'PENDING':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'approved':
+      case 'APPROVED':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'rejected':
+      case 'REJECTED':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -437,10 +435,13 @@ export default function AdminProducts() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
+      case 'PENDING':
         return <Clock className="w-4 h-4" />;
       case 'approved':
+      case 'APPROVED':
         return <Check className="w-4 h-4" />;
       case 'rejected':
+      case 'REJECTED':
         return <X className="w-4 h-4" />;
       default:
         return <AlertCircle className="w-4 h-4" />;
@@ -450,10 +451,13 @@ export default function AdminProducts() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending':
+      case 'PENDING':
         return 'Menunggu Persetujuan';
       case 'approved':
+      case 'APPROVED':
         return 'Disetujui';
       case 'rejected':
+      case 'REJECTED':
         return 'Ditolak';
       default:
         return 'Unknown';
@@ -732,7 +736,7 @@ export default function AdminProducts() {
                           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                           className="w-3 h-3 bg-yellow-100 border border-yellow-200 rounded-full"
                         />
-                        Pending: <AnimatedCounter value={products.filter(p => p.status === 'pending').length} />
+                        Pending: <AnimatedCounter value={products.filter(p => p.status === 'pending' || p.status === 'PENDING').length} />
                       </motion.span>
                       <motion.span 
                         whileHover={{ scale: 1.1 }}
@@ -743,7 +747,7 @@ export default function AdminProducts() {
                           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                           className="w-3 h-3 bg-green-100 border border-green-200 rounded-full"
                         />
-                        Approved: <AnimatedCounter value={products.filter(p => p.status === 'approved').length} />
+                        Approved: <AnimatedCounter value={products.filter(p => p.status === 'approved' || p.status === 'APPROVED').length} />
                       </motion.span>
                       <motion.span 
                         whileHover={{ scale: 1.1 }}
@@ -754,7 +758,7 @@ export default function AdminProducts() {
                           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                           className="w-3 h-3 bg-red-100 border border-red-200 rounded-full"
                         />
-                        Rejected: <AnimatedCounter value={products.filter(p => p.status === 'rejected').length} />
+                        Rejected: <AnimatedCounter value={products.filter(p => p.status === 'rejected' || p.status === 'REJECTED').length} />
                       </motion.span>
                     </motion.div>
                   )}
@@ -998,7 +1002,7 @@ export default function AdminProducts() {
                               Lihat
                             </motion.button>
                             
-                            {activeTab === 'pending' && product.status === 'pending' && (
+                            {activeTab === 'pending' && (product.status === 'pending' || product.status === 'PENDING') && (
                               <>
                                 <motion.button 
                                   onClick={() => handleApprove(product.id)}

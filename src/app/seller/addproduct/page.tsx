@@ -18,14 +18,16 @@ import {
   Eye,
   EyeOff,
   Check,
-  Loader2
+  Loader2,
+  CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import { createProduct, getCategories, type ProductFormData } from '@/actions/seller-actions';
+import { toast } from 'sonner';
 
 interface FormData {
   // Basic Info
   title: string;
-  slug: string;
   description: string;
   category: string;
   brand: string;
@@ -34,43 +36,34 @@ interface FormData {
   price: string;
   discount_price: string;
   stock: string;
-  sku: string;
   
   // Media
   images: string[];
   
   // Variants
-  sizes: Array<{ id: string; name: string; price: number; inStock: boolean }>;
+  sizes: Array<{ id: string; name: string; value: string; inStock: boolean }>;
   colors: Array<{ id: string; name: string; value: string; inStock: boolean }>;
-  
-  // Status
-  status: 'active' | 'draft';
-  featured: boolean;
   
   // Specifications
   material: string;
   care: string;
-  specifications: Record<string, string>;
+  specs: Record<string, string>;
 }
 
 const initialFormData: FormData = {
   title: '',
-  slug: '',
   description: '',
   category: '',
   brand: '',
   price: '',
   discount_price: '',
-  stock: '',
-  sku: '',
+  stock: '0',
   images: [],
   sizes: [],
   colors: [],
-  status: 'draft',
-  featured: false,
   material: '',
   care: '',
-  specifications: {}
+  specs: {}
 };
 
 const categories = [
@@ -90,27 +83,17 @@ export default function ModernSellerAddProductPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
 
-  // Auto-generate slug from title
+  // Load categories on mount
   useEffect(() => {
-    if (formData.title) {
-      const slug = formData.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      setFormData(prev => ({ ...prev, slug }));
-    }
-  }, [formData.title]);
-
-  // Auto-generate SKU
-  useEffect(() => {
-    if (formData.title && formData.category) {
-      const sku = `${formData.category.substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-6)}`;
-      setFormData(prev => ({ ...prev, sku }));
-    }
-  }, [formData.title, formData.category]);
+    const loadCategories = async () => {
+      const cats = await getCategories();
+      setCategories(cats);
+    };
+    loadCategories();
+  }, []);
 
   // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,7 +177,6 @@ export default function ModernSellerAddProductPage() {
     const newVariant = {
       id: Date.now().toString(),
       name: '',
-      price: 0,
       value: '',
       inStock: true
     };
@@ -251,7 +233,7 @@ export default function ModernSellerAddProductPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
+  // Handle form submission with Server Actions
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -260,67 +242,65 @@ export default function ModernSellerAddProductPage() {
     }
 
     setIsSubmitting(true);
+    setErrors({});
 
     try {
-      // Create product object
-      const newProduct = {
-        title: formData.title,
-        slug: formData.slug,
-        description: formData.description,
+      // Prepare data for Server Action
+      const productData: ProductFormData = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        category: formData.category as any, // Type assertion for enum
+        brand: formData.brand.trim() || undefined,
         price: parseFloat(formData.price),
         discount_price: formData.discount_price ? parseFloat(formData.discount_price) : undefined,
         stock: parseInt(formData.stock) || 0,
-        category: formData.category,
-        brand: formData.brand,
-        sku: formData.sku,
         images: formData.images,
-        sizes: formData.sizes,
-        colors: formData.colors,
-        status: formData.status,
-        featured: formData.featured,
-        material: formData.material,
-        care: formData.care,
-        specifications: {
-          material: formData.material,
-          care: formData.care,
-          ...formData.specifications
-        },
-        badges: [],
-        sellerId: 'current-seller',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        sizes: formData.sizes.map(size => ({
+          name: size.name,
+          value: size.value,
+          inStock: size.inStock
+        })),
+        colors: formData.colors.map(color => ({
+          name: color.name,
+          value: color.value,
+          inStock: color.inStock
+        })),
+        material: formData.material.trim() || undefined,
+        care: formData.care.trim() || undefined,
+        specs: formData.specs
       };
 
-      // Save to database via API
-      const response = await fetch('/api/seller-products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProduct)
-      });
+      // Call Server Action
+      const result = await createProduct(productData);
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Product saved successfully:', result);
+      if (result.success) {
+        // Show success toast
+        toast.success(result.message || 'Product created successfully!');
         
-        // Show success message
-        setShowSuccess(true);
+        // Reset form
+        setFormData(initialFormData);
+        setImagePreviews([]);
         
-        // Reset form after 2 seconds
+        // Redirect after delay
         setTimeout(() => {
-          setFormData(initialFormData);
-          setImagePreviews([]);
-          setShowSuccess(false);
           router.push('/seller/products');
         }, 2000);
       } else {
-        throw new Error('Failed to save product');
+        // Handle validation errors
+        if (result.details) {
+          const fieldErrors: Record<string, string> = {};
+          result.details.forEach((detail: any) => {
+            fieldErrors[detail.field] = detail.message;
+          });
+          setErrors(fieldErrors);
+        }
+        
+        toast.error(result.error || 'Failed to create product');
       }
       
     } catch (error) {
-      console.error('Error saving product:', error);
-      alert('Error saving product. Please try again.');
+      console.error('Error creating product:', error);
+      toast.error('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -374,19 +354,7 @@ export default function ModernSellerAddProductPage() {
         </div>
       </div>
 
-      {/* Success Message */}
-      {showSuccess && (
-        <div className="fixed top-4 right-4 z-50 animate-pulse">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-            <Check className="h-5 w-5 text-green-600" />
-            <div>
-              <h3 className="text-sm font-medium text-green-900">Product Added Successfully!</h3>
-              <p className="text-sm text-green-700">Your product has been saved and is now pending approval.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
+      
       <div className="flex">
         {/* Sidebar */}
         <div className="w-64 bg-white border-r border-gray-200 min-h-screen p-6">
@@ -447,21 +415,7 @@ export default function ModernSellerAddProductPage() {
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Slug
-                  </label>
-                  <input
-                    type="text"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
-                    placeholder="Auto-generated from product name"
-                    readOnly
-                  />
-                </div>
-
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Category *
@@ -590,21 +544,7 @@ export default function ModernSellerAddProductPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    SKU
-                  </label>
-                  <input
-                    type="text"
-                    name="sku"
-                    value={formData.sku}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
-                    placeholder="Auto-generated"
-                    readOnly
-                  />
-                </div>
-              </div>
+                              </div>
             </div>
 
             {/* Product Images */}
@@ -713,10 +653,10 @@ export default function ModernSellerAddProductPage() {
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <input
-                      type="number"
-                      placeholder="Price adjustment"
-                      value={size.price || 0}
-                      onChange={(e) => updateVariant('sizes', index, 'price', parseFloat(e.target.value) || 0)}
+                      type="text"
+                      placeholder="Size value (e.g., M, L, XL)"
+                      value={size.value}
+                      onChange={(e) => updateVariant('sizes', index, 'value', e.target.value)}
                       className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <button
@@ -780,69 +720,7 @@ export default function ModernSellerAddProductPage() {
               </div>
             </div>
 
-            {/* Status Settings */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <Settings className="h-5 w-5 text-gray-600" />
-                <h2 className="text-lg font-semibold text-gray-900">Status Settings</h2>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <label className="text-sm font-medium text-gray-900">Product Status</label>
-                    <p className="text-sm text-gray-500">Choose whether to publish or save as draft</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, status: 'draft' }))}
-                      className={`px-4 py-2 rounded-lg transition-colors ${
-                        formData.status === 'draft'
-                          ? 'bg-gray-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      <EyeOff className="h-4 w-4 inline mr-1" />
-                      Draft
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, status: 'active' }))}
-                      className={`px-4 py-2 rounded-lg transition-colors ${
-                        formData.status === 'active'
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      <Eye className="h-4 w-4 inline mr-1" />
-                      Active
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <label className="text-sm font-medium text-gray-900">Featured Product</label>
-                    <p className="text-sm text-gray-500">Display this product on the homepage</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, featured: !prev.featured }))}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.featured ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.featured ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
-
+            
             {/* Error Summary */}
             {Object.keys(errors).length > 0 && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4">

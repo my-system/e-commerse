@@ -1,15 +1,39 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Clock, TrendingUp, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { products } from '@/data/products';
-import { Product } from '@/data/products';
+
+interface Product {
+  id: string;
+  title: string;
+  name?: string;
+  category: string;
+  description?: string;
+  material?: string;
+  price: number;
+  image?: string;
+  images?: string[];
+  rating?: number;
+  inStock?: boolean;
+}
 
 interface SmartSearchProps {
   placeholder?: string;
   className?: string;
   onSearch?: (query: string) => void;
+}
+
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
 }
 
 export default function SmartSearchNew({ 
@@ -20,34 +44,67 @@ export default function SmartSearchNew({
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([
     't-shirt',
     'denim jacket', 
     'dress',
     'shoes'
   ]);
+  const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Search functionality
+  // Debounced query
+  const debouncedQuery = useDebounce(query, 300);
+
+  // Fetch products from API
   useEffect(() => {
-    if (query.trim() === '') {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/products');
+        if (response.ok) {
+          const data = await response.json();
+          // Handle different response formats
+          const productsArray = Array.isArray(data) ? data : (data.products || []);
+          setAllProducts(productsArray);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Search functionality with debounce
+  useEffect(() => {
+    if (debouncedQuery.trim() === '') {
       setSearchResults([]);
       return;
     }
 
-    const queryLower = query.toLowerCase().trim();
-    const results = products.filter(product => 
-      product.title.toLowerCase().includes(queryLower) ||
-      product.category.toLowerCase().includes(queryLower) ||
-      product.description?.toLowerCase().includes(queryLower) ||
-      product.material?.toLowerCase().includes(queryLower)
-    );
+    const queryLower = debouncedQuery.toLowerCase().trim();
+    const results = allProducts.filter(product => {
+      const searchFields = [
+        product.title || product.name || '',
+        product.category || '',
+        product.description || '',
+        product.material || ''
+      ];
+      
+      return searchFields.some(field => 
+        field.toLowerCase().includes(queryLower)
+      );
+    });
 
     setSearchResults(results.slice(0, 6));
-  }, [query]);
+  }, [debouncedQuery, allProducts]);
 
   // Handle search
   const handleSearch = (searchQuery: string) => {
@@ -196,7 +253,7 @@ export default function SmartSearchNew({
                         {/* Product Image */}
                         <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                           <img
-                            src={product.images[0]}
+                            src={product.images?.[0] || product.image || '/images/placeholder.jpg'}
                             alt={product.title}
                             className="w-full h-full object-cover"
                           />

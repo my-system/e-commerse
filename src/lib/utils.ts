@@ -10,8 +10,34 @@ export function formatPrice(price: number): string {
 export function generateSlug(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // Hapus karakter kecuali huruf, angka, spasi, dan dash
+    .replace(/\s+/g, '-') // Ganti spasi dengan dash
+    .replace(/-+/g, '-') // Hapus dash duplikat
+    .replace(/^-+|-+$/g, ''); // Hapus dash di awal/akhir
+}
+
+export async function generateUniqueSlug(title: string, prisma: any): Promise<string> {
+  let baseSlug = generateSlug(title);
+  let slug = baseSlug;
+  let counter = 1;
+  
+  // Cek apakah slug sudah ada
+  while (true) {
+    const existing = await prisma.product.findUnique({
+      where: { slug },
+      select: { id: true }
+    });
+    
+    if (!existing) {
+      break;
+    }
+    
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+  
+  return slug;
 }
 
 export function truncateText(text: string, maxLength: number): string {

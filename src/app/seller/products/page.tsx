@@ -25,7 +25,19 @@ interface Product {
   status: 'pending' | 'approved' | 'rejected';
   badges: string[];
   sellerId: string;
+  slug?: string;
 }
+
+// Helper function to generate slug from title
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
 
 export default function SellerProductsPage() {
   const router = useRouter();
@@ -79,45 +91,37 @@ export default function SellerProductsPage() {
     try {
       setLoading(true);
       
-      // Try localStorage first (fallback)
-      const localProducts = JSON.parse(localStorage.getItem('sellerProducts') || '[]');
-      if (localProducts.length > 0) {
-        console.log('Loading products from localStorage:', localProducts);
-        setProducts(localProducts);
-        setError(null);
-        setLoading(false);
-        return;
-      }
-      
-      // Use tri-database API
-      try {
-        const response = await fetch('/api/pending-products');
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setProducts(data.products);
-            setError(null);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Database API error:', error);
-      }
-      
-      // Fallback to localStorage API
-      const response = await fetch('/api/test-seller-products');
+      // Fetch ALL products from database (all statuses) using the all-products API
+      // This allows seller to see all their products regardless of status
+      const response = await fetch('/api/all-products');
       
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }
       
       const data = await response.json();
-      setProducts(data.products || []);
+      
+      if (data.success && data.products) {
+        console.log('Loaded products from database:', data.products.length);
+        setProducts(data.products);
+        setError(null);
+        
+        // Log status distribution for debugging
+        const statusCount = data.products.reduce((acc: Record<string, number>, product: any) => {
+          acc[product.status] = (acc[product.status] || 0) + 1;
+          return acc;
+        }, {});
+        console.log('Product status distribution:', statusCount);
+      } else {
+        console.error('API returned error:', data.error);
+        setProducts([]);
+        setError(data.error || 'Gagal memuat produk');
+      }
       
     } catch (error) {
       console.error('Error fetching products:', error);
       setError('Gagal memuat produk');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -206,10 +210,13 @@ export default function SellerProductsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
+      case 'PENDING':
         return <Clock className="h-4 w-4 text-yellow-500" />;
       case 'approved':
+      case 'APPROVED':
         return <Check className="h-4 w-4 text-green-500" />;
       case 'rejected':
+      case 'REJECTED':
         return <X className="h-4 w-4 text-red-500" />;
       default:
         return <AlertTriangle className="h-4 w-4 text-gray-500" />;
@@ -219,10 +226,13 @@ export default function SellerProductsPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending':
+      case 'PENDING':
         return 'Menunggu Persetujuan';
       case 'approved':
+      case 'APPROVED':
         return 'Disetujui';
       case 'rejected':
+      case 'REJECTED':
         return 'Ditolak';
       default:
         return 'Unknown';
@@ -232,10 +242,13 @@ export default function SellerProductsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
+      case 'PENDING':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'approved':
+      case 'APPROVED':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'rejected':
+      case 'REJECTED':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -272,7 +285,12 @@ export default function SellerProductsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
+    if (!dateString) return 'Tanggal tidak tersedia';
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Tanggal tidak valid';
+    
+    return date.toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -500,7 +518,7 @@ export default function SellerProductsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
                           <Link
-                            href={`/product/${product.id}`}
+                            href={`/product/${product.slug || generateSlug(product.title)}`}
                             className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
                             title="Lihat"
                           >

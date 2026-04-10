@@ -8,8 +8,7 @@ import ProductCard from '@/components/ui/ProductCard';
 import { formatPrice } from '@/lib/utils';
 import { ShoppingCart, Heart, Star, Truck, Shield, RefreshCw, ArrowLeft } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
-import AddToCartClient from '@/components/client/AddToCartClient';
-import WishlistClient from '@/components/client/WishlistClient';
+import ProductActionsWrapper from '@/components/client/ProductActionsWrapper';
 import Link from 'next/link';
 
 interface Product {
@@ -42,14 +41,15 @@ interface Product {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug);
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
   
   if (!product) {
     return {
@@ -72,7 +72,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 // Fetch product by slug from database
 async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
-    const product = await prisma.product.findUnique({
+    let product = null;
+    
+    // First try to find by slug field
+    product = await prisma.product.findUnique({
       where: { slug },
       include: {
         sizes: true,
@@ -87,6 +90,67 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
         }
       }
     });
+    
+    // If not found by slug, try to find by exact title match
+    if (!product) {
+      // Generate common title variations from slug
+      // "test-product-admin" -> ["Test Product Admin", "test product admin"]
+      const titleVariations = [
+        slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Title Case
+        slug.replace(/-/g, ' '), // Lowercase with spaces
+        slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toLowerCase()) // Sentence case
+      ];
+      
+      // Try each variation with direct findFirst (more efficient than findMany)
+      for (const titleVariation of titleVariations) {
+        product = await prisma.product.findFirst({
+          where: {
+            title: titleVariation
+          },
+          include: {
+            sizes: true,
+            colors: true,
+            specs: true,
+            seller: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
+        });
+        
+        if (product) break; // Found it, stop searching
+      }
+      
+      // If still not found, try a more flexible search as last resort
+      if (!product) {
+        product = await prisma.product.findFirst({
+          where: {
+            title: {
+              contains: slug.replace(/-/g, ' '),
+              mode: 'insensitive'
+            }
+          },
+          include: {
+            sizes: true,
+            colors: true,
+            specs: true,
+            seller: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        });
+      }
+    }
 
     if (!product) {
       return null;
@@ -193,7 +257,8 @@ async function getRelatedProducts(category: string, currentProductId: string): P
 
 // Main page component
 export default async function ProductDetailPage({ params }: PageProps) {
-  const product = await getProductBySlug(params.slug);
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
   const relatedProducts = await getRelatedProducts(product?.category || '', product?.id || '');
 
   // Product not found
@@ -327,9 +392,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <AddToCartClient 
+              <ProductActionsWrapper 
                 product={product}
-                disabled={!product.inStock}
               />
               
               <Link
@@ -340,10 +404,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               </Link>
             </div>
 
-            {/* Wishlist Button */}
-            <WishlistClient product={product} />
-
-            {/* Product Features */}
+{/* Product Features */}
             <div className="border-t pt-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex items-center gap-3">
@@ -426,10 +487,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct as any}
-                  onQuickView={() => {}}
-                  onAddToCart={() => {}}
-                  onToggleWishlist={() => {}}
-                  isWishlisted={false}
                 />
               ))}
             </div>

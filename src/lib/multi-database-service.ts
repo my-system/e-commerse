@@ -76,7 +76,8 @@ export class PendingDatabaseService {
     try {
       const client = await pendingPool.connect();
       try {
-        const result = await client.query('SELECT * FROM products ORDER BY created_at DESC');
+        // Query products with PENDING status from main database
+        const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY created_at DESC', ['PENDING']);
         return result.rows.map(row => this.mapRowToProduct(row));
       } finally {
         client.release();
@@ -234,7 +235,7 @@ export class MarketplaceDatabaseService {
         console.log('MarketplaceDatabaseService: Fetching approved products...');
         
         // Use the actual database schema - only get approved products
-        const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY "createdAt" DESC', ['approved']);
+        const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY "createdAt" DESC', ['APPROVED']);
         
         console.log(`MarketplaceDatabaseService: Found ${result.rows.length} approved products`);
         
