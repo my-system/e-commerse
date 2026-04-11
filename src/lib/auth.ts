@@ -132,6 +132,15 @@ export const authOptions: NextAuthOptions = {
               data: { status: 'ACTIVE', emailVerified: new Date() }
             });
           }
+
+          // Assign ADMIN role to specific email addresses
+          const adminEmails = ['yusufdarwis097@gmail.com'];
+          if (adminEmails.includes(user.email!)) {
+            await prisma.user.update({
+              where: { email: user.email! },
+              data: { role: 'ADMIN' }
+            });
+          }
         } catch (error) {
           console.error('Error activating user:', error);
         }
