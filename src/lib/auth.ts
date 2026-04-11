@@ -117,7 +117,25 @@ export const authOptions: NextAuthOptions = {
     
     // Sign in callback
     async signIn({ user, account }) {
-      // Let NextAuth PrismaAdapter handle user creation and account linkage
+      if (account?.provider === 'google') {
+        // For Google OAuth, automatically activate the user
+        // Google already verifies the email
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! }
+          });
+
+          if (existingUser && existingUser.status === 'INACTIVE') {
+            // Activate the user
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: { status: 'ACTIVE', emailVerified: new Date() }
+            });
+          }
+        } catch (error) {
+          console.error('Error activating user:', error);
+        }
+      }
       return true;
     },
     
