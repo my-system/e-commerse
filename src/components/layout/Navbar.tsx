@@ -134,10 +134,10 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Actions */}
-            <div className="md:hidden flex items-center space-x-2">
+            <div className="md:hidden flex items-center space-x-1 sm:space-x-2">
               {/* Search Icon - Mobile */}
               <button
-                className="relative p-2 text-white hover:text-white/80 transition-colors duration-200"
+                className="relative p-2 sm:p-3 text-white hover:text-white/80 transition-colors duration-200"
                 onClick={() => {
                   // Trigger search modal or navigate to search page
                   const searchModal = document.getElementById('mobile-search-modal');
@@ -150,17 +150,17 @@ export default function Navbar() {
                 }}
                 aria-label="Cari produk"
               >
-                <SearchIcon className="h-5 w-5" />
+                <SearchIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
 
               {/* Cart Icon - Mobile */}
               <button
-                className="relative p-2 text-white hover:text-white/80 transition-colors duration-200"
+                className="relative p-2 sm:p-3 text-white hover:text-white/80 transition-colors duration-200"
                 onClick={openCart}
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
                 {cartState.totalItems > 0 && (
-                  <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-white text-blue-600 text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-white text-blue-600 text-xs sm:text-sm rounded-full h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center font-bold">
                     {cartState.totalItems > 99 ? '99+' : cartState.totalItems}
                   </span>
                 )}
@@ -169,11 +169,11 @@ export default function Navbar() {
               {/* Mobile menu button */}
               <button
                 onClick={toggleSidebar}
-                className="p-2 text-white hover:text-white/80 transition-colors duration-200 relative z-50"
+                className="p-2 sm:p-3 text-white hover:text-white/80 transition-colors duration-200 relative z-50"
                 aria-label="Buka menu"
                 style={{ pointerEvents: 'auto' }}
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-6 w-6 sm:h-7 sm:w-7" />
               </button>
             </div>
           </div>
