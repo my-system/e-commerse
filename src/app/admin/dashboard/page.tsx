@@ -190,14 +190,10 @@ export default function AdminDashboard() {
   function AnimatedStatCard({ stat, index }: { stat: any; index: number }) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: index * 0.1 }}
-        whileHover={{ 
-          scale: 1.02, 
-          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" 
-        }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative overflow-hidden group"
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 relative overflow-hidden group"
       >
         {/* Background decoration */}
         <motion.div
@@ -286,7 +282,7 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="bg-white border-b border-gray-200 px-6 py-4"
+            className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4"
           >
             <motion.div 
               initial={{ opacity: 0, x: -50 }}
@@ -299,7 +295,7 @@ export default function AdminDashboard() {
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
-                  className="text-2xl font-bold text-gray-900"
+                  className="text-xl sm:text-2xl font-bold text-gray-900"
                 >
                   Dashboard
                 </motion.h1>
@@ -307,7 +303,7 @@ export default function AdminDashboard() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.6 }}
-                  className="text-sm text-gray-500 mt-1"
+                  className="text-xs sm:text-sm text-gray-500 mt-1"
                 >
                   Welcome back! Here's what's happening with your platform today.
                 </motion.p>
@@ -320,16 +316,16 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.9 }}
-            className="px-6 pb-4"
+            className="px-4 sm:px-6 pb-4"
           >
-            <div className="flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-              <div className="flex items-center space-x-4">
-                <Filter className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Time Range:</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200">
+              <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
+                <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                <span className="text-xs sm:text-sm font-medium text-gray-700">Time Range:</span>
                 <select 
                   value={timeRange}
                   onChange={(e) => setTimeRange(e.target.value)}
-                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-2 sm:px-4 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-1 sm:flex-none"
                 >
                   <option value="today">Today</option>
                   <option value="7days">Last 7 Days</option>
@@ -339,9 +335,10 @@ export default function AdminDashboard() {
                 </select>
               </div>
               <div className="flex items-center space-x-2 text-xs text-gray-500">
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
                 <ClientOnlyTime>
-                  <span>Last sync: {systemHealth.lastSync}</span>
+                  <span className="hidden sm:inline">Last sync: {systemHealth.lastSync}</span>
+                  <span className="sm:hidden">{systemHealth.lastSync}</span>
                 </ClientOnlyTime>
               </div>
             </div>
@@ -352,23 +349,23 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.0 }}
-            className="p-6"
+            className="p-4 sm:p-6"
           >
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
               {stats.map((stat, index) => (
                 <AnimatedStatCard key={index} stat={stat} index={index} />
               ))}
             </div>
 
             {/* Dashboard Grid Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
               {/* Revenue Chart - 2 columns */}
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 1.2 }}
-                className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+                className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6"
               >
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}

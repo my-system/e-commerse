@@ -240,6 +240,17 @@ function MiniBarChart() {
 function RealTimeCounter() {
   const [count, setCount] = useState(12456);
   const [isVisible, setIsVisible] = useState(false);
+  const [windowSize, setWindowSize] = useState(768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize(window.innerWidth);
+    };
+    
+    setWindowSize(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -1812,17 +1823,17 @@ export default function Home() {
         </div>
 
         {/* Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-32 sm:pb-24">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-32 lg:pb-24">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex justify-center mb-8"
+            className="flex justify-center mb-6"
           >
-            <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
-              <span className="text-sm font-medium text-blue-700">Version 2.0 is live</span>
-              <svg className="ml-2 w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+            <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-50 border border-blue-200 rounded-full">
+              <span className="text-xs sm:text-sm font-medium text-blue-700">Version 2.0 is live</span>
+              <svg className="ml-2 w-3 h-3 sm:w-4 sm:h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293a1 1 0 00-1.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414 1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.293a1 1 0 00-1.414 0L10 10.586 8.707 9.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 11.414l1.293 1.293a1 1 0 001.414 0l4-4a1 1 0 101.414 1.414L4-4a1 1 0 000-1.414z" clipRule="evenodd" />
               </svg>
             </div>
@@ -1833,7 +1844,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-center text-gray-900 mb-6 leading-tight font-['Inter']"
+            className="text-3xl sm:text-4xl lg:text-6xl font-bold text-center text-gray-900 mb-4 sm:mb-6 leading-tight font-['Inter']"
           >
             Satu Platform untuk Seluruh
             <br />
@@ -1845,7 +1856,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg sm:text-xl text-center text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed font-['Inter']"
+            className="text-base sm:text-lg lg:text-xl text-center text-gray-600 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-['Inter'] px-2"
           >
             Kelola produk, pantau analitik penjual, dan kendalikan database dalam satu dashboard terintegrasi.
           </motion.p>
@@ -1855,11 +1866,11 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-8 sm:mb-16"
           >
             <button
               onClick={() => setActiveDashboard('admin')}
-              className={`px-8 py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
+              className={`px-6 py-3 sm:px-8 sm:py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
                 activeDashboard === 'admin'
                   ? 'bg-red-600 text-white shadow-lg shadow-red-600/25'
                   : 'bg-white text-red-600 border-2 border-red-600 hover:bg-red-50'
@@ -1867,12 +1878,12 @@ export default function Home() {
             >
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-red-100 rounded-full"></div>
-                <span>Admin Dashboard</span>
+                <span className="text-sm sm:text-base">Admin Dashboard</span>
               </div>
             </button>
             <button
               onClick={() => setActiveDashboard('seller')}
-              className={`px-8 py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
+              className={`px-6 py-3 sm:px-8 sm:py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
                 activeDashboard === 'seller'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
                   : 'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50'
@@ -1880,7 +1891,7 @@ export default function Home() {
             >
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-blue-100 rounded-full"></div>
-                <span>Seller Dashboard</span>
+                <span className="text-sm sm:text-base">Seller Dashboard</span>
               </div>
             </button>
           </motion.div>
@@ -1906,7 +1917,7 @@ export default function Home() {
 
             {/* Browser Mockup Frame with Live Dashboard */}
             <div
-              className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden"
+              className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden md:transform md:perspective-[1200px]"
               style={{
                 transform: `perspective(1200px) rotateX(${transform.rotateX}deg) scale(${transform.scale})`,
                 transition: 'transform 0.3s ease-out',
@@ -1914,27 +1925,27 @@ export default function Home() {
               }}
             >
               {/* Browser Header */}
-              <div className={`px-4 py-3 flex items-center justify-between ${
+              <div className={`px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between ${
                 activeDashboard === 'admin' ? 'bg-white border-b border-gray-200' : 'bg-purple-50 border-b border-purple-200'
               }`}>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                   <div className={`w-3 h-3 rounded-full ${
                     activeDashboard === 'admin' ? 'bg-red-500' : 'bg-blue-500'
                   }`}></div>
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-xs sm:text-sm font-medium text-gray-900 hidden sm:block">
                     {activeDashboard === 'admin' ? 'Admin Dashboard - Live Preview' : 'Seller Dashboard - Live Preview'}
                   </div>
-                  <div className="text-xs text-gray-500">localhost:3000</div>
+                  <div className="text-xs text-gray-500 hidden sm:block">localhost:3000</div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
-                  <div className="w-4 h-4 bg-green-400 rounded-sm"></div>
-                  <div className="w-4 h-4 bg-blue-400 rounded-sm"></div>
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-400 rounded-sm"></div>
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-400 rounded-sm"></div>
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-400 rounded-sm"></div>
                 </div>
               </div>
 
               {/* Dashboard Content */}
-              <div className="browser-mockup-frame overflow-auto relative" style={{ height: '800px', width: '100%' }}>
+              <div className="browser-mockup-frame overflow-auto relative h-[500px] md:h-[800px] w-full">
                 <div className="bg-white min-h-full">
                   {activeDashboard === 'admin' ? <DashboardContent /> : <SellerDashboardContent />}
                 </div>

@@ -91,6 +91,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
         <meta name="theme-color" content="#3b82f6" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icon-32x32.png" />

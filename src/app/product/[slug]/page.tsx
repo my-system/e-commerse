@@ -302,8 +302,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
       </div>
 
       {/* Main Product Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Gallery - Left Side */}
           <div>
             <ProductGallery
@@ -313,7 +313,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           </div>
 
           {/* Product Info - Right Side */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Product Title & Category */}
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -326,7 +326,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   </span>
                 )}
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                 {product.title}
               </h1>
               
@@ -354,11 +354,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
             {/* Price Section */}
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-gray-900">
+              <span className="text-2xl sm:text-3xl font-bold text-gray-900">
                 {formatPrice(product.discount_price || product.price)}
               </span>
               {product.discount_price && product.discount_price < product.price && (
-                <span className="text-lg text-gray-500 line-through">
+                <span className="text-base sm:text-lg text-gray-500 line-through">
                   {formatPrice(product.price)}
                 </span>
               )}
@@ -383,7 +383,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
             {/* Short Description */}
             {product.description && (
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
                 {product.description.length > 200 
                   ? `${product.description.substring(0, 200)}...`
                   : product.description
@@ -436,19 +436,19 @@ export default async function ProductDetailPage({ params }: PageProps) {
       </div>
 
       {/* Product Description & Details */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="bg-white rounded-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Deskripsi Produk</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
+        <div className="bg-white rounded-lg p-4 sm:p-6 lg:p-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Deskripsi Produk</h2>
           <div className="prose prose-gray max-w-none">
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
               {product.description}
             </p>
           </div>
           
           {/* Product Specifications */}
           {(product.material || product.specifications) && (
-            <div className="mt-8 border-t pt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Spesifikasi Produk</h3>
+            <div className="mt-6 sm:mt-8 border-t pt-6 sm:pt-8">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Spesifikasi Produk</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {product.material && (
                   <div>
@@ -478,10 +478,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <div className="bg-white rounded-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">Produk Terkait</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
+          <div className="bg-white rounded-lg p-4 sm:p-6 lg:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8">Produk Terkait</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {relatedProducts.map((relatedProduct) => (
                 <ProductCard
                   key={relatedProduct.id}
