@@ -4,7 +4,12 @@ import { Resend } from 'resend';
 import crypto from 'crypto';
 
 const prisma = new PrismaClient();
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Only initialize Resend if API key is valid
+const resend = process.env.RESEND_API_KEY && 
+  process.env.RESEND_API_KEY !== 're_your_resend_api_key_here'
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,12 +79,16 @@ export async function POST(request: NextRequest) {
     `;
 
     try {
-      await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'noreply@luxe.com',
-        to: email,
-        subject: 'Verify Your LUXE Account - OTP Code',
-        html: emailContent,
-      });
+      if (resend) {
+        await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || 'noreply@luxe.com',
+          to: email,
+          subject: 'Verify Your LUXE Account - OTP Code',
+          html: emailContent,
+        });
+      } else {
+        console.warn('Resend API key not configured, skipping email send');
+      }
     } catch (emailError) {
       console.error('Failed to send OTP email:', emailError);
       
