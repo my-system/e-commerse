@@ -36,6 +36,7 @@ import {
   Store
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { motion } from 'framer-motion';
 
 interface AdminUser {
   id: string;
@@ -586,7 +587,12 @@ export default function AdminUsersPage() {
 
   // Temporarily remove access check for testing
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="min-h-screen bg-gray-50"
+    >
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -617,8 +623,19 @@ export default function AdminUsersPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
+          >
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
@@ -634,9 +651,15 @@ export default function AdminUsersPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
+          >
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
@@ -653,9 +676,15 @@ export default function AdminUsersPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
+          >
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
@@ -672,9 +701,15 @@ export default function AdminUsersPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.6 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
+          >
             <div className="flex flex-col justify-between h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
@@ -690,12 +725,22 @@ export default function AdminUsersPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Role Distribution */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
+        >
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Admins</p>
@@ -703,9 +748,13 @@ export default function AdminUsersPage() {
               </div>
               <Crown className="h-8 w-8 text-purple-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Sellers</p>
@@ -713,9 +762,13 @@ export default function AdminUsersPage() {
               </div>
               <Store className="h-8 w-8 text-blue-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Buyers</p>
@@ -723,11 +776,17 @@ export default function AdminUsersPage() {
               </div>
               <ShoppingBag className="h-8 w-8 text-green-600" />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          className="bg-white rounded-lg shadow-sm border p-6 mb-6"
+        >
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -785,7 +844,7 @@ export default function AdminUsersPage() {
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Bulk Actions */}
         {selectedUsers.length > 0 && (
@@ -857,7 +916,13 @@ export default function AdminUsersPage() {
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.5, delay: 0.9 }}
+            className="bg-white rounded-lg shadow-sm border overflow-hidden"
+          >
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -897,8 +962,15 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
+                  {filteredUsers.map((user, index) => (
+                    <motion.tr
+                      key={user.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 1 + (index * 0.05) }}
+                      whileHover={{ backgroundColor: '#f9fafb', scale: 1.01 }}
+                      className="hover:bg-gray-50"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
@@ -1014,14 +1086,14 @@ export default function AdminUsersPage() {
                           )}
                         </div>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

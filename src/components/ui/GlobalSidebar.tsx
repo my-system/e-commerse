@@ -26,9 +26,7 @@ import {
   LogIn,
   ChevronRight,
   X,
-  UserCircle,
-  Database,
-  Monitor
+  UserCircle
 } from 'lucide-react';
 
 interface MenuItem {
@@ -316,18 +314,6 @@ export default function GlobalSidebar() {
             label: 'Kontrol Marketplace',
             href: '/admin/marketplace',
             description: 'Pengaturan marketplace'
-          },
-          {
-            icon: Database,
-            label: 'Database',
-            href: '/admin/database',
-            description: 'Manajemen basis data sistem'
-          },
-          {
-            icon: Monitor,
-            label: 'Desktop',
-            href: '/admin/desktop',
-            description: 'Desktop management'
           }
         ]
       }

@@ -50,6 +50,7 @@ import {
   CheckSquare
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MarketplaceSettings {
   platform: {
@@ -392,9 +393,19 @@ export default function AdminMarketplacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="min-h-screen bg-gray-50"
+    >
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="bg-white shadow-sm border-b"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -402,28 +413,37 @@ export default function AdminMarketplacePage() {
               <h1 className="text-xl font-semibold text-gray-900">Admin Marketplace Control</h1>
             </div>
             <div className="flex items-center gap-4">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={exportMarketplaceData}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
               >
                 <Download className="h-4 w-4" />
                 Export
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={fetchMarketplaceData}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tab Navigation */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8"
+        >
           <div className="flex space-x-8 px-6" aria-label="Tabs">
             {[
               { id: 'overview', name: 'Overview', icon: BarChart3 },
@@ -446,14 +466,25 @@ export default function AdminMarketplacePage() {
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+            className="space-y-8"
+          >
             {/* Key Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Total Revenue</p>
@@ -462,9 +493,15 @@ export default function AdminMarketplacePage() {
                   </div>
                   <DollarSign className="h-8 w-8 text-green-600" />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.35 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Active Sellers</p>
@@ -473,9 +510,15 @@ export default function AdminMarketplacePage() {
                   </div>
                   <Store className="h-8 w-8 text-blue-600" />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Active Products</p>
@@ -484,9 +527,15 @@ export default function AdminMarketplacePage() {
                   </div>
                   <Package className="h-8 w-8 text-purple-600" />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.45 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Total Orders</p>
@@ -495,12 +544,18 @@ export default function AdminMarketplacePage() {
                   </div>
                   <ShoppingBag className="h-8 w-8 text-orange-600" />
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Performance Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.5 }}
+                whileHover={{ scale: 1.03, y: -3 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 cursor-pointer"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Avg Order Value</p>
@@ -508,9 +563,15 @@ export default function AdminMarketplacePage() {
                   </div>
                   <TrendingUp className="h-8 w-8 text-green-600" />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.55 }}
+                whileHover={{ scale: 1.03, y: -3 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 cursor-pointer"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Conversion Rate</p>
@@ -518,9 +579,15 @@ export default function AdminMarketplacePage() {
                   </div>
                   <BarChart3 className="h-8 w-8 text-blue-600" />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.6 }}
+                whileHover={{ scale: 1.03, y: -3 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 cursor-pointer"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Commission Rate</p>
@@ -528,39 +595,53 @@ export default function AdminMarketplacePage() {
                   </div>
                   <CreditCard className="h-8 w-8 text-purple-600" />
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Recent Activities */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.65 }}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Activities</h3>
                 <Activity className="h-5 w-5 text-gray-400" />
               </div>
               <div className="space-y-4">
-                {activities.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-shrink-0 mt-0.5">
-                      {getActivityIcon(activity.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(activity.status)}`}>
-                          {activity.status}
-                        </span>
+                <AnimatePresence>
+                  {activities.map((activity, index) => (
+                    <motion.div
+                      key={activity.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.7 + (index * 0.1) }}
+                      whileHover={{ scale: 1.02, backgroundColor: '#f9fafb' }}
+                      className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer"
+                    >
+                      <div className="flex-shrink-0 mt-0.5">
+                        {getActivityIcon(activity.type)}
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
-                      {activity.user && (
-                        <p className="text-xs text-gray-500 mt-1">User: {activity.user}</p>
-                      )}
-                      <p className="text-xs text-gray-400 mt-2">{formatDate(activity.timestamp)}</p>
-                    </div>
-                  </div>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(activity.status)}`}>
+                            {activity.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+                        {activity.user && (
+                          <p className="text-xs text-gray-500 mt-1">User: {activity.user}</p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-2">{formatDate(activity.timestamp)}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* Settings Tab */}
@@ -876,6 +957,6 @@ export default function AdminMarketplacePage() {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

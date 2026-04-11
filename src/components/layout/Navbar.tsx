@@ -54,23 +54,23 @@ export default function Navbar() {
     <>
       <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-md' 
-          : 'bg-white/80 backdrop-blur-sm'
+          ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 animate-gradient-shift shadow-lg' 
+          : 'bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 animate-gradient-shift'
       }`}>
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center flex-shrink-0">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative flex items-center justify-between h-16 w-full">
+            {/* Logo - Far Left */}
+            <div className="flex items-center flex-shrink-0 z-10">
               <Link href="/" className="block hover:opacity-80 transition-opacity duration-200">
                 <div className="flex flex-col leading-tight">
-                  <span className="text-lg md:text-xl font-bold text-gray-900">DEMO WEB E-COMMERCE</span>
-                  <span className="text-xs md:text-sm font-light text-gray-500">by yusuf</span>
+                  <span className="text-lg md:text-xl font-bold text-white">DEMO WEB E-COMMERCE</span>
+                  <span className="text-xs md:text-sm font-light text-white/90">by yusuf</span>
                 </div>
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
+            {/* Desktop Navigation - Center (Absolute) */}
+            <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 space-x-8">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -79,8 +79,8 @@ export default function Navbar() {
                     href={item.href}
                     className={`relative pb-1 transition-all duration-300 font-medium text-sm ${
                       isActive 
-                        ? 'text-black after:content-[\'\'] after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-[2px] after:bg-black' 
-                        : 'text-gray-700 hover:text-black'
+                        ? 'text-white after:content-[\'\'] after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-[2px] after:bg-white' 
+                        : 'text-white/80 hover:text-white'
                     }`}
                   >
                     {item.name}
@@ -89,8 +89,8 @@ export default function Navbar() {
               })}
             </div>
 
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
+            {/* Desktop Actions - Far Right */}
+            <div className="hidden md:flex items-center gap-4 z-10">
               <SmartSearchNew className="w-80" />
               
               {/* Authentication: Show Sign In button OR Profile dropdown */}
@@ -111,12 +111,12 @@ export default function Navbar() {
                 />
               )}
               <button 
-                className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
+                className="relative p-2 text-white hover:text-white/80 transition-colors duration-200"
                 onClick={openCart}
               >
                 <ShoppingCart className="h-5 w-5" />
                 {cartState.totalItems > 0 && (
-                  <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-white text-blue-600 text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                     {cartState.totalItems > 99 ? '99+' : cartState.totalItems}
                   </span>
                 )}
@@ -125,7 +125,7 @@ export default function Navbar() {
               {/* Hamburger Menu - Desktop */}
               <button
                 onClick={toggleSidebar}
-                className="p-2 text-gray-700 hover:text-black transition-colors duration-200 relative z-50"
+                className="p-2 text-white hover:text-white/80 transition-colors duration-200 relative z-50"
                 aria-label="Buka menu"
                 style={{ pointerEvents: 'auto' }}
               >
@@ -136,8 +136,8 @@ export default function Navbar() {
             {/* Mobile Actions */}
             <div className="md:hidden flex items-center space-x-2">
               {/* Search Icon - Mobile */}
-              <button 
-                className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
+              <button
+                className="relative p-2 text-white hover:text-white/80 transition-colors duration-200"
                 onClick={() => {
                   // Trigger search modal or navigate to search page
                   const searchModal = document.getElementById('mobile-search-modal');
@@ -152,24 +152,24 @@ export default function Navbar() {
               >
                 <SearchIcon className="h-5 w-5" />
               </button>
-              
+
               {/* Cart Icon - Mobile */}
-              <button 
-                className="relative p-2 text-gray-700 hover:text-black transition-colors duration-200"
+              <button
+                className="relative p-2 text-white hover:text-white/80 transition-colors duration-200"
                 onClick={openCart}
               >
                 <ShoppingCart className="h-5 w-5" />
                 {cartState.totalItems > 0 && (
-                  <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-white text-blue-600 text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                     {cartState.totalItems > 99 ? '99+' : cartState.totalItems}
                   </span>
                 )}
               </button>
-              
+
               {/* Mobile menu button */}
               <button
                 onClick={toggleSidebar}
-                className="p-2 text-gray-700 hover:text-black transition-colors duration-200 relative z-50"
+                className="p-2 text-white hover:text-white/80 transition-colors duration-200 relative z-50"
                 aria-label="Buka menu"
                 style={{ pointerEvents: 'auto' }}
               >

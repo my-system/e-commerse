@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -39,6 +39,7 @@ import {
 export default function ModernUserDashboard() {
   const { user, isLoggedIn, logout } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('profile');
   const [isUploading, setIsUploading] = useState(false);
@@ -94,6 +95,12 @@ export default function ModernUserDashboard() {
     confirm: false
   });
 
+  // Orders state
+  const [orders, setOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState<string | null>(null);
+  const [forceFetch, setForceFetch] = useState(false);
+
   // User stats
   const userStats = {
     totalOrders: 24,
@@ -123,9 +130,51 @@ export default function ModernUserDashboard() {
 
   useEffect(() => {
     if (!isLoggedIn && !isLoading) {
-      router.push('/user');
+      router.push('/login');
     }
   }, [isLoggedIn, isLoading, router]);
+
+  // Read tab parameter and auto-set active section
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'orders') {
+      setActiveSection('orders');
+      setForceFetch(true);
+      // Remove query parameter silently
+      router.replace('/user', { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  // Fetch orders when orders tab is active
+  useEffect(() => {
+    if (activeSection === 'orders' && user?.id) {
+      const fetchOrders = async () => {
+        setOrdersLoading(true);
+        setOrdersError(null);
+        
+        try {
+          const response = await fetch(`/api/user/orders?t=${Date.now()}`, {
+            cache: 'no-store'
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            setOrders(data.orders);
+          } else {
+            setOrdersError(data.error || 'Gagal memuat pesanan');
+          }
+        } catch (error) {
+          console.error('Error fetching orders:', error);
+          setOrdersError('Terjadi kesalahan saat memuat pesanan');
+        } finally {
+          setOrdersLoading(false);
+          setForceFetch(false);
+        }
+      };
+
+      fetchOrders();
+    }
+  }, [activeSection, user?.id, forceFetch]);
 
   const handleLogout = () => {
     logout();
@@ -530,14 +579,122 @@ export default function ModernUserDashboard() {
             {activeSection === 'orders' && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Pesanan Saya</h2>
-                <div className="text-center py-12">
-                  <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">Belum ada pesanan</p>
-                  <Link href="/products" className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    <ShoppingBag className="w-4 h-4" />
-                    Mulai Belanja
-                  </Link>
-                </div>
+                
+                {ordersLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : ordersError ? (
+                  <div className="text-center py-12">
+                    <X className="w-16 h-16 text-red-300 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">{ordersError}</p>
+                    <button 
+                      onClick={() => window.location.reload()}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Coba Lagi
+                    </button>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">Belum ada pesanan</p>
+                    <Link href="/marketplace" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                      <ShoppingBag className="w-4 h-4" />
+                      Mulai Belanja
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map((order: any) => (
+                      <div key={order.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        {/* Order Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                INV-{order.id.slice(0, 8).toUpperCase()}
+                              </h3>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                order.status === 'PAID' ? 'bg-green-100 text-green-800' :
+                                order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
+                                order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' :
+                                order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {order.status}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600">
+                              {new Date(order.createdAt).toLocaleDateString('id-ID', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-gray-900">
+                              Rp {order.total.toLocaleString('id-ID')}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {order.orderItems.length} produk
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Order Items */}
+                        <div className="border-t border-gray-200 pt-4 mb-4">
+                          <div className="space-y-3">
+                            {order.orderItems.map((item: any) => (
+                              <div key={item.id} className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                  <img
+                                    src={item.product?.images ? JSON.parse(item.product.images)[0] || '/placeholder.png' : '/placeholder.png'}
+                                    alt={item.product?.title || 'Produk'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-sm font-medium text-gray-900 truncate">
+                                    {item.product?.title || 'Produk'}
+                                  </h4>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {item.size ? `Size: ${item.size}` : ''} 
+                                    {item.color ? ` | Color: ${item.color}` : ''}
+                                  </p>
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    {item.quantity} × Rp {item.price.toLocaleString('id-ID')}
+                                  </p>
+                                </div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  Rp {(item.quantity * item.price).toLocaleString('id-ID')}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Order Actions */}
+                        <div className="border-t border-gray-200 pt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                              {order.address}
+                            </div>
+                            <Link
+                              href={`/orders/${order.id}/payment`}
+                              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              Lihat Detail
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

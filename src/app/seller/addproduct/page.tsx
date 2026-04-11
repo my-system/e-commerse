@@ -24,6 +24,7 @@ import {
 import Link from 'next/link';
 import { createProduct, getCategories, type ProductFormData } from '@/actions/seller-actions';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface FormData {
   // Basic Info
@@ -307,32 +308,51 @@ export default function ModernSellerAddProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="min-h-screen bg-gray-50"
+    >
+      {/* Sticky Top Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm"
+      >
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <Link 
-                href="/seller/products"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Products
-              </Link>
+              <motion.div whileHover={{ x: -3 }}>
+                <Link 
+                  href="/seller/products"
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Products
+                </Link>
+              </motion.div>
               <div className="ml-8">
                 <h1 className="text-xl font-semibold text-gray-900">Add New Product</h1>
                 <p className="text-sm text-gray-500">Add a new product to your store catalog</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Link
-                href="/seller/products"
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Cancel
-              </Link>
-              <button
+                <Link
+                  href="/seller/products"
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </Link>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -348,52 +368,32 @@ export default function ModernSellerAddProductPage() {
                     Save Product
                   </>
                 )}
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-white border-r border-gray-200 min-h-screen p-6">
-          <nav className="space-y-2">
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 bg-blue-50 border-l-4 border-blue-600 rounded-r-lg">
-              <Package className="h-4 w-4" />
-              <span className="text-sm font-medium">Basic Info</span>
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
-              <DollarSign className="h-4 w-4" />
-              <span className="text-sm font-medium">Pricing</span>
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
-              <ImageIcon className="h-4 w-4" />
-              <span className="text-sm font-medium">Media</span>
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
-              <Palette className="h-4 w-4" />
-              <span className="text-sm font-medium">Variants</span>
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
-              <Settings className="h-4 w-4" />
-              <span className="text-sm font-medium">Settings</span>
-            </button>
-          </nav>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 p-8">
-          <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
+      <div className="flex gap-6 p-6">
+        {/* Left Column - 70% */}
+        <div className="w-[70%] space-y-6">
+          <form onSubmit={handleSubmit}>
             {/* Basic Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-8"
+            >
               <div className="flex items-center gap-2 mb-6">
                 <Package className="h-5 w-5 text-blue-600" />
                 <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
+              <div className="space-y-6">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Product Name *
                   </label>
@@ -415,49 +415,50 @@ export default function ModernSellerAddProductPage() {
                   )}
                 </div>
 
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category *
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.category ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.category && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.category}
-                    </p>
-                  )}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Category *
+                    </label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors.category ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.category && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.category}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Brand
+                    </label>
+                    <input
+                      type="text"
+                      name="brand"
+                      value={formData.brand}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      placeholder="Enter brand name"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Brand
-                  </label>
-                  <input
-                    type="text"
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Enter brand name"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description *
                   </label>
@@ -479,76 +480,16 @@ export default function ModernSellerAddProductPage() {
                   )}
                 </div>
               </div>
-            </div>
-
-            {/* Pricing & Stock */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <DollarSign className="h-5 w-5 text-green-600" />
-                <h2 className="text-lg font-semibold text-gray-900">Pricing & Stock</h2>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price (Rp) *
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.price ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="0"
-                    min="0"
-                    step="0.01"
-                  />
-                  {errors.price && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.price}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Discount Price (Rp)
-                  </label>
-                  <input
-                    type="number"
-                    name="discount_price"
-                    value={formData.discount_price}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Optional"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock Quantity
-                  </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={formData.stock}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-
-                              </div>
-            </div>
+            </motion.div>
 
             {/* Product Images */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-8"
+            >
               <div className="flex items-center gap-2 mb-6">
                 <ImageIcon className="h-5 w-5 text-purple-600" />
                 <h2 className="text-lg font-semibold text-gray-900">Product Images</h2>
@@ -558,7 +499,8 @@ export default function ModernSellerAddProductPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Upload Images *
                 </label>
-                <div
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
                   className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                     isDragging 
                       ? 'border-blue-500 bg-blue-50' 
@@ -588,7 +530,7 @@ export default function ModernSellerAddProductPage() {
                       PNG, JPG, GIF up to 5MB each
                     </span>
                   </label>
-                </div>
+                </motion.div>
                 {errors.images && (
                   <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
@@ -597,33 +539,54 @@ export default function ModernSellerAddProductPage() {
                 )}
               </div>
 
-              {imagePreviews.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Image Previews</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              <AnimatePresence>
+                {imagePreviews.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">Image Previews</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {imagePreviews.map((preview, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          className="relative group"
                         >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+                          <img
+                            src={preview}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                          />
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </motion.button>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
             {/* Product Variants */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-8"
+            >
               <div className="flex items-center gap-2 mb-6">
                 <Palette className="h-5 w-5 text-orange-600" />
                 <h2 className="text-lg font-semibold text-gray-900">Product Variants</h2>
@@ -633,44 +596,64 @@ export default function ModernSellerAddProductPage() {
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-md font-medium text-gray-800">Sizes</h3>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={() => addVariant('sizes')}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     Add Size
-                  </button>
+                  </motion.button>
                 </div>
                 
-                {formData.sizes.map((size, index) => (
-                  <div key={size.id} className="flex gap-3 mb-3">
-                    <input
-                      type="text"
-                      placeholder="Size name (e.g., M, L, XL)"
-                      value={size.name}
-                      onChange={(e) => updateVariant('sizes', index, 'name', e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Size value (e.g., M, L, XL)"
-                      value={size.value}
-                      onChange={(e) => updateVariant('sizes', index, 'value', e.target.value)}
-                      className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeVariant('sizes', index)}
-                      className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                <AnimatePresence>
+                  {formData.sizes.map((size, index) => (
+                    <motion.div
+                      key={size.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="flex gap-3 mb-3"
                     >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
+                      <input
+                        type="text"
+                        placeholder="Size name (e.g., M, L, XL)"
+                        value={size.name}
+                        onChange={(e) => updateVariant('sizes', index, 'name', e.target.value)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Size value (e.g., M, L, XL)"
+                        value={size.value}
+                        onChange={(e) => updateVariant('sizes', index, 'value', e.target.value)}
+                        className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        type="button"
+                        onClick={() => removeVariant('sizes', index)}
+                        className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </motion.button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
                 
                 {formData.sizes.length === 0 && (
-                  <p className="text-sm text-gray-500 mb-3">No sizes added yet</p>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-8 px-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+                  >
+                    <Package className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">No sizes added yet</p>
+                  </motion.div>
                 )}
               </div>
 
@@ -678,66 +661,219 @@ export default function ModernSellerAddProductPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-md font-medium text-gray-800">Colors</h3>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={() => addVariant('colors')}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     Add Color
-                  </button>
+                  </motion.button>
                 </div>
                 
-                {formData.colors.map((color, index) => (
-                  <div key={color.id} className="flex gap-3 mb-3">
-                    <input
-                      type="text"
-                      placeholder="Color name (e.g., Red, Blue)"
-                      value={color.name}
-                      onChange={(e) => updateVariant('colors', index, 'name', e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Color code (e.g., #FF0000)"
-                      value={color.value}
-                      onChange={(e) => updateVariant('colors', index, 'value', e.target.value)}
-                      className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeVariant('colors', index)}
-                      className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                <AnimatePresence>
+                  {formData.colors.map((color, index) => (
+                    <motion.div
+                      key={color.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="flex gap-3 mb-3"
                     >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
+                      <input
+                        type="text"
+                        placeholder="Color name (e.g., Red, Blue)"
+                        value={color.name}
+                        onChange={(e) => updateVariant('colors', index, 'name', e.target.value)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Color code (e.g., #FF0000)"
+                        value={color.value}
+                        onChange={(e) => updateVariant('colors', index, 'value', e.target.value)}
+                        className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        type="button"
+                        onClick={() => removeVariant('colors', index)}
+                        className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </motion.button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
                 
                 {formData.colors.length === 0 && (
-                  <p className="text-sm text-gray-500 mb-3">No colors added yet</p>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-8 px-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+                  >
+                    <Palette className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">No colors added yet</p>
+                  </motion.div>
                 )}
               </div>
-            </div>
+            </motion.div>
 
+          </form>
+        </div>
+
+        {/* Right Column - 30% */}
+        <div className="w-[30%] space-y-6">
+          {/* Pricing & Stock */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+            className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <DollarSign className="h-5 w-5 text-green-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Pricing & Stock</h2>
+            </div>
             
-            {/* Error Summary */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Price (Rp) *
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.price ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="0"
+                  min="0"
+                  step="0.01"
+                />
+                {errors.price && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.price}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Discount Price (Rp)
+                </label>
+                <input
+                  type="number"
+                  name="discount_price"
+                  value={formData.discount_price}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Optional"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Stock Quantity
+                </label>
+                <input
+                  type="number"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="0"
+                  min="0"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Settings / Visibility */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+            className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <Settings className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Settings</h2>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Material
+                </label>
+                <input
+                  type="text"
+                  name="material"
+                  value={formData.material}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="e.g., Cotton, Silk"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Care Instructions
+                </label>
+                <input
+                  type="text"
+                  name="care"
+                  value={formData.care}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="e.g., Hand wash only"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Error Summary */}
+          <AnimatePresence>
             {Object.keys(errors).length > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="bg-red-50 border border-red-200 rounded-xl p-6"
+              >
                 <div className="flex items-center mb-2">
                   <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
                   <h3 className="text-lg font-medium text-red-900">Please fix the following errors:</h3>
                 </div>
                 <ul className="list-disc list-inside space-y-1 text-sm text-red-800">
                   {Object.values(errors).map((error, index) => (
-                    <li key={index}>{error}</li>
+                    <motion.li
+                      key={index}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
+                    >
+                      {error}
+                    </motion.li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
             )}
-          </form>
+          </AnimatePresence>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

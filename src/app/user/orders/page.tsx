@@ -107,110 +107,8 @@ export default function ModernUserDashboard() {
   });
 
   // Orders states
-  const [orders, setOrders] = useState([
-    {
-      id: '1',
-      orderNumber: 'ORD-20240320-12345',
-      date: '2024-03-20',
-      status: 'shipped',
-      total: 750000,
-      items: 2,
-      products: [
-        {
-          name: 'Kemeja Pria Slim Fit Premium',
-          image: 'https://images.unsplash.com/photo-1596755094418-8d5be48a5176?w=100',
-          quantity: 1,
-          price: 450000,
-          variant: 'Size: L, Color: Navy'
-        },
-        {
-          name: 'Celana Jeans Dark Blue',
-          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100',
-          quantity: 1,
-          price: 300000,
-          variant: 'Size: 32, Color: Dark Blue'
-        }
-      ],
-      shippingAddress: 'Jl. Sudirman No. 123, Jakarta Selatan',
-      trackingNumber: 'TRK123456789ID',
-      estimatedDelivery: '2024-03-22'
-    },
-    {
-      id: '2',
-      orderNumber: 'ORD-20240318-12346',
-      date: '2024-03-18',
-      status: 'delivered',
-      total: 350000,
-      items: 1,
-      products: [
-        {
-          name: 'Sepatu Sneakers Sport Pro',
-          image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=100',
-          quantity: 1,
-          price: 350000,
-          variant: 'Size: 42, Color: Black'
-        }
-      ],
-      shippingAddress: 'Jl. Gatot Subroto No. 456, Jakarta Pusat',
-      trackingNumber: 'TRK987654321ID',
-      estimatedDelivery: '2024-03-19',
-      deliveredDate: '2024-03-19'
-    },
-    {
-      id: '3',
-      orderNumber: 'ORD-20240315-12347',
-      date: '2024-03-15',
-      status: 'processing',
-      total: 1250000,
-      items: 3,
-      products: [
-        {
-          name: 'Tas Backpack Travel Premium',
-          image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=100',
-          quantity: 1,
-          price: 600000,
-          variant: 'Color: Black'
-        },
-        {
-          name: 'Topi Baseball Classic',
-          image: 'https://images.unsplash.com/photo-1576871337622-6d0a9b23b5a2?w=100',
-          quantity: 2,
-          price: 175000,
-          variant: 'Color: White'
-        },
-        {
-          name: 'Kaos Cotton Basic',
-          image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=100',
-          quantity: 1,
-          price: 300000,
-          variant: 'Size: M, Color: Gray'
-        }
-      ],
-      shippingAddress: 'Jl. Sudirman No. 123, Jakarta Selatan',
-      trackingNumber: null,
-      estimatedDelivery: '2024-03-25'
-    },
-    {
-      id: '4',
-      orderNumber: 'ORD-20240310-12348',
-      date: '2024-03-10',
-      status: 'pending',
-      total: 450000,
-      items: 1,
-      products: [
-        {
-          name: 'Jam Tangan Digital Smart',
-          image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100',
-          quantity: 1,
-          price: 450000,
-          variant: 'Color: Silver'
-        }
-      ],
-      shippingAddress: 'Jl. Sudirman No. 123, Jakarta Selatan',
-      trackingNumber: null,
-      estimatedDelivery: null
-    }
-  ]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [ordersError, setOrdersError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -248,6 +146,28 @@ export default function ModernUserDashboard() {
       router.push('/user');
     }
   }, [isLoggedIn, isLoading, router]);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch('/api/orders');
+        const data = await response.json();
+
+        if (data.success) {
+          setOrders(data.orders);
+        } else {
+          setOrdersError(data.error || 'Gagal memuat pesanan');
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        setOrdersError('Terjadi kesalahan saat memuat pesanan');
+      }
+    };
+
+    fetchOrders();
+  }, [user?.id]);
 
   const handleLogout = () => {
     logout();
@@ -340,10 +260,12 @@ export default function ModernUserDashboard() {
     return configs[status] || configs.pending;
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.products.some(product => product.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+  const filteredOrders = orders.filter((order: any) => {
+    const orderNumber = order.id;
+    const products = order.orderItems || [];
+    const matchesSearch = orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         products.some((item: any) => item.product?.title?.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -486,7 +408,24 @@ export default function ModernUserDashboard() {
         </ScrollAnimation>
 
         {/* Orders List */}
-        {filteredOrders.length === 0 ? (
+        {ordersError ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+            <X className="w-16 h-16 text-red-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Terjadi Kesalahan
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {ordersError}
+            </p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Coba Lagi
+            </button>
+          </div>
+        ) : filteredOrders.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
             <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -498,16 +437,17 @@ export default function ModernUserDashboard() {
                 : 'Mulai berbelanja untuk melihat pesanan Anda di sini'
               }
             </p>
-            <Link href="/products" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <Link href="/marketplace" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
               <ShoppingBag className="w-4 h-4" />
               Mulai Belanja
             </Link>
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredOrders.map((order) => {
-              const statusConfig = getStatusConfig(order.status);
+            {filteredOrders.map((order: any) => {
+              const statusConfig = getStatusConfig(order.status.toLowerCase());
               const StatusIcon = statusConfig.icon;
+              const products = order.orderItems || [];
               
               return (
                 <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
@@ -516,14 +456,14 @@ export default function ModernUserDashboard() {
                     <div className="flex items-start justify-between mb-6">
                       <div>
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">{order.orderNumber}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">{order.id}</h3>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusConfig.color}`}>
                             <StatusIcon className="w-3 h-3 mr-1 inline" />
                             {statusConfig.label}
                           </span>
                         </div>
                         <p className="text-sm text-gray-600">
-                          {new Date(order.date).toLocaleDateString('id-ID', {
+                          {new Date(order.createdAt).toLocaleDateString('id-ID', {
                             weekday: 'long',
                             year: 'numeric',
                             month: 'long',
@@ -537,29 +477,35 @@ export default function ModernUserDashboard() {
                       
                       <div className="text-right">
                         <p className="text-xl font-bold text-gray-900">Rp {order.total.toLocaleString('id-ID')}</p>
-                        <p className="text-sm text-gray-600">{order.items} produk</p>
+                        <p className="text-sm text-gray-600">{products.length} produk</p>
                       </div>
                     </div>
 
                     {/* Products */}
                     <div className="border-t border-gray-200 pt-4 mb-4">
                       <div className="space-y-3">
-                        {order.products.map((product, index) => (
+                        {products.map((item: any, index: number) => (
                           <div key={index} className="flex items-center gap-4">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                            />
+                            {item.product?.images ? (
+                              <img
+                                src={JSON.parse(item.product.images)[0] || '/placeholder.png'}
+                                alt={item.product?.title || 'Produk'}
+                                className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
+                                <Package className="w-8 h-8 text-gray-400" />
+                              </div>
+                            )}
                             <div className="flex-1">
-                              <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
-                              <p className="text-xs text-gray-500">{product.variant}</p>
+                              <h4 className="text-sm font-medium text-gray-900">{item.product?.title || 'Produk'}</h4>
+                              <p className="text-xs text-gray-500">{item.size ? `Size: ${item.size}` : ''} {item.color ? `Color: ${item.color}` : ''}</p>
                               <p className="text-sm text-gray-600 mt-1">
-                                {product.quantity} × Rp {product.price.toLocaleString('id-ID')}
+                                {item.quantity} × Rp {item.price.toLocaleString('id-ID')}
                               </p>
                             </div>
                             <div className="text-sm font-medium text-gray-900">
-                              Rp {(product.quantity * product.price).toLocaleString('id-ID')}
+                              Rp {(item.quantity * item.price).toLocaleString('id-ID')}
                             </div>
                           </div>
                         ))}
@@ -572,53 +518,22 @@ export default function ModernUserDashboard() {
                         <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">Alamat Pengiriman</p>
-                          <p className="text-sm text-gray-600">{order.shippingAddress}</p>
+                          <p className="text-sm text-gray-600">{order.address}</p>
                         </div>
                       </div>
-                      
-                      {order.trackingNumber && (
-                        <div className="flex items-start gap-2 mt-3">
-                          <Truck className="w-4 h-4 text-gray-400 mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">Nomor Resi</p>
-                            <p className="text-sm text-gray-600">{order.trackingNumber}</p>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {order.estimatedDelivery && (
-                        <div className="flex items-start gap-2 mt-3">
-                          <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">Estimasi Pengiriman</p>
-                            <p className="text-sm text-gray-600">
-                              {new Date(order.estimatedDelivery).toLocaleDateString('id-ID', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     {/* Actions */}
                     <div className="border-t border-gray-200 pt-4">
                       <div className="flex items-center justify-between">
                         <div className="flex gap-2">
-                          {order.status === 'pending' && (
-                            <button className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
+                          {order.status.toLowerCase() === 'pending' && (
+                            <Link 
+                              href={`/orders/${order.id}/payment`}
+                              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                            >
                               Bayar Sekarang
-                            </button>
-                          )}
-                          
-                          {order.status === 'delivered' && (
-                            <button className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
-                              <Star className="w-4 h-4 inline mr-1" />
-                              Beri Ulasan
-                            </button>
+                            </Link>
                           )}
                           
                           <button className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
@@ -628,15 +543,13 @@ export default function ModernUserDashboard() {
                         </div>
                         
                         <div className="flex gap-2">
-                          <button className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
-                            <MessageSquare className="w-4 h-4 inline mr-1" />
-                            Hubungi
-                          </button>
-                          
-                          <button className="px-4 py-2 text-blue-600 text-sm rounded-lg hover:bg-blue-50 transition-colors">
+                          <Link
+                            href={`/orders/${order.id}/payment`}
+                            className="px-4 py-2 text-blue-600 text-sm rounded-lg hover:bg-blue-50 transition-colors"
+                          >
                             Lihat Detail
                             <ArrowRight className="w-4 h-4 inline ml-1" />
-                          </button>
+                          </Link>
                         </div>
                       </div>
                     </div>

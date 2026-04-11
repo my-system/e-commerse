@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://neondb_owner:npg_Wb35tJcYmLKy@ep-jolly-pine-an0l6t3r-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
+  url      = env("DATABASE_URL")
 }
 
 model EmailVerificationToken {
@@ -27,6 +27,7 @@ model Product {
   description String?
   featured    Boolean         @default(false)
   inStock     Boolean         @default(true)
+  stock       Int             @default(0)
   rating      Float           @default(0)
   images      String
   material    String?
@@ -53,18 +54,22 @@ model Product {
 }
 
 model Order {
-  id         String      @id @default(cuid())
-  userId     String
-  status     String      @default("PENDING")
-  total      Float
-  shipping   Float       @default(0)
-  tax        Float       @default(0)
-  address    String
-  paymentId  String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  orderItems OrderItem[]
-  user       User        @relation(fields: [userId], references: [id])
+  id             String       @id @default(cuid())
+  userId         String
+  status         OrderStatus  @default(PENDING)
+  total          Float
+  shipping       Float        @default(0)
+  tax            Float        @default(0)
+  address        String
+  addressId      String?
+  shippingMethod String?
+  paymentMethod  String?
+  paymentId      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  orderItems     OrderItem[]
+  user           User         @relation(fields: [userId], references: [id])
+  userAddress    UserAddress? @relation(fields: [addressId], references: [id])
 
   @@map("orders")
 }
@@ -165,6 +170,7 @@ model User {
   soldProducts       Product[]           @relation("ProductSeller")
   sessions           Session[]
   verificationTokens VerificationToken[]
+  addresses          UserAddress[]
 
   @@map("users")
 }
@@ -210,6 +216,24 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+model UserAddress {
+  id          String   @id @default(cuid())
+  userId      String
+  fullName    String
+  phoneNumber String
+  address     String
+  province    String
+  city        String
+  postalCode  String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[]
+
+  @@map("user_addresses")
+}
+
 enum Role {
   USER
   ADMIN
@@ -226,4 +250,10 @@ enum ProductStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
 }

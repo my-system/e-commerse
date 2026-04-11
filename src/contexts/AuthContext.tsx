@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getSession } from 'next-auth/react';
 
 interface User {
   id: string;
@@ -62,10 +63,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isVisible: false
   });
 
-  // Initialize auth state from localStorage
+  // Initialize auth state from localStorage and NextAuth session
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
+        // First check NextAuth session (for Google OAuth)
+        const session = await getSession();
+
+        if (session?.user) {
+          // User is logged in via OAuth
+          setState({
+            user: {
+              id: session.user.id,
+              name: session.user.name || '',
+              email: session.user.email,
+              role: (session.user.role as 'USER' | 'SELLER' | 'ADMIN') || 'USER',
+              status: (session.user.status as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED') || 'ACTIVE',
+              createdAt: new Date().toISOString()
+            },
+            isLoggedIn: true,
+            isLoading: false
+          });
+          return;
+        }
+
+        // Fallback to localStorage (for email/password login)
         const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
         const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
 
@@ -143,8 +165,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     try {
+      // Sign out from NextAuth (for OAuth users)
+      await fetch('/api/auth/signout', { method: 'POST' });
+
       // Clear localStorage
       localStorage.removeItem(STORAGE_KEYS.USER);
       localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);

@@ -396,22 +396,48 @@ export default function MarketplacePage() {
           }}>
             {/* Products Grid - Main Content */}
             <div className="flex-1 min-w-0 transition-all duration-400 ease-out overflow-hidden">
-              {/* Products Grid */}
-              <div className="grid gap-6 transition-all duration-400 ease-out px-2 pb-8" style={{
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gridAutoRows: '1fr',
-                transition: 'all 0.4s ease-in-out'
-              }}>
-                {paginatedProducts.map((product) => (
-                  <div key={product.id} className="flex flex-col h-full">
-                    <ProductCard
-                      product={product}
-                      onAddToCart={handleAddToCart}
-                      isWishlisted={isInWishlist(product.id)}
-                    />
+              {/* Loading State */}
+              {loading ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600">Memuat produk...</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : paginatedProducts.length === 0 ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <ShoppingCart className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Tidak ada produk ditemukan</h3>
+                    <p className="text-gray-600">Coba ubah filter atau kembali lagi nanti</p>
+                    <button
+                      onClick={() => handleFilterChange(initialFilters)}
+                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Reset Filter
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Products Grid */
+                <div className="grid gap-6 transition-all duration-400 ease-out px-2 pb-8" style={{
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gridAutoRows: '1fr',
+                  transition: 'all 0.4s ease-in-out'
+                }}>
+                  {paginatedProducts.map((product) => (
+                    <div key={product.id} className="flex flex-col h-full">
+                      <ProductCard
+                        product={product}
+                        onAddToCart={handleAddToCart}
+                        isWishlisted={isInWishlist(product.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Pagination */}
               {totalPages > 1 && (
@@ -586,30 +612,56 @@ export default function MarketplacePage() {
 
         {/* Products Grid - Mobile */}
         <div className="px-4 py-4 pb-20">
-          <div className="grid grid-cols-2 gap-4" style={{ gridAutoRows: '1fr' }}>
-            {paginatedProducts.map((product) => (
-              <div key={`product-${product.id}`} className="flex flex-col h-full">
-                <ProductCardModern
-                  product={{
-                    id: product.id,
-                    name: product.name || product.title || 'Unknown Product',
-                    title: product.title || product.name,
-                    description: product.description || '',
-                    price: product.price,
-                    originalPrice: (product as any).originalPrice,
-                    discount: (product as any).discount,
-                    rating: product.rating,
-                    reviews: product.reviews,
-                    image: product.image || (product as any).images?.[0],
-                    images: (product as any).images,
-                    isNew: (product as any).isNew,
-                    category: product.category,
-                    slug: product.slug
-                  }}
+          {/* Loading State */}
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-600">Memuat produk...</p>
+              </div>
+            </div>
+          ) : paginatedProducts.length === 0 ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShoppingCart className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Tidak ada produk ditemukan</h3>
+                <p className="text-gray-600">Coba ubah filter atau kembali lagi nanti</p>
+                <button
+                  onClick={() => handleFilterChange(initialFilters)}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4" style={{ gridAutoRows: '1fr' }}>
+              {paginatedProducts.map((product) => (
+                <div key={`product-${product.id}`} className="flex flex-col h-full">
+                  <ProductCardModern
+                    product={{
+                      id: product.id,
+                      name: product.name || product.title || 'Unknown Product',
+                      title: product.title || product.name,
+                      description: product.description || '',
+                      price: product.price,
+                      originalPrice: (product as any).originalPrice,
+                      discount: (product as any).discount,
+                      rating: product.rating,
+                      reviews: product.reviews,
+                      image: product.image || (product as any).images?.[0],
+                      images: (product as any).images,
+                      isNew: (product as any).isNew,
+                      category: product.category,
+                      slug: product.slug
+                    }}
                 />
               </div>
             ))}
           </div>
+          )}
         </div>
       </div>
 

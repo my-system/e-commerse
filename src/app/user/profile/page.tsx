@@ -59,30 +59,20 @@ export default function ModernUserDashboard() {
   
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      label: 'Rumah',
-      recipient: 'John Doe',
-      phone: '+62 812-3456-7890',
-      address: 'Jl. Sudirman No. 123, RT 01/RW 02',
-      city: 'Jakarta Selatan',
-      province: 'DKI Jakarta',
-      postalCode: '12345',
-      isDefault: true
-    },
-    {
-      id: 2,
-      label: 'Kantor',
-      recipient: 'John Doe',
-      phone: '+62 812-3456-7890',
-      address: 'Jl. Gatot Subroto No. 456, Suite 789',
-      city: 'Jakarta Pusat',
-      province: 'DKI Jakarta',
-      postalCode: '12345',
-      isDefault: false
-    }
-  ]);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<any>(null);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [addressForm, setAddressForm] = useState({
+    fullName: '',
+    phoneNumber: '',
+    address: '',
+    province: '',
+    city: '',
+    postalCode: '',
+    isDefault: false
+  });
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
@@ -121,12 +111,31 @@ export default function ModernUserDashboard() {
     if (savedProfilePicture) {
       setProfilePicture(savedProfilePicture);
     }
-    
+
+    // Fetch addresses from API
+    const fetchAddresses = async () => {
+      try {
+        if (user?.id) {
+          const response = await fetch(`/api/user/addresses?userId=${user.id}`);
+          const data = await response.json();
+          if (data.success) {
+            setAddresses(data.addresses);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+      } finally {
+        setIsLoadingAddresses(false);
+      }
+    };
+
+    fetchAddresses();
+
     // Simulate loading complete
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!isLoggedIn && !isLoading) {
@@ -184,29 +193,115 @@ export default function ModernUserDashboard() {
   };
 
   const handleAddAddress = () => {
-    const newAddress = {
-      id: Date.now(),
-      label: 'Alamat Baru',
-      recipient: profileForm.firstName + ' ' + profileForm.lastName,
-      phone: profileForm.phone,
+    setEditingAddress(null);
+    setAddressForm({
+      fullName: profileForm.firstName + ' ' + profileForm.lastName,
+      phoneNumber: profileForm.phone,
       address: '',
-      city: '',
       province: '',
+      city: '',
       postalCode: '',
       isDefault: false
-    };
-    setAddresses([...addresses, newAddress]);
+    });
+    setShowAddressModal(true);
   };
 
-  const handleSetDefaultAddress = (id: number) => {
-    setAddresses(addresses.map(addr => ({
-      ...addr,
-      isDefault: addr.id === id
-    })));
+  const handleEditAddress = (address: any) => {
+    setEditingAddress(address);
+    setAddressForm({
+      fullName: address.fullName,
+      phoneNumber: address.phoneNumber,
+      address: address.address,
+      province: address.province,
+      city: address.city,
+      postalCode: address.postalCode,
+      isDefault: address.isDefault
+    });
+    setShowAddressModal(true);
   };
 
-  const handleDeleteAddress = (id: number) => {
-    setAddresses(addresses.filter(addr => addr.id !== id));
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      const response = await fetch(`/api/user/addresses/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isDefault: true })
+      });
+      const data = await response.json();
+      if (data.success) {
+        // Refresh addresses
+        const addressesResponse = await fetch(`/api/user/addresses?userId=${user?.id}`);
+        const addressesData = await addressesResponse.json();
+        if (addressesData.success) {
+          setAddresses(addressesData.addresses);
+        }
+      }
+    } catch (error) {
+      console.error('Error setting default address:', error);
+    }
+  };
+
+  const handleDeleteAddress = async (id: string) => {
+    try {
+      const response = await fetch(`/api/user/addresses/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await response.json();
+      if (data.success) {
+        setAddresses(addresses.filter(addr => addr.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting address:', error);
+    }
+  };
+
+  const handleSaveAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingAddress(true);
+
+    try {
+      const url = editingAddress
+        ? `/api/user/addresses/${editingAddress.id}`
+        : '/api/user/addresses';
+      const method = editingAddress ? 'PUT' : 'POST';
+
+      console.log('Saving address to:', url);
+      console.log('Payload:', JSON.stringify({
+        userId: user?.id,
+        ...addressForm
+      }, null, 2));
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          ...addressForm
+        })
+      });
+
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (data.success) {
+        // Refresh addresses
+        const addressesResponse = await fetch(`/api/user/addresses?userId=${user?.id}`);
+        const addressesData = await addressesResponse.json();
+        if (addressesData.success) {
+          setAddresses(addressesData.addresses);
+        }
+        setShowAddressModal(false);
+      } else {
+        alert('Gagal menyimpan alamat: ' + (data.error || data.message || 'Terjadi kesalahan'));
+      }
+    } catch (error: any) {
+      console.error('Error saving address:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      alert('Gagal menyimpan alamat: ' + (error.message || 'Silakan coba lagi.'));
+    } finally {
+      setIsSavingAddress(false);
+    }
   };
 
   const handlePasswordChange = (e: React.FormEvent) => {
@@ -550,47 +645,63 @@ export default function ModernUserDashboard() {
                     </button>
                   </div>
 
-                  <div className="space-y-4">
-                    {addresses.map((address) => (
-                      <div key={address.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <h3 className="font-semibold text-gray-900">{address.label}</h3>
-                              {address.isDefault && (
-                                <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full font-medium">Utama</span>
+                  {isLoadingAddresses ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                  ) : addresses.length === 0 ? (
+                    <div className="text-center py-12">
+                      <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-600">Belum ada alamat tersimpan</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {addresses.map((address) => (
+                        <div key={address.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-3">
+                                <h3 className="font-semibold text-gray-900">{address.fullName}</h3>
+                                {address.isDefault && (
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full font-medium">Utama</span>
+                                )}
+                              </div>
+                              <div className="space-y-1 text-sm text-gray-600">
+                                <p>{address.phoneNumber}</p>
+                                <p>{address.address}</p>
+                                <p>{address.city}, {address.province} {address.postalCode}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {!address.isDefault && (
+                                <button
+                                  onClick={() => handleSetDefaultAddress(address.id)}
+                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  title="Set sebagai Utama"
+                                >
+                                  <Check className="w-4 h-4" />
+                                </button>
                               )}
-                            </div>
-                            <div className="space-y-1 text-sm text-gray-600">
-                              <p>{address.recipient}</p>
-                              <p>{address.phone}</p>
-                              <p>{address.address}</p>
-                              <p>{address.city}, {address.province} {address.postalCode}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {!address.isDefault && (
                               <button
-                                onClick={() => handleSetDefaultAddress(address.id)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                onClick={() => handleEditAddress(address)}
+                                className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                                title="Edit"
                               >
-                                <Check className="w-4 h-4" />
+                                <Edit3 className="w-4 h-4" />
                               </button>
-                            )}
-                            <button className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteAddress(address.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                              <button
+                                onClick={() => handleDeleteAddress(address.id)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Hapus"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -731,6 +842,135 @@ export default function ModernUserDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Address Modal */}
+      {showAddressModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {editingAddress ? 'Edit Alamat' : 'Tambah Alamat Baru'}
+                </h2>
+                <button
+                  onClick={() => setShowAddressModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveAddress} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                <input
+                  type="text"
+                  value={addressForm.fullName}
+                  onChange={(e) => setAddressForm({...addressForm, fullName: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nomor HP</label>
+                <input
+                  type="tel"
+                  value={addressForm.phoneNumber}
+                  onChange={(e) => setAddressForm({...addressForm, phoneNumber: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Alamat Lengkap</label>
+                <textarea
+                  value={addressForm.address}
+                  onChange={(e) => setAddressForm({...addressForm, address: e.target.value})}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Provinsi</label>
+                  <input
+                    type="text"
+                    value={addressForm.province}
+                    onChange={(e) => setAddressForm({...addressForm, province: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Kota</label>
+                  <input
+                    type="text"
+                    value={addressForm.city}
+                    onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Kode Pos</label>
+                <input
+                  type="text"
+                  value={addressForm.postalCode}
+                  onChange={(e) => setAddressForm({...addressForm, postalCode: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isDefault"
+                  checked={addressForm.isDefault}
+                  onChange={(e) => setAddressForm({...addressForm, isDefault: e.target.checked})}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="isDefault" className="ml-2 text-sm text-gray-700">
+                  Jadikan sebagai alamat utama
+                </label>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="submit"
+                  disabled={isSavingAddress}
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSavingAddress ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <span>{editingAddress ? 'Update Alamat' : 'Simpan Alamat'}</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddressModal(false)}
+                  disabled={isSavingAddress}
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

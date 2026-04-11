@@ -9,6 +9,7 @@ import { formatPrice } from '@/lib/utils';
 import { ShoppingCart, Heart, Star, Truck, Shield, RefreshCw, ArrowLeft } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import ProductActionsWrapper from '@/components/client/ProductActionsWrapper';
+import BuyNowClient from '@/components/client/BuyNowClient';
 import Link from 'next/link';
 
 interface Product {
@@ -396,12 +397,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 product={product}
               />
               
-              <Link
-                href="/checkout"
-                className="w-full px-6 py-3 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-block text-center"
-              >
-                Beli Sekarang
-              </Link>
+              <BuyNowClient 
+                product={product}
+                disabled={!product.inStock}
+              />
             </div>
 
 {/* Product Features */}

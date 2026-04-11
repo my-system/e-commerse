@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface InventoryItem {
   id: string;
@@ -415,9 +416,19 @@ export default function SellerInventoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="min-h-screen bg-gray-50"
+    >
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="bg-white shadow-sm border-b"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -425,29 +436,53 @@ export default function SellerInventoryPage() {
               <h1 className="text-xl font-semibold text-gray-900">Manajemen Inventory</h1>
             </div>
             <div className="flex items-center gap-4">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={exportInventory}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
               >
                 <Download className="h-4 w-4" />
                 Export
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={fetchInventory}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8"
+        >
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+            }}
+            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Items</p>
@@ -455,9 +490,16 @@ export default function SellerInventoryPage() {
               </div>
               <Package className="h-8 w-8 text-blue-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+            }}
+            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Nilai</p>
@@ -465,9 +507,16 @@ export default function SellerInventoryPage() {
               </div>
               <BarChart3 className="h-8 w-8 text-green-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+            }}
+            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Stok Rendah</p>
@@ -475,9 +524,16 @@ export default function SellerInventoryPage() {
               </div>
               <AlertTriangle className="h-8 w-8 text-yellow-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+            }}
+            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Habis</p>
@@ -485,9 +541,16 @@ export default function SellerInventoryPage() {
               </div>
               <XCircle className="h-8 w-8 text-red-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+            }}
+            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Stok Berlebih</p>
@@ -495,9 +558,16 @@ export default function SellerInventoryPage() {
               </div>
               <AlertCircle className="h-8 w-8 text-orange-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+            }}
+            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Kategori</p>
@@ -505,11 +575,16 @@ export default function SellerInventoryPage() {
               </div>
               <Package className="h-8 w-8 text-purple-600" />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white rounded-lg shadow-sm border p-6 mb-6"
+        >
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -554,51 +629,67 @@ export default function SellerInventoryPage() {
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Bulk Actions */}
-        {selectedItems.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span className="text-sm text-blue-800">
-                  {selectedItems.length} item terpilih
-                </span>
+        <AnimatePresence>
+          {selectedItems.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <span className="text-sm text-blue-800">
+                    {selectedItems.length} item terpilih
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => bulkUpdateStock('add', 10)}
+                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    +10 Stok
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => bulkUpdateStock('subtract', 10)}
+                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    -10 Stok
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      const value = prompt('Masukkan jumlah stok baru:');
+                      if (value) {
+                        bulkUpdateStock('set', parseInt(value));
+                      }
+                    }}
+                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    Set Stok
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedItems([])}
+                    className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm"
+                  >
+                    Batal
+                  </motion.button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => bulkUpdateStock('add', 10)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
-                >
-                  +10 Stok
-                </button>
-                <button
-                  onClick={() => bulkUpdateStock('subtract', 10)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
-                >
-                  -10 Stok
-                </button>
-                <button
-                  onClick={() => {
-                    const value = prompt('Masukkan jumlah stok baru:');
-                    if (value) {
-                      bulkUpdateStock('set', parseInt(value));
-                    }
-                  }}
-                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
-                >
-                  Set Stok
-                </button>
-                <button
-                  onClick={() => setSelectedItems([])}
-                  className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm"
-                >
-                  Batal
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Inventory Table */}
         {loading ? (
@@ -606,12 +697,20 @@ export default function SellerInventoryPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-6 text-center"
+          >
             <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-2" />
             <p className="text-red-800">{error}</p>
-          </div>
+          </motion.div>
         ) : filteredInventory.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg shadow-sm border p-12 text-center"
+          >
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               {searchTerm || statusFilter !== 'all' || categoryFilter !== 'all' ? 'Tidak ada item yang cocok' : 'Belum ada inventory'}
@@ -622,9 +721,14 @@ export default function SellerInventoryPage() {
                 : 'Mulai dengan menambahkan produk ke inventory'
               }
             </p>
-          </div>
+          </motion.div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-white rounded-lg shadow-sm border overflow-hidden"
+          >
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -664,8 +768,15 @@ export default function SellerInventoryPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredInventory.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
+                  {filteredInventory.map((item, index) => (
+                    <motion.tr
+                      key={item.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.4 + (index * 0.05) }}
+                      whileHover={{ backgroundColor: '#f9fafb', scale: 1.01 }}
+                      className="hover:bg-gray-50"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
@@ -689,23 +800,27 @@ export default function SellerInventoryPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.2 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => updateStock(item.id, Math.max(0, item.currentStock - 1))}
                             disabled={updatingStock === item.id}
                             className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
                           >
                             <Minus className="h-3 w-3" />
-                          </button>
+                          </motion.button>
                           <span className="text-sm font-medium text-gray-900 w-8 text-center">
                             {item.currentStock}
                           </span>
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.2 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => updateStock(item.id, item.currentStock + 1)}
                             disabled={updatingStock === item.id}
                             className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
                           >
                             <Plus className="h-3 w-3" />
-                          </button>
+                          </motion.button>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -721,17 +836,22 @@ export default function SellerInventoryPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(item.status)}`}>
+                        <motion.span
+                          whileHover={{ scale: 1.05 }}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(item.status)}`}
+                        >
                           {getStatusIcon(item.status)}
                           <span className="ml-1">{getStatusText(item.status)}</span>
-                        </span>
+                        </motion.span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900">{item.location || '-'}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => {
                               const value = prompt(`Masukkan stok baru untuk ${item.title}:`, item.currentStock.toString());
                               if (value) {
@@ -743,17 +863,17 @@ export default function SellerInventoryPage() {
                             title="Edit Stok"
                           >
                             <Edit className="h-4 w-4" />
-                          </button>
+                          </motion.button>
                         </div>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

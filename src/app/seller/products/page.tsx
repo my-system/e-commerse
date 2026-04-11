@@ -6,6 +6,7 @@ import { Package, Eye, Edit, Trash2, Plus, Clock, Check, X, AlertTriangle, Searc
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { categories } from '@/data/categories';
+import { motion } from 'framer-motion';
 
 interface Product {
   id: string;
@@ -306,9 +307,19 @@ export default function SellerProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-gray-50"
+    >
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="bg-white shadow-sm border-b"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -324,11 +335,16 @@ export default function SellerProductsPage() {
             </Link>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="bg-white rounded-lg shadow-sm border p-6 mb-6"
+        >
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -358,11 +374,17 @@ export default function SellerProductsPage() {
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="bg-white rounded-lg shadow-sm border p-6 cursor-pointer"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Produk</p>
@@ -370,9 +392,15 @@ export default function SellerProductsPage() {
               </div>
               <Package className="h-8 w-8 text-blue-600" />
             </div>
-          </div>
+          </motion.div>
           
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="bg-white rounded-lg shadow-sm border p-6 cursor-pointer"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Menunggu Persetujuan</p>
@@ -382,9 +410,15 @@ export default function SellerProductsPage() {
               </div>
               <Clock className="h-8 w-8 text-yellow-600" />
             </div>
-          </div>
+          </motion.div>
           
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.5 }}
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="bg-white rounded-lg shadow-sm border p-6 cursor-pointer"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Disetujui</p>
@@ -394,9 +428,15 @@ export default function SellerProductsPage() {
               </div>
               <Check className="h-8 w-8 text-green-600" />
             </div>
-          </div>
+          </motion.div>
           
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.6 }}
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="bg-white rounded-lg shadow-sm border p-6 cursor-pointer"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Ditolak</p>
@@ -406,7 +446,7 @@ export default function SellerProductsPage() {
               </div>
               <X className="h-8 w-8 text-red-600" />
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Products List */}
@@ -415,12 +455,22 @@ export default function SellerProductsPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-6 text-center"
+          >
             <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-2" />
             <p className="text-red-800">{error}</p>
-          </div>
+          </motion.div>
         ) : filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.7 }}
+            className="bg-white rounded-lg shadow-sm border p-12 text-center"
+          >
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               {searchTerm || statusFilter !== 'all' ? 'Tidak ada produk yang cocok' : 'Belum ada produk'}
@@ -440,9 +490,14 @@ export default function SellerProductsPage() {
                 Tambah Produk Pertama
               </Link>
             )}
-          </div>
+          </motion.div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.7 }}
+            className="bg-white rounded-lg shadow-sm border overflow-hidden"
+          >
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -468,8 +523,15 @@ export default function SellerProductsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredProducts.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
+                  {filteredProducts.map((product, index) => (
+                    <motion.tr
+                      key={product.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.8 + (index * 0.05) }}
+                      whileHover={{ scale: 1.01, backgroundColor: '#f9fafb' }}
+                      className="hover:bg-gray-50"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 flex-shrink-0">
@@ -517,42 +579,48 @@ export default function SellerProductsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
-                          <Link
-                            href={`/product/${product.slug || generateSlug(product.title)}`}
-                            className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
-                            title="Lihat"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                          <Link
-                            href={`/seller/products/${product.id}/edit`}
-                            className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
-                            title="Edit"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Link>
-                          <button
-                            onClick={() => handleDeleteProduct(product.id)}
-                            disabled={deletingId === product.id}
-                            className="text-gray-600 hover:text-red-600 transition-colors duration-200 disabled:opacity-50"
-                            title="Hapus"
-                          >
-                            {deletingId === product.id ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                          </button>
+                          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
+                            <Link
+                              href={`/product/${product.slug || generateSlug(product.title)}`}
+                              className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
+                              title="Lihat"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </motion.div>
+                          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
+                            <Link
+                              href={`/seller/products/${product.id}/edit`}
+                              className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
+                              title="Edit"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                          </motion.div>
+                          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
+                            <button
+                              onClick={() => handleDeleteProduct(product.id)}
+                              disabled={deletingId === product.id}
+                              className="text-gray-600 hover:text-red-600 transition-colors duration-200 disabled:opacity-50"
+                              title="Hapus"
+                            >
+                              {deletingId === product.id ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                          </motion.div>
                         </div>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

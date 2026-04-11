@@ -69,8 +69,12 @@ export const authOptions: NextAuthOptions = {
             status: user.status,
             image: user.image
           };
-        } catch (error) {
+        } catch (error: any) {
           console.error('Auth error:', error);
+          // Handle database connection errors gracefully
+          if (error.code === 'P1001' || error.code === 'P1000') {
+            throw new Error('Database connection failed. Please try again later.');
+          }
           throw error;
         }
       }
@@ -113,35 +117,7 @@ export const authOptions: NextAuthOptions = {
     
     // Sign in callback
     async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        // For Google OAuth, check if user exists or create new one
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! }
-        });
-
-        if (!existingUser) {
-          // Create new user with Google OAuth
-          await prisma.user.create({
-            data: {
-              email: user.email!,
-              name: user.name,
-              image: user.image,
-              status: 'ACTIVE', // Google users are automatically active
-              role: 'USER'
-            }
-          });
-        } else {
-          // Update existing user status to active if they sign in with Google
-          await prisma.user.update({
-            where: { email: user.email! },
-            data: { 
-              status: 'ACTIVE',
-              image: user.image || existingUser.image
-            }
-          });
-        }
-      }
-      
+      // Let NextAuth PrismaAdapter handle user creation and account linkage
       return true;
     },
     

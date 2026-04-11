@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface OrderItem {
   id: string;
@@ -549,7 +550,12 @@ export default function SellerOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="min-h-screen bg-gray-50"
+    >
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -590,8 +596,19 @@ export default function SellerOrdersPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Pesanan</p>
@@ -599,9 +616,15 @@ export default function SellerOrdersPage() {
               </div>
               <ShoppingCart className="h-8 w-8 text-blue-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Menunggu Konfirmasi</p>
@@ -609,9 +632,15 @@ export default function SellerOrdersPage() {
               </div>
               <Clock className="h-8 w-8 text-yellow-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Pendapatan</p>
@@ -619,9 +648,15 @@ export default function SellerOrdersPage() {
               </div>
               <Package className="h-8 w-8 text-green-600" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.6 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            className="bg-white rounded-lg shadow-sm border p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Rata-rata Order</p>
@@ -629,39 +664,75 @@ export default function SellerOrdersPage() {
               </div>
               <Calendar className="h-8 w-8 text-purple-600" />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Status Overview */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8"
+        >
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg shadow-sm border p-4 text-center"
+          >
             <p className="text-sm text-gray-600 mb-1">Dikonfirmasi</p>
             <p className="text-lg font-bold text-blue-600">{stats.processingOrders}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg shadow-sm border p-4 text-center"
+          >
             <p className="text-sm text-gray-600 mb-1">Diproses</p>
             <p className="text-lg font-bold text-purple-600">{stats.processingOrders}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg shadow-sm border p-4 text-center"
+          >
             <p className="text-sm text-gray-600 mb-1">Dikirim</p>
             <p className="text-lg font-bold text-indigo-600">{stats.shippedOrders}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg shadow-sm border p-4 text-center"
+          >
             <p className="text-sm text-gray-600 mb-1">Terkirim</p>
             <p className="text-lg font-bold text-green-600">{stats.deliveredOrders}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg shadow-sm border p-4 text-center"
+          >
             <p className="text-sm text-gray-600 mb-1">Dibatalkan</p>
             <p className="text-lg font-bold text-red-600">{stats.cancelledOrders}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg shadow-sm border p-4 text-center"
+          >
             <p className="text-sm text-gray-600 mb-1">Dikembalikan</p>
             <p className="text-lg font-bold text-orange-600">0</p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          className="bg-white rounded-lg shadow-sm border p-6 mb-6"
+        >
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -710,7 +781,7 @@ export default function SellerOrdersPage() {
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Orders Table */}
         {loading ? (
@@ -736,7 +807,13 @@ export default function SellerOrdersPage() {
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.5, delay: 0.9 }}
+            className="bg-white rounded-lg shadow-sm border overflow-hidden"
+          >
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -768,8 +845,15 @@ export default function SellerOrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
+                  {filteredOrders.map((order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 1 + (index * 0.05) }}
+                      whileHover={{ backgroundColor: '#f9fafb', scale: 1.01 }}
+                      className="hover:bg-gray-50"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{order.orderNumber}</div>
@@ -851,19 +935,34 @@ export default function SellerOrdersPage() {
                           )}
                         </div>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* Order Detail Modal */}
-      {showOrderDetail && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto m-4">
+      <AnimatePresence>
+        {showOrderDetail && selectedOrder && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setShowOrderDetail(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto m-4"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Detail Pesanan {selectedOrder.orderNumber}</h2>
@@ -989,9 +1088,10 @@ export default function SellerOrdersPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
