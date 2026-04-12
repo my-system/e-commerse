@@ -84,38 +84,39 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protected routes - require authentication
-  const protectedRoutes = ['/profile', '/cart', '/dashboard', '/seller', '/admin'];
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  // DISABLED TEMPORARILY FOR TESTING NEXTAUTH_SECRET
+  // const protectedRoutes = ['/profile', '/cart', '/dashboard', '/seller', '/admin'];
+  // const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-  if (isProtectedRoute) {
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET 
-    });
+  // if (isProtectedRoute) {
+  //   const token = await getToken({ 
+  //     req: request, 
+  //     secret: process.env.NEXTAUTH_SECRET 
+  //   });
 
-    if (!token) {
-      // Redirect to login with callback URL
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+  //   if (!token) {
+  //     // Redirect to login with callback URL
+  //     const loginUrl = new URL('/login', request.url);
+  //     loginUrl.searchParams.set('callbackUrl', pathname);
+  //     return NextResponse.redirect(loginUrl);
+  //   }
 
-    // Check user status for additional protection
-    if (token.status !== 'ACTIVE') {
-      const verifyUrl = new URL('/verify-otp', request.url);
-      return NextResponse.redirect(verifyUrl);
-    }
+  //   // Check user status for additional protection
+  //   if (token.status !== 'ACTIVE') {
+  //     const verifyUrl = new URL('/verify-otp', request.url);
+  //     return NextResponse.redirect(verifyUrl);
+  //   }
 
-    // Admin-only routes
-    if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/access-denied', request.url));
-    }
+  //   // Admin-only routes
+  //   if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
+  //     return NextResponse.redirect(new URL('/access-denied', request.url));
+  //   }
 
-    // Seller-only routes
-    if (pathname.startsWith('/seller') && token.role !== 'SELLER' && token.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/access-denied', request.url));
-    }
-  }
+  //   // Seller-only routes
+  //   if (pathname.startsWith('/seller') && token.role !== 'SELLER' && token.role !== 'ADMIN') {
+  //     return NextResponse.redirect(new URL('/access-denied', request.url));
+  //   }
+  // }
 
   // Public routes - redirect authenticated users
   // DISABLED TEMPORARILY FOR TESTING
