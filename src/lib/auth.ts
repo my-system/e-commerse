@@ -193,9 +193,14 @@ export const authOptions: NextAuthOptions = {
               });
             }
 
-            // Set user role from database
-            user.role = existingUser.role;
-            user.status = existingUser.status;
+            // Fetch updated user from database to get the latest role
+            const updatedUser = await prisma.user.findUnique({
+              where: { email: user.email! }
+            });
+
+            // Set user role from updated database record
+            user.role = updatedUser?.role || 'USER';
+            user.status = updatedUser?.status || 'ACTIVE';
           } else {
             // Create new user if not exists
             const adminEmails = ['yusufdarwis097@gmail.com'];
