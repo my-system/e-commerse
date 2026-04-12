@@ -2,28 +2,58 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { z } from 'zod';
+import { sanitizeString, sanitizeNumber, detectSqlInjection } from '@/lib/input-sanitizer';
 
 const prisma = new PrismaClient();
+
+// Validation schema for order
+const orderSchema = z.object({
+  fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100),
+  phone: z.string().min(10, 'Phone number must be at least 10 characters').max(20),
+  address: z.string().min(5, 'Address must be at least 5 characters').max(500),
+  city: z.string().min(2, 'City must be at least 2 characters').max(100),
+  province: z.string().min(2, 'Province must be at least 2 characters').max(100),
+  postalCode: z.string().min(5, 'Postal code must be at least 5 characters').max(20),
+  shippingMethod: z.enum(['regular', 'express', 'free']),
+  paymentMethod: z.string().min(1, 'Payment method is required'),
+  items: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    price: z.number().positive(),
+    quantity: z.number().positive().max(99),
+    size: z.string().optional(),
+    color: z.string().optional()
+  })).min(1, 'At least one item is required'),
+  shippingCost: z.number().min(0).optional(),
+  insuranceCost: z.number().min(0).optional(),
+  tax: z.number().min(0).optional(),
+  total: z.number().min(0).optional()
+});
 
 // GET - Get all orders for logged-in user
 export async function GET(request: NextRequest) {
   try {
-    console.log('GET /api/orders - Fetching orders for user');
-    
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user?.id) {
-      console.log('No session or user ID found');
       return NextResponse.json(
         { success: false, error: 'Unauthorized - Please login' },
         { status: 401 }
       );
     }
 
-    console.log('Fetching orders for user ID:', session.user.id);
+    // Sanitize userId
+    const sanitizedUserId = sanitizeString(session.user.id);
+    if (detectSqlInjection(sanitizedUserId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid user ID' },
+        { status: 400 }
+      );
+    }
     
     const orders = await prisma.order.findMany({
-      where: { userId: session.user.id },
+      where: { userId: sanitizedUserId },
       include: {
         orderItems: {
           include: {
@@ -35,17 +65,14 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     });
 
-    console.log('Orders fetched successfully:', orders.length);
     return NextResponse.json({
       success: true,
       orders
     });
   } catch (error: any) {
     console.error('Error fetching orders:', error);
-    console.error('Error message:', error.message);
-    console.error('Error code:', error.code);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch orders', details: error.code },
+      { success: false, error: error.message || 'Failed to fetch orders' },
       { status: 500 }
     );
   }
@@ -54,7 +81,6 @@ export async function GET(request: NextRequest) {
 // POST - Create new order
 export async function POST(request: NextRequest) {
   try {
-    // Get session to get the actual logged-in user ID
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user?.id) {
@@ -65,54 +91,36 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    
-    const { 
-      userId, // Will be overridden by session userId
-      fullName, 
-      email, 
-      phone, 
-      address, 
-      city, 
-      province, 
-      postalCode, 
-      shippingMethod, 
-      paymentMethod, 
-      items,
-      shippingCost,
-      insuranceCost,
-      tax,
-      total
-    } = body;
+    const { userId, ...orderData } = body;
+
+    // Validate order data
+    const validatedData = orderSchema.parse(orderData);
+
+    // Sanitize inputs
+    const sanitizedData = {
+      fullName: sanitizeString(validatedData.fullName),
+      phone: sanitizeString(validatedData.phone),
+      address: sanitizeString(validatedData.address),
+      city: sanitizeString(validatedData.city),
+      province: sanitizeString(validatedData.province),
+      postalCode: sanitizeString(validatedData.postalCode),
+      shippingMethod: validatedData.shippingMethod,
+      paymentMethod: sanitizeString(validatedData.paymentMethod),
+      items: validatedData.items,
+      shippingCost: sanitizeNumber(validatedData.shippingCost),
+      insuranceCost: sanitizeNumber(validatedData.insuranceCost),
+      tax: sanitizeNumber(validatedData.tax),
+      total: sanitizeNumber(validatedData.total)
+    };
 
     // Use session userId instead of client-side userId
-    const actualUserId = session.user.id;
-    const actualEmail = session.user.email || email;
+    const actualUserId = sanitizeString(session.user.id);
+    const actualEmail = session.user.email || '';
 
-    // Validation
-    if (!actualUserId || !fullName || !actualEmail || !phone || !address || !city || !province || !postalCode) {
+    // Check for SQL injection
+    if (detectSqlInjection(actualUserId) || detectSqlInjection(actualEmail)) {
       return NextResponse.json(
-        { success: false, error: 'Data alamat tidak lengkap' },
-        { status: 400 }
-      );
-    }
-
-    if (!shippingMethod) {
-      return NextResponse.json(
-        { success: false, error: 'Metode pengiriman belum dipilih' },
-        { status: 400 }
-      );
-    }
-
-    if (!paymentMethod) {
-      return NextResponse.json(
-        { success: false, error: 'Metode pembayaran belum dipilih' },
-        { status: 400 }
-      );
-    }
-
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Keranjang belanja kosong' },
+        { success: false, error: 'Invalid input' },
         { status: 400 }
       );
     }
@@ -126,7 +134,7 @@ export async function POST(request: NextRequest) {
       await prisma.user.create({
         data: {
           id: actualUserId,
-          name: fullName,
+          name: sanitizedData.fullName,
           email: actualEmail,
           password: '',
           role: 'USER',
@@ -141,10 +149,10 @@ export async function POST(request: NextRequest) {
       express: 40000,
       free: 0
     };
-    const calculatedShippingCost = shippingCost || shippingCosts[shippingMethod] || 20000;
-    const calculatedInsuranceCost = insuranceCost || 0;
-    const calculatedTax = tax || 0;
-    const calculatedTotal = total || (items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) + calculatedShippingCost + calculatedInsuranceCost + calculatedTax);
+    const calculatedShippingCost = sanitizedData.shippingCost || shippingCosts[sanitizedData.shippingMethod] || 20000;
+    const calculatedInsuranceCost = sanitizedData.insuranceCost || 0;
+    const calculatedTax = sanitizedData.tax || 0;
+    const calculatedTotal = sanitizedData.total || (sanitizedData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0) + calculatedShippingCost + calculatedInsuranceCost + calculatedTax);
 
     // Use transaction to ensure atomicity
     const result = await prisma.$transaction(async (tx) => {
@@ -156,25 +164,27 @@ export async function POST(request: NextRequest) {
           total: calculatedTotal,
           shipping: calculatedShippingCost,
           tax: calculatedTax,
-          address: `${address}, ${city}, ${province} ${postalCode}`,
+          address: `${sanitizedData.address}, ${sanitizedData.city}, ${sanitizedData.province} ${sanitizedData.postalCode}`,
         }
       });
 
       // Create order items
       const orderItems = await Promise.all(
-        items.map(async (item: any) => {
+        sanitizedData.items.map(async (item) => {
+          const sanitizedItemId = sanitizeString(item.id);
+          
           // Check if product exists in database
           const existingProduct = await tx.product.findUnique({
-            where: { id: item.id }
+            where: { id: sanitizedItemId }
           });
 
           if (!existingProduct) {
             // Create placeholder product if it doesn't exist
             await tx.product.create({
               data: {
-                id: item.id,
-                title: item.title,
-                price: item.price,
+                id: sanitizedItemId,
+                title: sanitizeString(item.title),
+                price: sanitizeNumber(item.price),
                 category: 'Uncategorized',
                 images: '[]',
                 inStock: true,
@@ -187,11 +197,11 @@ export async function POST(request: NextRequest) {
           return tx.orderItem.create({
             data: {
               orderId: order.id,
-              productId: item.id,
-              quantity: item.quantity,
-              price: item.price,
-              size: item.size || null,
-              color: item.color || null,
+              productId: sanitizedItemId,
+              quantity: Math.min(99, Math.max(1, sanitizeNumber(item.quantity))),
+              price: sanitizeNumber(item.price),
+              size: item.size ? sanitizeString(item.size) : null,
+              color: item.color ? sanitizeString(item.color) : null,
             }
           });
         })
@@ -217,6 +227,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error creating order:', error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to create order' },
       { status: 500 }
