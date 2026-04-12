@@ -143,9 +143,12 @@ export async function proxy(request: NextRequest) {
     }
 
     // Public routes - redirect authenticated users (PRODUCTION ONLY)
+    // TEMPORARILY DISABLED to allow logout and login again for role refresh
     const publicRoutes = ['/login', '/register'];
     const isPublicRoute = publicRoutes.includes(pathname);
 
+    // Commented out temporarily to allow logout
+    /*
     if (isPublicRoute) {
       try {
         const token = await getToken({ 
@@ -162,6 +165,7 @@ export async function proxy(request: NextRequest) {
         console.error('Token validation error on public route:', error);
       }
     }
+    */
   }
 
   // Add security headers
