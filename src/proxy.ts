@@ -11,7 +11,10 @@ export async function proxy(request: NextRequest) {
   // DEVELOPMENT MODE: Disable all authentication redirects for testing
   const isDevelopment = process.env.NODE_ENV === 'development';
   
+  console.log('[MIDDLEWARE] NODE_ENV:', process.env.NODE_ENV, 'isDevelopment:', isDevelopment, 'pathname:', pathname);
+  
   if (isDevelopment) {
+    console.log('[MIDDLEWARE] Development mode - skipping auth checks');
     // Only apply rate limiting, skip all authentication redirects
     if ((pathname.startsWith('/api/auth/') && pathname !== '/api/auth/session') || pathname === '/register') {
       const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
