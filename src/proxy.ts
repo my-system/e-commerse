@@ -48,101 +48,103 @@ export async function proxy(request: NextRequest) {
   }
 
   // PRODUCTION MODE: Full authentication logic
-  // Rate limiting for auth endpoints (excluding session endpoint which NextAuth needs and login page)
-  if ((pathname.startsWith('/api/auth/') && pathname !== '/api/auth/session') || pathname === '/login' || pathname === '/register') {
-    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    const now = Date.now();
-    const windowMs = 15 * 60 * 1000; // 15 minutes
-    const maxRequests = 5; // Max 5 requests per 15 minutes
+  if (!isDevelopment) {
+    // Rate limiting for auth endpoints (excluding session endpoint which NextAuth needs and login page)
+    if ((pathname.startsWith('/api/auth/') && pathname !== '/api/auth/session') || pathname === '/login' || pathname === '/register') {
+      const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+      const now = Date.now();
+      const windowMs = 15 * 60 * 1000; // 15 minutes
+      const maxRequests = 5; // Max 5 requests per 15 minutes
 
-    const rateLimitData = rateLimitStore.get(clientIP);
-    
-    if (rateLimitData) {
-      if (now > rateLimitData.resetTime) {
-        // Reset window
-        rateLimitStore.set(clientIP, { count: 1, resetTime: now + windowMs });
-      } else if (rateLimitData.count >= maxRequests) {
-        // Rate limit exceeded - only for API endpoints, not pages
-        if (pathname.startsWith('/api/')) {
-          return NextResponse.json(
-            { error: 'Too many requests. Please try again later.' },
-            { status: 429 }
-          );
+      const rateLimitData = rateLimitStore.get(clientIP);
+      
+      if (rateLimitData) {
+        if (now > rateLimitData.resetTime) {
+          // Reset window
+          rateLimitStore.set(clientIP, { count: 1, resetTime: now + windowMs });
+        } else if (rateLimitData.count >= maxRequests) {
+          // Rate limit exceeded - only for API endpoints, not pages
+          if (pathname.startsWith('/api/')) {
+            return NextResponse.json(
+              { error: 'Too many requests. Please try again later.' },
+              { status: 429 }
+            );
+          }
+          // For pages, continue normally but don't increment counter
+        } else {
+          // Increment count
+          rateLimitStore.set(clientIP, { 
+            count: rateLimitData.count + 1, 
+            resetTime: rateLimitData.resetTime 
+          });
         }
-        // For pages, continue normally but don't increment counter
       } else {
-        // Increment count
-        rateLimitStore.set(clientIP, { 
-          count: rateLimitData.count + 1, 
-          resetTime: rateLimitData.resetTime 
-        });
+        // First request
+        rateLimitStore.set(clientIP, { count: 1, resetTime: now + windowMs });
       }
-    } else {
-      // First request
-      rateLimitStore.set(clientIP, { count: 1, resetTime: now + windowMs });
     }
-  }
 
-  // Protected routes - require authentication
-  const protectedRoutes = ['/profile', '/cart', '/dashboard', '/seller', '/admin'];
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+    // Protected routes - require authentication (PRODUCTION ONLY)
+    const protectedRoutes = ['/profile', '/cart', '/dashboard', '/seller', '/admin'];
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-  if (isProtectedRoute) {
-    try {
-      const token = await getToken({ 
-        req: request, 
-        secret: process.env.NEXTAUTH_SECRET 
-      });
+    if (isProtectedRoute) {
+      try {
+        const token = await getToken({ 
+          req: request, 
+          secret: process.env.NEXTAUTH_SECRET 
+        });
 
-      if (!token) {
-        // Redirect to login with callback URL
+        if (!token) {
+          // Redirect to login with callback URL
+          const loginUrl = new URL('/login', request.url);
+          loginUrl.searchParams.set('callbackUrl', pathname);
+          return NextResponse.redirect(loginUrl);
+        }
+
+        // Check user status for additional protection
+        if (token.status !== 'ACTIVE') {
+          const verifyUrl = new URL('/verify-otp', request.url);
+          return NextResponse.redirect(verifyUrl);
+        }
+
+        // Admin-only routes
+        if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
+          return NextResponse.redirect(new URL('/access-denied', request.url));
+        }
+
+        // Seller-only routes
+        if (pathname.startsWith('/seller') && token.role !== 'SELLER' && token.role !== 'ADMIN') {
+          return NextResponse.redirect(new URL('/access-denied', request.url));
+        }
+      } catch (error) {
+        // If token validation fails, redirect to login
+        console.error('Token validation error:', error);
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('callbackUrl', pathname);
         return NextResponse.redirect(loginUrl);
       }
-
-      // Check user status for additional protection
-      if (token.status !== 'ACTIVE') {
-        const verifyUrl = new URL('/verify-otp', request.url);
-        return NextResponse.redirect(verifyUrl);
-      }
-
-      // Admin-only routes
-      if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/access-denied', request.url));
-      }
-
-      // Seller-only routes
-      if (pathname.startsWith('/seller') && token.role !== 'SELLER' && token.role !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/access-denied', request.url));
-      }
-    } catch (error) {
-      // If token validation fails, redirect to login
-      console.error('Token validation error:', error);
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl);
     }
-  }
 
-  // Public routes - redirect authenticated users
-  const publicRoutes = ['/login', '/register'];
-  const isPublicRoute = publicRoutes.includes(pathname);
+    // Public routes - redirect authenticated users (PRODUCTION ONLY)
+    const publicRoutes = ['/login', '/register'];
+    const isPublicRoute = publicRoutes.includes(pathname);
 
-  if (isPublicRoute) {
-    try {
-      const token = await getToken({ 
-        req: request, 
-        secret: process.env.NEXTAUTH_SECRET 
-      });
+    if (isPublicRoute) {
+      try {
+        const token = await getToken({ 
+          req: request, 
+          secret: process.env.NEXTAUTH_SECRET 
+        });
 
-      if (token) {
-        // Redirect authenticated users to dashboard
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        if (token) {
+          // Redirect authenticated users to dashboard
+          return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+      } catch (error) {
+        // If token validation fails, continue to public route
+        console.error('Token validation error on public route:', error);
       }
-    } catch (error) {
-      // If token validation fails, continue to public route
-      console.error('Token validation error on public route:', error);
     }
   }
 
