@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Home, 
   ShoppingCart, 
@@ -47,6 +48,7 @@ interface MenuSection {
 export default function GlobalSidebar() {
   const { isSidebarOpen, closeSidebar, userRole, setUserRole } = useSidebar();
   const { data: session, status } = useSession();
+  const { logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -58,11 +60,13 @@ export default function GlobalSidebar() {
     return pathname.startsWith(href);
   };
 
-  const handleAuthAction = () => {
+  const handleAuthAction = async () => {
     if (status === 'authenticated') {
-      // If logged in, go to account page
+      // If logged in, logout
+      setIsLoggingOut(true);
+      await logout();
+      setIsLoggingOut(false);
       closeSidebar();
-      router.push('/user');
     } else {
       // If not logged in, go to login page
       closeSidebar();
@@ -662,15 +666,16 @@ export default function GlobalSidebar() {
             <div className="p-4 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={handleAuthAction}
+                disabled={isLoggingOut}
                 className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium border ${
                   status === 'authenticated' 
-                    ? 'bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-600 border-blue-200/50'
+                    ? 'bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-600 border-red-200/50'
                     : 'bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 text-green-600 border-green-200/50'
-                }`}
+                } ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {status === 'authenticated' ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
-                <span>{status === 'authenticated' ? 'Account' : 'Login'}</span>
-                <ChevronRight className="w-4 h-4" />
+                <span>{isLoggingOut ? 'Logging out...' : (status === 'authenticated' ? 'Logout' : 'Login')}</span>
+                {!isLoggingOut && <ChevronRight className="w-4 h-4" />}
               </button>
             </div>
           </motion.div>
