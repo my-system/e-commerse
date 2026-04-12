@@ -118,20 +118,21 @@ export async function proxy(request: NextRequest) {
   }
 
   // Public routes - redirect authenticated users
-  const publicRoutes = ['/login', '/register'];
-  const isPublicRoute = publicRoutes.includes(pathname);
+  // DISABLED TEMPORARILY FOR TESTING
+  // const publicRoutes = ['/login', '/register'];
+  // const isPublicRoute = publicRoutes.includes(pathname);
 
-  if (isPublicRoute) {
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET 
-    });
+  // if (isPublicRoute) {
+  //   const token = await getToken({ 
+  //     req: request, 
+  //     secret: process.env.NEXTAUTH_SECRET 
+  //   });
 
-    if (token) {
-      // Redirect authenticated users to dashboard
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-  }
+  //   if (token) {
+  //     // Redirect authenticated users to dashboard
+  //     return NextResponse.redirect(new URL('/dashboard', request.url));
+  //   }
+  // }
 
   // Add security headers
   const response = NextResponse.next();
