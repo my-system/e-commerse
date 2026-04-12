@@ -84,56 +84,67 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protected routes - require authentication
-  // DISABLED TEMPORARILY FOR TESTING NEXTAUTH_SECRET
-  // const protectedRoutes = ['/profile', '/cart', '/dashboard', '/seller', '/admin'];
-  // const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  const protectedRoutes = ['/profile', '/cart', '/dashboard', '/seller', '/admin'];
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-  // if (isProtectedRoute) {
-  //   const token = await getToken({ 
-  //     req: request, 
-  //     secret: process.env.NEXTAUTH_SECRET 
-  //   });
+  if (isProtectedRoute) {
+    try {
+      const token = await getToken({ 
+        req: request, 
+        secret: process.env.NEXTAUTH_SECRET 
+      });
 
-  //   if (!token) {
-  //     // Redirect to login with callback URL
-  //     const loginUrl = new URL('/login', request.url);
-  //     loginUrl.searchParams.set('callbackUrl', pathname);
-  //     return NextResponse.redirect(loginUrl);
-  //   }
+      if (!token) {
+        // Redirect to login with callback URL
+        const loginUrl = new URL('/login', request.url);
+        loginUrl.searchParams.set('callbackUrl', pathname);
+        return NextResponse.redirect(loginUrl);
+      }
 
-  //   // Check user status for additional protection
-  //   if (token.status !== 'ACTIVE') {
-  //     const verifyUrl = new URL('/verify-otp', request.url);
-  //     return NextResponse.redirect(verifyUrl);
-  //   }
+      // Check user status for additional protection
+      if (token.status !== 'ACTIVE') {
+        const verifyUrl = new URL('/verify-otp', request.url);
+        return NextResponse.redirect(verifyUrl);
+      }
 
-  //   // Admin-only routes
-  //   if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
-  //     return NextResponse.redirect(new URL('/access-denied', request.url));
-  //   }
+      // Admin-only routes
+      if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/access-denied', request.url));
+      }
 
-  //   // Seller-only routes
-  //   if (pathname.startsWith('/seller') && token.role !== 'SELLER' && token.role !== 'ADMIN') {
-  //     return NextResponse.redirect(new URL('/access-denied', request.url));
-  //   }
-  // }
+      // Seller-only routes
+      if (pathname.startsWith('/seller') && token.role !== 'SELLER' && token.role !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/access-denied', request.url));
+      }
+    } catch (error) {
+      // If token validation fails, redirect to login
+      console.error('Token validation error:', error);
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
 
   // Public routes - redirect authenticated users
-  // DISABLED TEMPORARILY FOR TESTING
-  // const publicRoutes = ['/login', '/register'];
-  // const isPublicRoute = publicRoutes.includes(pathname);
+  const publicRoutes = ['/login', '/register'];
+  const isPublicRoute = publicRoutes.includes(pathname);
 
-  // if (isPublicRoute) {
-  //   const token = await getToken({ 
-  //     req: request, 
-  //     secret: process.env.NEXTAUTH_SECRET 
-  //   });
+  if (isPublicRoute) {
+    try {
+      const token = await getToken({ 
+        req: request, 
+        secret: process.env.NEXTAUTH_SECRET 
+      });
 
-  //   if (token) {
-  //     // Redirect authenticated users to dashboard
-  //     return NextResponse.redirect(new URL('/dashboard', request.url));
-  //   }
-  // }
+      if (token) {
+        // Redirect authenticated users to dashboard
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    } catch (error) {
+      // If token validation fails, continue to public route
+      console.error('Token validation error on public route:', error);
+    }
+  }
 
   // Add security headers
   const response = NextResponse.next();
@@ -143,16 +154,27 @@ export async function proxy(request: NextRequest) {
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   
-  // CSP Header (Content Security Policy)
+  // HSTS (HTTP Strict Transport Security) - Only in production with HTTPS
+  if (request.nextUrl.protocol === 'https:') {
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+  
+  // CSP Header (Content Security Policy) - Enhanced
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://accounts.google.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://api.resend.com https://accounts.google.com",
+    "connect-src 'self' https://api.resend.com https://accounts.google.com https://oauth2.googleapis.com",
     "frame-src 'none'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests"
   ].join('; ');
   
   response.headers.set('Content-Security-Policy', csp);

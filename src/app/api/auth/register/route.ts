@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import { z } from 'zod';
+import { sanitizeString, sanitizeEmail, detectSqlInjection } from '@/lib/input-sanitizer';
 
 const prisma = new PrismaClient();
+
+// Validation schema for registration
+const registerSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(128)
+});
 
 // Create tester account on server start
 async function ensureTesterAccount() {
@@ -35,18 +44,27 @@ ensureTesterAccount();
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password } = await request.json();
+    const body = await request.json();
+    const { name, email, password } = body;
 
-    if (!name || !email || !password) {
+    // Validate input
+    const validatedData = registerSchema.parse({ name, email, password });
+
+    // Sanitize inputs
+    const sanitizedName = sanitizeString(validatedData.name);
+    const sanitizedEmail = sanitizeEmail(validatedData.email);
+    
+    // Check for SQL injection
+    if (detectSqlInjection(sanitizedName) || detectSqlInjection(sanitizedEmail) || detectSqlInjection(validatedData.password)) {
       return NextResponse.json(
-        { success: false, message: 'Name, email, and password are required' },
+        { success: false, message: 'Invalid input' },
         { status: 400 }
       );
     }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: sanitizedEmail }
     });
 
     if (existingUser) {
@@ -57,13 +75,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
     // Create new user
     const user = await prisma.user.create({
       data: {
-        name,
-        email,
+        name: sanitizedName,
+        email: sanitizedEmail,
         password: hashedPassword,
         role: 'USER',
         status: 'ACTIVE',
@@ -82,6 +100,14 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Register error:', error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, message: error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, message: 'An error occurred during registration' },
       { status: 500 }

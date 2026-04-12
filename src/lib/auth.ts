@@ -87,16 +87,36 @@ export const authOptions: NextAuthOptions = {
   
   session: {
     strategy: 'jwt',
-    maxAge: 60 * 60, // 1 hour
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
-  
+
   jwt: {
-    maxAge: 60 * 60, // 1 hour
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  
+
   cookies: {
     sessionToken: {
       name: 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+      },
+    },
+    callbackUrl: {
+      name: 'next-auth.callback-url',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    csrfToken: {
+      name: 'next-auth.csrf-token',
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -211,14 +231,28 @@ export const authOptions: NextAuthOptions = {
   // Security settings
   secret: process.env.NEXTAUTH_SECRET,
   
-  // Rate limiting
+  // Security events logging
   events: {
     signIn: async (message) => {
-      console.log('User signed in:', message.user?.email);
+      console.log('User signed in:', {
+        email: message.user?.email,
+        role: message.user?.role,
+        timestamp: new Date().toISOString()
+      });
     },
     signOut: async (message) => {
-      console.log('User signed out:', message.session?.user?.email);
+      console.log('User signed out:', {
+        email: message.session?.user?.email,
+        timestamp: new Date().toISOString()
+      });
     },
+    createUser: async (message) => {
+      console.log('User created:', {
+        email: message.user?.email,
+        role: message.user?.role,
+        timestamp: new Date().toISOString()
+      });
+    }
   },
   
   // Debug mode (disable in production)

@@ -1,23 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { z } from 'zod';
+import { sanitizeEmail, detectSqlInjection } from '@/lib/input-sanitizer';
 
 const prisma = new PrismaClient();
 
+// Validation schema for login
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(128)
+});
+
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const { email, password } = body;
 
-    if (!email || !password) {
+    // Validate input
+    const validatedData = loginSchema.parse({ email, password });
+
+    // Sanitize email
+    const sanitizedEmail = sanitizeEmail(validatedData.email);
+    
+    // Check for SQL injection
+    if (detectSqlInjection(sanitizedEmail) || detectSqlInjection(validatedData.password)) {
       return NextResponse.json(
-        { success: false, message: 'Email and password are required' },
+        { success: false, message: 'Invalid input' },
         { status: 400 }
       );
     }
 
     // Find user by email
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email: sanitizedEmail }
     });
 
     if (!user) {
@@ -44,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(validatedData.password, user.password);
 
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -63,6 +79,14 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Login error:', error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, message: error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, message: 'An error occurred during login' },
       { status: 500 }
