@@ -98,7 +98,8 @@ export async function proxy(request: NextRequest) {
       try {
         const token = await getToken({ 
           req: request, 
-          secret: process.env.NEXTAUTH_SECRET 
+          secret: process.env.NEXTAUTH_SECRET,
+          cookieName: 'next-auth.session-token'
         });
 
         console.log('[MIDDLEWARE] Token exists:', !!token);
