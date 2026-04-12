@@ -89,13 +89,24 @@ export async function proxy(request: NextRequest) {
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
     if (isProtectedRoute) {
+      console.log('[MIDDLEWARE] PROTECTED ROUTE CHECK - pathname:', pathname);
+      console.log('[MIDDLEWARE] NEXTAUTH_SECRET exists:', !!process.env.NEXTAUTH_SECRET);
+      
       try {
         const token = await getToken({ 
           req: request, 
           secret: process.env.NEXTAUTH_SECRET 
         });
 
+        console.log('[MIDDLEWARE] Token exists:', !!token);
+        if (token) {
+          console.log('[MIDDLEWARE] Token role:', token.role);
+          console.log('[MIDDLEWARE] Token status:', token.status);
+          console.log('[MIDDLEWARE] Token email:', token.email);
+        }
+
         if (!token) {
+          console.log('[MIDDLEWARE] No token found - redirecting to login');
           // Redirect to login with callback URL
           const loginUrl = new URL('/login', request.url);
           loginUrl.searchParams.set('callbackUrl', pathname);
@@ -104,22 +115,27 @@ export async function proxy(request: NextRequest) {
 
         // Check user status for additional protection
         if (token.status !== 'ACTIVE') {
+          console.log('[MIDDLEWARE] User status not ACTIVE - redirecting to verify-otp');
           const verifyUrl = new URL('/verify-otp', request.url);
           return NextResponse.redirect(verifyUrl);
         }
 
         // Admin-only routes
         if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
+          console.log('[MIDDLEWARE] User not ADMIN - redirecting to access-denied');
           return NextResponse.redirect(new URL('/access-denied', request.url));
         }
 
         // Seller-only routes
         if (pathname.startsWith('/seller') && token.role !== 'SELLER' && token.role !== 'ADMIN') {
+          console.log('[MIDDLEWARE] User not SELLER or ADMIN - redirecting to access-denied');
           return NextResponse.redirect(new URL('/access-denied', request.url));
         }
+
+        console.log('[MIDDLEWARE] Access granted for:', pathname);
       } catch (error) {
         // If token validation fails, redirect to login
-        console.error('Token validation error:', error);
+        console.error('[MIDDLEWARE] Token validation error:', error);
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('callbackUrl', pathname);
         return NextResponse.redirect(loginUrl);
