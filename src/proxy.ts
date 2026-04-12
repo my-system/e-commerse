@@ -50,6 +50,8 @@ export async function proxy(request: NextRequest) {
   // PRODUCTION MODE: Full authentication logic
   if (!isDevelopment) {
     // Rate limiting for auth endpoints (excluding session endpoint which NextAuth needs and login page)
+    // TEMPORARILY DISABLED to allow login after rate limit hit
+    /*
     if ((pathname.startsWith('/api/auth/') && pathname !== '/api/auth/session') || pathname === '/login' || pathname === '/register') {
       const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
       const now = Date.now();
@@ -83,6 +85,7 @@ export async function proxy(request: NextRequest) {
         rateLimitStore.set(clientIP, { count: 1, resetTime: now + windowMs });
       }
     }
+    */
 
     // Protected routes - require authentication (PRODUCTION ONLY)
     const protectedRoutes = ['/profile', '/cart', '/dashboard', '/seller', '/admin'];
