@@ -106,9 +106,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Use NextAuth signOut
       const { signOut } = await import('next-auth/react');
-      await signOut({ callbackUrl: '/' });
+      await signOut({ redirect: false });
 
       showToast('Anda telah berhasil logout.', 'info');
+      
+      // Manually redirect to login page after logout
+      window.location.href = '/login';
     } catch (error) {
       console.error('Logout error:', error);
     }
