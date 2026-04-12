@@ -108,12 +108,12 @@ export async function proxy(request: NextRequest) {
 
     // Admin-only routes
     if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
+      return NextResponse.redirect(new URL('/access-denied', request.url));
     }
 
     // Seller-only routes
     if (pathname.startsWith('/seller') && token.role !== 'SELLER' && token.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
+      return NextResponse.redirect(new URL('/access-denied', request.url));
     }
   }
 
