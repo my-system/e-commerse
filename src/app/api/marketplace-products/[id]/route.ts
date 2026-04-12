@@ -20,8 +20,8 @@ export async function GET(
     }
 
     // Get all products and find the specific one
-    const products = await MarketplaceDatabaseService.getMarketplaceProducts();
-    const product = products.find(p => p.id === id);
+    const result = await MarketplaceDatabaseService.getMarketplaceProducts();
+    const product = result.products.find(p => p.id === id);
 
     if (!product) {
       return NextResponse.json(

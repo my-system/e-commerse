@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from 'react';
-import Navbar from '@/components/layout/Navbar';
 import GlobalSidebar from '@/components/ui/GlobalSidebar';
 import Footer from '@/components/layout/Footer';
 
@@ -18,9 +17,6 @@ export default function AppLayout({
 }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar untuk semua device */}
-      <Navbar />
-      
       {/* Page Content - No extra padding */}
       <main>
         {children}

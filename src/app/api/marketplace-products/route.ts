@@ -4,43 +4,78 @@ import { MarketplaceDatabaseService } from '@/lib/multi-database-service';
 // GET - Fetch approved products for marketplace
 export async function GET(request: NextRequest) {
   try {
-    // Log environment variables for debugging
-    console.log('🔧 Environment Check:');
-    console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? '✅ Set' : '❌ Not set'}`);
-    console.log(`NEON_DATABASE_URL: ${process.env.NEON_DATABASE_URL ? '✅ Set' : '❌ Not set'}`);
-    
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
-    
-    console.log(`📋 API Request - Category: ${category}, Featured: ${featured}`);
-    
-    let products = await MarketplaceDatabaseService.getMarketplaceProducts();
-    
-    // Apply filters
-    if (category && category !== 'all') {
-      products = products.filter(product => product.category === category);
+    const search = searchParams.get('search');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50'); // Server-side pagination - 50 products per page
+    const all = searchParams.get('all') === 'true'; // Get all products (for admin)
+
+    // If 'all' parameter is true, fetch all products without pagination
+    if (all) {
+      const { products, total } = await MarketplaceDatabaseService.getMarketplaceProducts(
+        1,
+        1000, // Large limit to get all products
+        search || undefined,
+        category || undefined,
+        featured === 'true' ? true : undefined
+      );
+
+      // Parse images to array to match Product Detail page format
+      const productsWithParsedImages = products.map(product => ({
+        ...product,
+        images: typeof product.images === 'string' ? JSON.parse(product.images || '[]') : (product.images || [])
+      }));
+
+      return NextResponse.json({
+        success: true,
+        products: productsWithParsedImages,
+        total,
+        page,
+        limit,
+        totalPages: 1,
+        message: 'Marketplace products retrieved'
+      }, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate'
+        }
+      });
     }
-    
-    if (featured === 'true') {
-      products = products.filter(product => product.featured);
-    }
-    
+
+    // Pass filter params to database service
+    const { products, total } = await MarketplaceDatabaseService.getMarketplaceProducts(
+      page,
+      limit,
+      search || undefined,
+      category || undefined,
+      featured === 'true' ? true : undefined
+    );
+
+    // Parse images to array to match Product Detail page format
+    const productsWithParsedImages = products.map(product => ({
+      ...product,
+      images: typeof product.images === 'string' ? JSON.parse(product.images || '[]') : (product.images || [])
+    }));
+
     return NextResponse.json({
       success: true,
-      products: products,
-      total: products.length
+      products: productsWithParsedImages,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
     }, {
       headers: {
-        'Cache-Control': 'no-store, max-age=0'
+        'Cache-Control': 'no-store, no-cache, must-revalidate'
       }
     });
   } catch (error) {
     console.error('Error fetching marketplace products:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch marketplace products' 
+      {
+        success: false,
+        error: 'Failed to fetch marketplace products'
       },
       { status: 500 }
     );
@@ -77,12 +112,18 @@ export async function DELETE(request: NextRequest) {
     }
     
     // Get updated products list
-    const updatedProducts = await MarketplaceDatabaseService.getMarketplaceProducts();
+    const { products: updatedProducts } = await MarketplaceDatabaseService.getMarketplaceProducts();
+    
+    // Parse images to array for consistency
+    const productsWithParsedImages = updatedProducts.map(product => ({
+      ...product,
+      images: typeof product.images === 'string' ? JSON.parse(product.images || '[]') : (product.images || [])
+    }));
     
     return NextResponse.json({
       success: true,
       message: 'Product deleted from marketplace successfully',
-      products: updatedProducts
+      products: productsWithParsedImages
     });
     
   } catch (error: any) {

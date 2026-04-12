@@ -52,318 +52,12 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  Tooltip as ChartTooltip,
-  Legend as ChartLegend,
-} from 'chart.js';
-import { Line as ChartLine } from 'react-chartjs-2';
-
-// Analytics Tab Component
-function AnalyticsTabComponent() {
-  const [activeTab, setActiveTab] = useState<'Overview' | 'Sales' | 'Users'>('Overview');
-  
-  const tabs: ('Overview' | 'Sales' | 'Users')[] = ['Overview', 'Sales', 'Users'];
-  
-  const chartData: Record<'Overview' | 'Sales' | 'Users', any> = {
-    Overview: {
-      labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
-      datasets: [
-        {
-          label: 'Revenue',
-          data: [22000, 26000, 18000, 30000, 25000, 34000, 29000],
-          borderColor: '#22c55e',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(34,197,94,0.4)');
-            gradient.addColorStop(1, 'rgba(34,197,94,0)');
-            return gradient;
-          },
-          fill: true,
-          borderWidth: 3,
-          tension: 0.45,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointBackgroundColor: '#22c55e',
-        },
-        {
-          label: 'Users',
-          data: [15000, 18000, 12000, 20000, 17000, 22000, 19000],
-          borderColor: '#3b82f6',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(59,130,246,0.4)');
-            gradient.addColorStop(1, 'rgba(59,130,246,0)');
-            return gradient;
-          },
-          fill: true,
-          borderWidth: 3,
-          tension: 0.45,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointBackgroundColor: '#3b82f6',
-        }
-      ]
-    },
-    Sales: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [
-        {
-          label: 'Orders',
-          data: [120, 150, 180, 140, 200, 250, 220],
-          borderColor: '#22c55e',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(34,197,94,0.4)');
-            gradient.addColorStop(1, 'rgba(34,197,94,0)');
-            return gradient;
-          },
-          fill: true,
-          borderWidth: 3,
-          tension: 0.45,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointBackgroundColor: '#22c55e',
-        },
-        {
-          label: 'Revenue',
-          data: [45000, 52000, 61000, 48000, 75000, 92000, 81000],
-          borderColor: '#f59e0b',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(245,158,11,0.4)');
-            gradient.addColorStop(1, 'rgba(245,158,11,0)');
-            return gradient;
-          },
-          fill: true,
-          borderWidth: 3,
-          tension: 0.45,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointBackgroundColor: '#f59e0b',
-        }
-      ]
-    },
-    Users: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [
-        {
-          label: 'New Users',
-          data: [85, 120, 95, 140, 180, 210, 165],
-          borderColor: '#3b82f6',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(59,130,246,0.4)');
-            gradient.addColorStop(1, 'rgba(59,130,246,0)');
-            return gradient;
-          },
-          fill: true,
-          borderWidth: 3,
-          tension: 0.45,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointBackgroundColor: '#3b82f6',
-        },
-        {
-          label: 'Active Users',
-          data: [450, 520, 480, 580, 650, 720, 610],
-          borderColor: '#8b5cf6',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(139,92,246,0.4)');
-            gradient.addColorStop(1, 'rgba(139,92,246,0)');
-            return gradient;
-          },
-          fill: true,
-          borderWidth: 3,
-          tension: 0.45,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointBackgroundColor: '#8b5cf6',
-        }
-      ]
-    }
-  };
-  
-  const metrics: Record<'Overview' | 'Sales' | 'Users', { label: string; value: string; change: string; color: string }[]> = {
-    Overview: [
-      { label: 'Total Revenue', value: '$2.4M', change: '+12.5%', color: 'green' },
-      { label: 'Active Users', value: '48.2K', change: '+8.3%', color: 'blue' },
-      { label: 'Conversion', value: '3.2%', change: '+2.1%', color: 'purple' },
-      { label: 'Avg. Order', value: '$156', change: '+5.7%', color: 'yellow' },
-    ],
-    Sales: [
-      { label: 'Total Orders', value: '1,250', change: '+15.3%', color: 'green' },
-      { label: 'Total Sales', value: '$3.8M', change: '+18.7%', color: 'blue' },
-      { label: 'Conversion Rate', value: '4.5%', change: '+1.2%', color: 'purple' },
-      { label: 'Avg. Order Value', value: '$3,040', change: '+3.8%', color: 'yellow' },
-    ],
-    Users: [
-      { label: 'New Signups', value: '2,340', change: '+22.5%', color: 'green' },
-      { label: 'Active Users', value: '15.2K', change: '+12.3%', color: 'blue' },
-      { label: 'Retention Rate', value: '78.5%', change: '+5.2%', color: 'purple' },
-      { label: 'Avg. Session', value: '8m 15s', change: '+2.8%', color: 'yellow' },
-    ]
-  };
-  
-  const additionalMetrics: Record<'Overview' | 'Sales' | 'Users', { label: string; value: string; change: string; color: string }[]> = {
-    Overview: [
-      { label: 'Bounce Rate', value: '32.5%', change: '-1.2%', color: 'red' },
-      { label: 'Session Duration', value: '4m 32s', change: '+0.8%', color: 'green' },
-      { label: 'Page Views', value: '125.4K', change: '+15.3%', color: 'green' },
-    ],
-    Sales: [
-      { label: 'Cart Abandonment', value: '68.2%', change: '-3.5%', color: 'green' },
-      { label: 'Return Rate', value: '4.2%', change: '-0.8%', color: 'green' },
-      { label: 'Product Views', value: '45.2K', change: '+12.5%', color: 'green' },
-    ],
-    Users: [
-      { label: 'Daily Active', value: '8.5K', change: '+18.2%', color: 'green' },
-      { label: 'Weekly Active', value: '32.1K', change: '+14.7%', color: 'green' },
-      { label: 'Monthly Active', value: '125.8K', change: '+21.3%', color: 'green' },
-    ]
-  };
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2 }}
-      viewport={{ once: true }}
-      className="rounded-2xl p-4 md:p-6 shadow-xl border border-gray-800/50 relative overflow-hidden bg-gradient-to-br from-[#1a1f35] via-[#0d1117] to-[#1e293b]"
-    >
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-700/50 pb-4 relative z-10">
-        {tabs.map((tab: 'Overview' | 'Sales' | 'Users') => (
-          <motion.button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            viewport={{ once: true }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              activeTab === tab
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
-                : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
-            }`}
-          >
-            {tab}
-          </motion.button>
-        ))}
-      </div>
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 relative z-10">
-        {metrics[activeTab].map((metric: { label: string; value: string; change: string; color: string }, index: number) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 * index }}
-            viewport={{ once: true }}
-            whileHover={{ scale: 1.02, y: -5 }}
-            className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50 backdrop-blur-sm"
-          >
-            <div className="text-sm text-gray-400 mb-1">{metric.label}</div>
-            <div className={`text-2xl font-bold text-${metric.color}-400`}>{metric.value}</div>
-            <div className={`text-xs text-${metric.color === 'red' ? 'green' : metric.color}-500 mt-1`}>{metric.change}</div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Trading Chart */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        viewport={{ once: true }}
-        className="bg-gray-900/50 rounded-xl p-4 border border-gray-800/50 backdrop-blur-sm relative z-10"
-      >
-        <div className="h-[250px] md:h-[400px]">
-          <ChartLine
-            data={chartData[activeTab]}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              interaction: {
-                mode: 'index',
-                intersect: false
-              },
-              plugins: {
-                legend: {
-                  labels: {
-                    color: '#cbd5f5'
-                  }
-                },
-                tooltip: {
-                  backgroundColor: '#020617',
-                  borderColor: '#334155',
-                  borderWidth: 1
-                }
-              },
-              scales: {
-                x: {
-                  ticks: { color: '#94a3b8' },
-                  grid: {
-                    color: 'rgba(255,255,255,0.03)'
-                  }
-                },
-                y: {
-                  ticks: { color: '#94a3b8' },
-                  grid: {
-                    color: 'rgba(255,255,255,0.03)'
-                  }
-                }
-              }
-            }}
-          />
-        </div>
-      </motion.div>
-
-      {/* Additional Metrics */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
-        {additionalMetrics[activeTab].map((metric: { label: string; value: string; change: string; color: string }, index: number) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-            viewport={{ once: true }}
-            whileHover={{ scale: 1.02, x: 5 }}
-            className="bg-gray-800/30 rounded-lg p-4 border border-gray-700/50 backdrop-blur-sm"
-          >
-            <div className="text-sm text-gray-400 mb-1">{metric.label}</div>
-            <div className="text-xl font-bold text-white">{metric.value}</div>
-            <div className={`text-xs text-${metric.color === 'red' ? 'green' : metric.color}-400 mt-1`}>{metric.change}</div>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  ChartTooltip,
-  ChartLegend
-);
 
 // Ambient Particles Container Component
 function AmbientParticles() {
   const particles = [...Array(6)].map((_, i) => {
-    const seed = i * 12345;
+    // Generate consistent random positions based on index
+    const seed = i * 12345; // Simple seed for pseudo-randomness
     const random1 = (seed * 9301 + 49297) % 233280;
     const random2 = (seed * 233280 + 9301) % 233280;
     
@@ -398,6 +92,39 @@ function AmbientParticles() {
     </>
   );
 }
+
+// Ambient Particle Component (deprecated, using AmbientParticles instead)
+function AmbientParticle({ index }: { index: number }) {
+  const [particleStyle, setParticleStyle] = useState({
+    top: '20%',
+    left: '10%',
+  });
+
+  useEffect(() => {
+    // Generate random positions only on client side
+    setParticleStyle({
+      top: `${20 + Math.random() * 60}%`,
+      left: `${10 + Math.random() * 80}%`,
+    });
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 0] }}
+      transition={{ 
+        duration: 3, 
+        repeat: Infinity, 
+        delay: index * 0.5,
+        ease: "easeInOut" 
+      }}
+      className="absolute w-1 h-1 bg-blue-400 rounded-full"
+      style={particleStyle}
+    />
+  );
+}
+
+// Analytics Preview Components
 
 // Custom Glowing Bar untuk Mini Bar Chart
 const GlowingMiniBar = (props: any) => {
@@ -514,6 +241,17 @@ function MiniBarChart() {
 function RealTimeCounter() {
   const [count, setCount] = useState(12456);
   const [isVisible, setIsVisible] = useState(false);
+  const [windowSize, setWindowSize] = useState(768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize(window.innerWidth);
+    };
+    
+    setWindowSize(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -578,11 +316,14 @@ function AnalyticsDashboardPreview() {
       }}
       className="analytics-preview-card"
     >
+      {/* Dashboard Card Content */}
       <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 relative overflow-hidden">
+        {/* Animated Border Effect */}
         <div className="absolute inset-0 rounded-2xl">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 opacity-0 hover:opacity-20 transition-opacity duration-500"></div>
         </div>
         
+        {/* Header */}
         <div className="relative z-10 flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center border border-blue-500/30">
@@ -599,6 +340,7 @@ function AnalyticsDashboardPreview() {
           </div>
         </div>
 
+        {/* Revenue Section */}
         <div className="relative z-10 mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-400 font-['Inter']">Total Revenue</span>
@@ -608,6 +350,7 @@ function AnalyticsDashboardPreview() {
           <RevenueSparkline />
         </div>
 
+        {/* Mini Charts Grid */}
         <div className="relative z-10 grid grid-cols-2 gap-4 mb-6">
           <div className="bg-slate-800/50 rounded-lg p-3">
             <div className="text-xs text-slate-400 font-['Inter'] mb-2">Weekly Sales</div>
@@ -624,10 +367,12 @@ function AnalyticsDashboardPreview() {
           </div>
         </div>
 
+        {/* Real-time Counter */}
         <div className="relative z-10 bg-slate-800/50 rounded-lg p-4">
           <RealTimeCounter />
         </div>
 
+        {/* Floating Action */}
         <motion.div
           animate={{ y: [0, -5, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -639,7 +384,6 @@ function AnalyticsDashboardPreview() {
     </motion.div>
   );
 }
-
 const analyticsData = [
   { month: 'Jan', revenue: 45000000, orders: 120 },
   { month: 'Feb', revenue: 52000000, orders: 145 },
@@ -667,6 +411,7 @@ function AnimatedBarChart() {
       </div>
       
       <div className="relative h-64">
+        {/* Y-axis labels */}
         <div className="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between text-xs text-gray-500">
           <span>Rp 75M</span>
           <span>Rp 50M</span>
@@ -674,6 +419,7 @@ function AnimatedBarChart() {
           <span>Rp 0</span>
         </div>
 
+        {/* Chart bars container */}
         <div className="ml-16 h-full flex items-end justify-between space-x-2">
           {analyticsData.map((data, index) => {
             const barHeight = (data.revenue / maxRevenue) * 100;
@@ -697,6 +443,7 @@ function AnimatedBarChart() {
                 <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-all duration-300 ${
                   isHovered ? 'from-blue-700 to-blue-500 shadow-lg' : ''
                 }`}>
+                  {/* Tooltip */}
                   {isHovered && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -710,6 +457,7 @@ function AnimatedBarChart() {
                   )}
                 </div>
                 
+                {/* X-axis labels */}
                 <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap">
                   {data.month}
                 </div>
@@ -718,6 +466,7 @@ function AnimatedBarChart() {
           })}
         </div>
 
+        {/* Grid lines */}
         <div className="absolute inset-0 ml-16 pointer-events-none">
           <div className="h-full flex flex-col justify-between">
             {[0, 1, 2, 3].map((i) => (
@@ -727,6 +476,7 @@ function AnimatedBarChart() {
         </div>
       </div>
 
+      {/* Summary Stats */}
       <div className="mt-12 grid grid-cols-3 gap-4">
         <div className="text-center">
           <div className="text-2xl font-bold text-gray-900">Rp 530M</div>
@@ -745,8 +495,185 @@ function AnimatedBarChart() {
   );
 }
 
-// Dashboard Content Component
+// Mock Data for Admin Dashboard
+const mockStats = [
+  {
+    title: 'Total Revenue',
+    value: 'Rp 2.4B',
+    change: '+15.3%',
+    icon: DollarSign,
+    color: 'bg-green-500'
+  },
+  {
+    title: 'Total Orders',
+    value: '12,456',
+    change: '+12.7%',
+    icon: ShoppingCart,
+    color: 'bg-blue-500'
+  },
+  {
+    title: 'Total Users',
+    value: '45,678',
+    change: '+8.9%',
+    icon: Users,
+    color: 'bg-purple-500'
+  },
+  {
+    title: 'Active Sellers',
+    value: '892',
+    change: '+18.2%',
+    icon: Users,
+    color: 'bg-orange-500'
+  }
+];
+
+const mockActivities = [
+  {
+    id: 1,
+    title: 'New Seller Registered',
+    description: 'Toko Fashion Premium joined platform',
+    time: '2 hours ago',
+    icon: Users,
+    color: 'text-orange-500'
+  },
+  {
+    id: 2,
+    title: 'Order Completed',
+    description: 'Order #12345 completed successfully',
+    time: '4 hours ago',
+    icon: ShoppingCart,
+    color: 'text-green-500'
+  },
+  {
+    id: 3,
+    title: 'Product Approved',
+    description: '45 products approved and listed',
+    time: '6 hours ago',
+    icon: Package,
+    color: 'text-purple-500'
+  },
+  {
+    id: 4,
+    title: 'New User Registration',
+    description: '234 new users registered today',
+    time: '1 day ago',
+    icon: Users,
+    color: 'text-blue-500'
+  }
+];
+
+// Animated Counter Component
+function AnimatedCounter({ value, prefix = '', suffix = '', duration = 2 }: { 
+  value: string | number; 
+  prefix?: string; 
+  suffix?: string; 
+  duration?: number;
+}) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.]/g, '')) : value;
+
+  useEffect(() => {
+    let startTime: number;
+    let startValue = 0;
+    const endValue = numericValue;
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+        const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
+        
+        // Easing function for smooth animation
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const currentValue = Math.floor(startValue + (endValue - startValue) * easeOutQuart);
+        
+        setDisplayValue(currentValue);
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+    requestAnimationFrame(animate);
+  }, [numericValue, duration]);
+
+  return (
+    <span>
+      {prefix}{displayValue.toLocaleString('id-ID')}{suffix}
+    </span>
+  );
+}
+
+// Animated Stat Card Component
+function AnimatedStatCard({ stat, index }: { stat: any; index: number }) {
+  const Icon = stat.icon;  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ 
+        duration: 0.6, 
+        delay: index * 0.1,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
+      whileHover={{ 
+        y: -5, 
+        scale: 1.02,
+        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)"
+      }}
+      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <motion.p 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
+            className="text-sm font-medium text-gray-600"
+          >
+            {stat.title}
+          </motion.p>
+          <motion.p 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+            className="text-2xl font-bold text-gray-900 mt-2"
+          >
+            <AnimatedCounter value={stat.value} duration={1.5} />
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
+            className="text-sm text-green-600 mt-2 flex items-center gap-1"
+          >
+            <motion.div
+              animate={{ rotate: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <TrendingUp className="w-3 h-3" />
+            </motion.div>
+            {stat.change}
+          </motion.div>
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
+          whileHover={{ 
+            rotate: 360,
+            scale: 1.1
+          }}
+          className={`p-3 rounded-full ${stat.color} bg-opacity-10`}
+        >
+          <Icon className={`w-6 h-6 ${stat.color.replace('bg-', 'text-')}`} />
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+// Dashboard Content Component - Updated to match real admin dashboard
 function DashboardContent() {
+  // Animated Counter Component
   function AnimatedCounter({ value, prefix = '', suffix = '', duration = 2 }: { 
     value: string | number; 
     prefix?: string; 
@@ -758,6 +685,7 @@ function DashboardContent() {
     const ref = useRef<HTMLSpanElement>(null);
     const inView = useInView(ref, { once: true, margin: "-100px" });
 
+    // Convert string value to number if needed
     const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.]/g, '')) || 0 : value;
 
     useEffect(() => {
@@ -771,6 +699,7 @@ function DashboardContent() {
           if (!startTime) startTime = currentTime;
           const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
           
+          // Easing function for smooth animation
           const easeOutQuart = 1 - Math.pow(1 - progress, 4);
           const currentValue = Math.floor(startValue + (endValue - startValue) * easeOutQuart);
           
@@ -794,6 +723,7 @@ function DashboardContent() {
     );
   }
 
+  // Updated stats to match admin dashboard
   const updatedStats = [
     {
       title: 'Total Revenue',
@@ -825,6 +755,7 @@ function DashboardContent() {
     }
   ];
 
+  // Mock data for charts
   const revenueData = [
     { month: 'Jan', revenue: 45000000, orders: 120 },
     { month: 'Feb', revenue: 52000000, orders: 145 },
@@ -844,6 +775,7 @@ function DashboardContent() {
     { name: 'Others', value: 5, color: '#6b7280' }
   ];
 
+  // Recent activities
   const recentActivities = [
     {
       id: 1,
@@ -879,6 +811,7 @@ function DashboardContent() {
     }
   ];
 
+  // Animated Stat Card Component - Enhanced
   function AnimatedStatCard({ stat, index }: { stat: any; index: number }) {
     return (
       <motion.div
@@ -891,6 +824,7 @@ function DashboardContent() {
         }}
         className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative overflow-hidden group"
       >
+        {/* Background decoration */}
         <motion.div
           className={`absolute top-0 right-0 w-32 h-32 ${stat.color} opacity-5 rounded-full -mr-16 -mt-16`}
           animate={{ 
@@ -956,6 +890,7 @@ function DashboardContent() {
           >
             <stat.icon className="w-6 h-6" />
             
+            {/* Glow effect on hover */}
             <motion.div
               className={`absolute inset-0 ${stat.color} rounded-xl opacity-0 group-hover:opacity-20`}
               animate={{ scale: [1, 1.2, 1] }}
@@ -969,6 +904,7 @@ function DashboardContent() {
 
   return (
     <div className="bg-gray-50">
+      {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
@@ -985,13 +921,16 @@ function DashboardContent() {
       </div>
 
       <div className="p-6 pb-20">
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {updatedStats.map((stat, index) => (
             <AnimatedStatCard key={index} stat={stat} index={index} />
           ))}
         </div>
 
+        {/* Charts and Activities */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Revenue Chart - 2 columns */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -1016,6 +955,7 @@ function DashboardContent() {
               </motion.div>
             </motion.div>
             
+            {/* Mini Chart */}
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenueData}>
@@ -1044,6 +984,7 @@ function DashboardContent() {
             </div>
           </motion.div>
 
+          {/* Category Distribution - 1 column */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -1068,9 +1009,10 @@ function DashboardContent() {
               </motion.div>
             </motion.div>
             
+            {/* Pie Chart */}
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
-                <RePieChart>
+                <PieChart>
                   <Pie
                     data={categoryData}
                     cx="50%"
@@ -1085,10 +1027,11 @@ function DashboardContent() {
                     ))}
                   </Pie>
                   <Tooltip />
-                </RePieChart>
+                </PieChart>
               </ResponsiveContainer>
             </div>
             
+            {/* Legend */}
             <div className="mt-4 space-y-2">
               {categoryData.slice(0, 3).map((item, index) => (
                 <div key={index} className="flex items-center justify-between text-sm">
@@ -1103,6 +1046,7 @@ function DashboardContent() {
           </motion.div>
         </div>
 
+        {/* Recent Activities */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1136,11 +1080,11 @@ function DashboardContent() {
                 transition={{ duration: 0.4, delay: 2.0 + index * 0.1 }}
                 className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className={`p-2 rounded-lg ${activity.color.replace('text-', 'bg-').replace('-500', '-100')}`}>
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activity.color} bg-opacity-10`}>
                   <activity.icon className={`w-5 h-5 ${activity.color}`} />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900">{activity.title}</h4>
+                  <h4 className="font-medium text-gray-900">{activity.title}</h4>
                   <p className="text-sm text-gray-600">{activity.description}</p>
                   <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
                 </div>
@@ -1155,184 +1099,252 @@ function DashboardContent() {
 
 // Seller Dashboard Content Component
 function SellerDashboardContent() {
-  const sellerStats = [
-    {
-      title: 'Total Sales',
-      value: 'Rp 845M',
-      change: '+22.5%',
-      icon: DollarSign,
-      color: 'bg-green-500'
-    },
-    {
-      title: 'Total Orders',
-      value: '3,456',
-      change: '+18.2%',
-      icon: ShoppingCart,
-      color: 'bg-blue-500'
-    },
-    {
-      title: 'Active Products',
-      value: '156',
-      change: '+12.8%',
-      icon: Package,
-      color: 'bg-purple-500'
-    },
-    {
-      title: 'Avg. Rating',
-      value: '4.8',
-      change: '+0.3',
-      icon: Star,
-      color: 'bg-yellow-500'
-    }
-  ];
-
-  const sellerSalesData = [
-    { month: 'Jan', sales: 85000000, orders: 45 },
-    { month: 'Feb', sales: 92000000, orders: 52 },
-    { month: 'Mar', sales: 105000000, orders: 58 },
-    { month: 'Apr', sales: 118000000, orders: 65 },
-    { month: 'May', sales: 125000000, orders: 72 },
-    { month: 'Jun', sales: 140000000, orders: 78 },
-    { month: 'Jul', sales: 135000000, orders: 75 },
-    { month: 'Aug', sales: 150000000, orders: 85 }
-  ];
-
-  const productCategoryData = [
-    { name: 'Fashion', value: 45, color: '#8b5cf6' },
-    { name: 'Electronics', value: 28, color: '#3b82f6' },
-    { name: 'Accessories', value: 15, color: '#10b981' },
-    { name: 'Home', value: 8, color: '#f59e0b' },
-    { name: 'Others', value: 4, color: '#6b7280' }
-  ];
-
-  const recentOrders = [
-    {
-      id: 1,
-      title: 'New Order #12345',
-      description: 'Premium Denim Jacket x2',
-      time: '1 hour ago',
-      icon: ShoppingCart,
-      color: 'text-green-500'
-    },
-    {
-      id: 2,
-      title: 'Product Restocked',
-      description: 'Wireless Earbuds +50 units',
-      time: '3 hours ago',
-      icon: Package,
-      color: 'text-blue-500'
-    },
-    {
-      id: 3,
-      title: 'Review Received',
-      description: '5-star review on Smart Watch',
-      time: '5 hours ago',
-      icon: Star,
-      color: 'text-yellow-500'
-    },
-    {
-      id: 4,
-      title: 'Order Shipped',
-      description: 'Order #12340 shipped successfully',
-      time: '7 hours ago',
-      icon: Truck,
-      color: 'text-purple-500'
-    }
-  ];
-
   return (
-    <div className="bg-gray-50 min-h-full">
-      <div className="bg-purple-50 border-b border-purple-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">Seller Dashboard</h1>
-            <p className="text-sm text-gray-500">Manage your products and orders</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <BarChart3 className="h-6 w-6 text-blue-600 mr-3" />
+              <h1 className="text-xl font-semibold text-gray-900">Dashboard Toko</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="30d">30 Hari Terakhir</option>
+                <option value="90d">90 Hari Terakhir</option>
+                <option value="1y">1 Tahun</option>
+              </select>
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </button>
+            </div>
           </div>
-          <button className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
-            + Add Product
-          </button>
         </div>
       </div>
-      
-      <div className="p-6">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {sellerStats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center`}>
-                  <stat.icon className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-green-600 text-sm font-medium">{stat.change}</span>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-6 mb-8 text-white relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Selamat Datang Kembali!</h2>
+              <p className="text-blue-100">Berikut adalah ringkasan performa toko Anda</p>
+            </div>
+            <div className="hidden lg:block text-right">
+              <div>
+                <p className="text-3xl font-bold">Rp 87.5Jt</p>
+                <p className="text-blue-100">Total Pendapatan</p>
               </div>
-              <h3 className="text-gray-500 text-sm mb-1">{stat.title}</h3>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Sales Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Overview</h3>
-            <div className="h-48 flex items-end justify-between gap-2">
-              {sellerSalesData.map((item, index) => (
-                <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                  <div 
-                    className="w-full bg-purple-500 rounded-t-lg transition-all hover:bg-purple-600"
-                    style={{ height: `${(item.sales / 150000000) * 100}%` }}
-                  />
-                  <span className="text-xs text-gray-500">{item.month}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Product Categories */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Categories</h3>
-            <div className="space-y-3">
-              {productCategoryData.map((item, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <div className="flex-1">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700">{item.name}</span>
-                      <span className="text-gray-500">{item.value}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full transition-all"
-                        style={{ backgroundColor: item.color, width: `${item.value}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
 
-        {/* Recent Orders */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
-          <div className="space-y-4">
-            {recentOrders.map((item, index) => (
-              <div key={index} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <div className={`w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center ${item.color}`}>
-                  <item.icon className="w-5 h-5" />
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Total Pendapatan */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <DollarSign className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="flex items-center text-green-600">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm font-medium ml-1">12.5%</span>
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">Rp 87.500.000</h3>
+            <p className="text-gray-600 text-sm">Total Pendapatan</p>
+          </div>
+
+          {/* Total Pesanan */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <ShoppingCart className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="flex items-center text-green-600">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm font-medium ml-1">8.2%</span>
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">423</h3>
+            <p className="text-gray-600 text-sm">Total Pesanan</p>
+          </div>
+
+          {/* Total Pelanggan */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Users className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="flex items-center text-green-600">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm font-medium ml-1">15.3%</span>
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">312</h3>
+            <p className="text-gray-600 text-sm">Total Pelanggan</p>
+          </div>
+
+          {/* Total Produk */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Package className="h-6 w-6 text-orange-600" />
+              </div>
+              <div className="flex items-center text-gray-600">
+                <span className="text-sm font-medium ml-1">45 produk</span>
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">45</h3>
+            <p className="text-gray-600 text-sm">Total Produk</p>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { href: "/seller/addproduct", icon: Plus, color: "blue", label: "Tambah Produk" },
+              { href: "/seller/orders", icon: ShoppingCart, color: "green", label: "Lihat Pesanan" },
+              { href: "/seller/inventory", icon: Package, color: "purple", label: "Inventory" },
+              { href: "/seller/analytics", icon: BarChart3, color: "orange", label: "Analitik" },
+              { href: "/seller/products", icon: Edit, color: "pink", label: "Kelola Produk" },
+              { href: "/seller/settings", icon: Settings, color: "gray", label: "Pengaturan" }
+            ].map((action, index) => (
+              <div key={action.href} className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                <div className="h-6 w-6 text-blue-600 mb-2">
+                  <action.icon />
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{item.title}</h4>
-                  <p className="text-sm text-gray-500">{item.description}</p>
-                </div>
-                <span className="text-xs text-gray-400">{item.time}</span>
+                <span className="text-sm text-gray-700">{action.label}</span>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Recent Orders */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Pesanan Terbaru</h2>
+                <div className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                  Lihat Semua
+                </div>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { id: '1', orderNumber: 'ORD-2024-001', customerName: 'Budi Santoso', total: 620000, status: 'pending', orderDate: '2024-01-15T10:30:00Z' },
+                  { id: '2', orderNumber: 'ORD-2024-002', customerName: 'Siti Nurhaliza', total: 340000, status: 'confirmed', orderDate: '2024-01-14T15:45:00Z' },
+                  { id: '3', orderNumber: 'ORD-2024-003', customerName: 'Ahmad Wijaya', total: 680000, status: 'processing', orderDate: '2024-01-13T09:20:00Z' }
+                ].map((order) => (
+                  <div key={order.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">{order.orderNumber}</p>
+                        <p className="text-sm text-gray-600">{order.customerName}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-gray-900">Rp {order.total.toLocaleString('id-ID')}</p>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                          order.status === 'processing' ? 'bg-purple-100 text-purple-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status === 'pending' ? 'Menunggu Konfirmasi' :
+                           order.status === 'confirmed' ? 'Dikonfirmasi' :
+                           order.status === 'processing' ? 'Diproses' :
+                           'Unknown'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activities */}
+          <div>
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Aktivitas Terbaru</h2>
+              <div className="space-y-4">
+                {[
+                  { id: '1', type: 'order', title: 'Pesanan Baru', description: 'ORD-2024-001 - Budi Santoso', icon: ShoppingCart, color: 'text-blue-600' },
+                  { id: '2', type: 'product', title: 'Produk Ditambahkan', description: 'Kemeja Casual Premium berhasil ditambahkan', icon: Package, color: 'text-green-600' },
+                  { id: '3', type: 'review', title: 'Review Baru', description: 'Produk Sepatu Sneakers mendapat 5 bintang', icon: Star, color: 'text-yellow-600' }
+                ].map((activity) => (
+                  <div key={activity.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div className={`flex-shrink-0 ${activity.color}`}>
+                      <activity.icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                      <p className="text-sm text-gray-600">{activity.description}</p>
+                      <p className="text-xs text-gray-500">2 jam yang lalu</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Content for Scrolling */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Performance</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">This Month</span>
+                <span className="text-sm font-medium text-green-600">+23.5%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Last Month</span>
+                <span className="text-sm font-medium text-blue-600">+18.2%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Average Order Value</span>
+                <span className="text-sm font-medium text-gray-900">Rp 245,000</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Categories</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Fashion</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div className="w-16 bg-blue-500 h-2 rounded-full"></div>
+                  </div>
+                  <span className="text-sm font-medium">45%</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Electronics</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div className="w-12 bg-green-500 h-2 rounded-full"></div>
+                  </div>
+                  <span className="text-sm font-medium">30%</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Home & Living</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div className="w-8 bg-purple-500 h-2 rounded-full"></div>
+                  </div>
+                  <span className="text-sm font-medium">25%</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1340,44 +1352,8 @@ function SellerDashboardContent() {
   );
 }
 
-export default function Homee() {
-  const [scrollY, setScrollY] = useState(0);
-  const [activeDashboard, setActiveDashboard] = useState<'admin' | 'seller'>('admin');
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const calculateTransform = () => {
-    const maxScroll = 500;
-    const scrollProgress = Math.min(scrollY / maxScroll, 1);
-    
-    if (isMounted && typeof window !== 'undefined' && window.innerWidth < 768) {
-      return {
-        scale: 1,
-        rotateX: 0,
-      };
-    }
-    
-    const scale = 0.95 + (0.05 * scrollProgress);
-    const rotateX = 12 - (12 * scrollProgress);
-    
-    return {
-      scale,
-      rotateX,
-    };
-  };
-
-  const transform = calculateTransform();
-
-  // Inject custom styles
+export default function Home() {
+  // Inject custom styles for neon border beam effects and analytics preview
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const styleElement = document.createElement('style');
@@ -1410,6 +1386,139 @@ export default function Homee() {
           left: -50%;
           background: conic-gradient(
             from 0deg,
+            #fbbf24,
+            #f59e0b,
+            #fbbf24 25%,
+            transparent 25%,
+            transparent 50%,
+            #fbbf24 50%,
+            #f59e0b 75%,
+            #fbbf24 100%
+          );
+          animation: spin 7s linear infinite;
+          border-radius: 12px;
+          z-index: 0;
+          opacity: 0.3;
+          transition: opacity 0.3s ease;
+        }
+
+        .database-card:hover::before {
+          opacity: 0.6;
+        }
+
+        .database-card::after {
+          content: "";
+          position: absolute;
+          inset: 1px;
+          background: #1f2937;
+          border-radius: 11px;
+          z-index: 1;
+        }
+
+        .database-card-content {
+          position: relative;
+          z-index: 10;
+          background: transparent;
+          border-radius: 11px;
+        }
+
+        .database-card-blue {
+          position: relative;
+          overflow: hidden;
+          border-radius: 12px;
+        }
+
+        .database-card-blue::before {
+          content: "";
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
+          background: conic-gradient(
+            from 0deg,
+            #3b82f6,
+            #2563eb,
+            #3b82f6 25%,
+            transparent 25%,
+            transparent 50%,
+            #3b82f6 50%,
+            #2563eb 75%,
+            #3b82f6 100%
+          );
+          animation: spin 7s linear infinite;
+          border-radius: 12px;
+          z-index: 0;
+          opacity: 0.3;
+          transition: opacity 0.3s ease;
+        }
+
+        .database-card-blue:hover::before {
+          opacity: 0.6;
+        }
+
+        .database-card-blue::after {
+          content: "";
+          position: absolute;
+          inset: 1px;
+          background: #1f2937;
+          border-radius: 11px;
+          z-index: 1;
+        }
+
+        .database-card-purple {
+          position: relative;
+          overflow: hidden;
+          border-radius: 12px;
+        }
+
+        .database-card-purple::before {
+          content: "";
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
+          background: conic-gradient(
+            from 0deg,
+            #a855f7,
+            #9333ea,
+            #a855f7 25%,
+            transparent 25%,
+            transparent 50%,
+            #a855f7 50%,
+            #9333ea 75%,
+            #a855f7 100%
+          );
+          animation: spin 7s linear infinite;
+          border-radius: 12px;
+          z-index: 0;
+          opacity: 0.3;
+          transition: opacity 0.3s ease;
+        }
+
+        .database-card-purple:hover::before {
+          opacity: 0.6;
+        }
+
+        .database-card-purple::after {
+          content: "";
+          position: absolute;
+          inset: 1px;
+          background: #1f2937;
+          border-radius: 11px;
+          z-index: 1;
+        }
+
+        .database-card::before {
+          content: "";
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
+          background: conic-gradient(
+            from 0deg,
             #eab308,
             transparent 20%,
             #eab308 50%,
@@ -1417,7 +1526,7 @@ export default function Homee() {
             #eab308 100%
           );
           animation: spin 4s linear infinite;
-          border-radius: 12px;
+          border-radius: 16px;
           z-index: 0;
           filter: blur(2px);
         }
@@ -1559,6 +1668,7 @@ export default function Homee() {
 
         .analytics-preview-card {
           position: relative;
+{{ ... }
           overflow: hidden;
           border-radius: 20px;
         }
@@ -1610,9 +1720,13 @@ export default function Homee() {
           border-radius: 16px;
         }
 
-        .technical-specs-content {
-          position: relative;
-          z-index: 10;
+        @keyframes spin {
+          from { 
+            transform: rotate(0deg); 
+          }
+          to { 
+            transform: rotate(360deg); 
+          }
         }
 
         .database-card:hover::before {
@@ -1636,198 +1750,435 @@ export default function Homee() {
       };
     }
   }, []);
+  
+  const [scrollY, setScrollY] = useState(0);
+  const [activeDashboard, setActiveDashboard] = useState<'admin' | 'seller'>('admin');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Calculate transform values based on scroll
+  const calculateTransform = () => {
+    const maxScroll = 500; // Maximum scroll for full effect
+    const scrollProgress = Math.min(scrollY / maxScroll, 1);
+    
+    // Mobile: disable 3D effect
+    if (isMounted && typeof window !== 'undefined' && window.innerWidth < 768) {
+      return {
+        scale: 1,
+        rotateX: 0,
+      };
+    }
+    
+    // Desktop: 3D perspective effect
+    const scale = 0.95 + (0.05 * scrollProgress); // 0.95 to 1
+    const rotateX = 12 - (12 * scrollProgress); // 12deg to 0deg
+    
+    return {
+      scale,
+      rotateX,
+    };
+  };
+
+  const transform = calculateTransform();
 
   return (
     <AppLayout showSidebar={false} showFooter={true}>
       <div className="min-h-screen bg-white">
-        <style jsx>{`
-          .browser-mockup-frame {
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            overflow: auto;
-            pointer-events: auto;
-          }
-          
-          .browser-mockup-frame::-webkit-scrollbar {
-            width: 8px;
-          }
-          
-          .browser-mockup-frame::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-          }
-          
-          .browser-mockup-frame::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-          }
-          
-          .browser-mockup-frame::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-          }
-        `}</style>
-        {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gray-50">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="absolute w-[800px] h-[800px] bg-gradient-radial from-gray-100/30 via-gray-50/20 to-transparent rounded-full blur-3xl" />
-          </div>
+      <style jsx>{`
+        .browser-mockup-frame {
+          border-radius: 12px;
+          border: 1px solid #e5e7eb;
+          overflow: auto;
+          pointer-events: auto;
+        }
+        
+        .browser-mockup-frame::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        .browser-mockup-frame::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        
+        .browser-mockup-frame::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 4px;
+        }
+        
+        .browser-mockup-frame::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
+        }
+      `}</style>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gray-50">
+        {/* Background Glow Effect */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute w-[800px] h-[800px] bg-gradient-radial from-gray-100/30 via-gray-50/20 to-transparent rounded-full blur-3xl" />
+        </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-32 lg:pb-24">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex justify-center mb-6"
+        {/* Content Container */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-32 lg:pb-24">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex justify-center mb-6"
+          >
+            <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-50 border border-blue-200 rounded-full">
+              <span className="text-xs sm:text-sm font-medium text-blue-700">Version 2.0 is live</span>
+              <svg className="ml-2 w-3 h-3 sm:w-4 sm:h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293a1 1 0 00-1.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414 1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.293a1 1 0 00-1.414 0L10 10.586 8.707 9.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 11.414l1.293 1.293a1 1 0 001.414 0l4-4a1 1 0 101.414 1.414L4-4a1 1 0 000-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-3xl sm:text-4xl lg:text-6xl font-bold text-center text-gray-900 mb-4 sm:mb-6 leading-tight font-['Inter']"
+          >
+            Satu Platform untuk Seluruh
+            <br />
+            Ekosistem Marketplace Anda.
+          </motion.h1>
+
+          {/* Sub-headline */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-base sm:text-lg lg:text-xl text-center text-gray-600 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-['Inter'] px-2"
+          >
+            Kelola produk, pantau analitik penjual, dan kendalikan database dalam satu dashboard terintegrasi.
+          </motion.p>
+
+          {/* Dashboard Navigation Tabs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-8 sm:mb-16"
+          >
+            <button
+              onClick={() => setActiveDashboard('admin')}
+              className={`px-6 py-3 sm:px-8 sm:py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
+                activeDashboard === 'admin'
+                  ? 'bg-red-600 text-white shadow-lg shadow-red-600/25'
+                  : 'bg-white text-red-600 border-2 border-red-600 hover:bg-red-50'
+              }`}
             >
-              <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-50 border border-blue-200 rounded-full">
-                <span className="text-xs sm:text-sm font-medium text-blue-700">Version 2.0 is live</span>
-                <svg className="ml-2 w-3 h-3 sm:w-4 sm:h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293a1 1 0 00-1.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414 1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.293a1 1 0 00-1.414 0L10 10.586 8.707 9.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 11.414l1.293 1.293a1 1 0 001.414 0l4-4a1 1 0 101.414 1.414L4-4a1 1 0 000-1.414z" clipRule="evenodd" />
-                </svg>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-red-100 rounded-full"></div>
+                <span className="text-sm sm:text-base">Admin Dashboard</span>
               </div>
-            </motion.div>
-
-            {/* Headline */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-3xl sm:text-4xl lg:text-6xl font-bold text-center text-gray-900 mb-4 sm:mb-6 leading-tight font-['Inter']"
+            </button>
+            <button
+              onClick={() => setActiveDashboard('seller')}
+              className={`px-6 py-3 sm:px-8 sm:py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
+                activeDashboard === 'seller'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                  : 'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50'
+              }`}
             >
-              Satu Platform untuk Seluruh
-              <br />
-              Ekosistem Marketplace Anda.
-            </motion.h1>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-blue-100 rounded-full"></div>
+                <span className="text-sm sm:text-base">Seller Dashboard</span>
+              </div>
+            </button>
+          </motion.div>
 
-            {/* Sub-headline */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-base sm:text-lg lg:text-xl text-center text-gray-600 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-['Inter'] px-2"
-            >
-              Kelola produk, pantau analitik penjual, dan kendalikan database dalam satu dashboard terintegrasi.
-            </motion.p>
+          {/* Dashboard Mockup Container */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="relative max-w-6xl mx-auto"
+            style={{
+              perspective: '1200px',
+            }}
+          >
+            {/* Glow Effect Behind Image */}
+            <div className="absolute inset-0 flex items-center justify-center -z-10">
+              <div className={`w-[600px] h-[400px] bg-gradient-radial ${
+                activeDashboard === 'admin' 
+                  ? 'from-blue-400/20 via-blue-300/10 to-transparent' 
+                  : 'from-purple-400/20 via-indigo-300/10 to-transparent'
+              } rounded-full blur-2xl`} />
+            </div>
 
-            {/* Dashboard Navigation Tabs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-8 sm:mb-16"
-            >
-              <button
-                onClick={() => setActiveDashboard('admin')}
-                className={`px-6 py-3 sm:px-8 sm:py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
-                  activeDashboard === 'admin'
-                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/25'
-                    : 'bg-white text-red-600 border-2 border-red-600 hover:bg-red-50'
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-red-100 rounded-full"></div>
-                  <span className="text-sm sm:text-base">Admin Dashboard</span>
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveDashboard('seller')}
-                className={`px-6 py-3 sm:px-8 sm:py-4 font-semibold rounded-lg transition-all duration-200 font-['Inter'] ${
-                  activeDashboard === 'seller'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-                    : 'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50'
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-blue-100 rounded-full"></div>
-                  <span className="text-sm sm:text-base">Seller Dashboard</span>
-                </div>
-              </button>
-            </motion.div>
-
-            {/* Dashboard Mockup Container */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative max-w-6xl mx-auto"
+            {/* Browser Mockup Frame with Live Dashboard */}
+            <div
+              className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden md:transform md:perspective-[1200px]"
               style={{
-                perspective: '1200px',
+                transform: `perspective(1200px) rotateX(${transform.rotateX}deg) scale(${transform.scale})`,
+                transition: 'transform 0.3s ease-out',
+                transformStyle: 'preserve-3d',
               }}
             >
-              <div className="absolute inset-0 flex items-center justify-center -z-10">
-                <div className={`w-[600px] h-[400px] bg-gradient-radial ${
-                  activeDashboard === 'admin' 
-                    ? 'from-blue-400/20 via-blue-300/10 to-transparent' 
-                    : 'from-purple-400/20 via-indigo-300/10 to-transparent'
-                } rounded-full blur-2xl`} />
-              </div>
-
-              <div
-                className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden md:transform md:perspective-[1200px]"
-                style={{
-                  transform: `perspective(1200px) rotateX(${transform.rotateX}deg) scale(${transform.scale})`,
-                  transition: 'transform 0.3s ease-out',
-                  transformStyle: 'preserve-3d',
-                }}
-              >
-                <div className={`px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between ${
-                  activeDashboard === 'admin' ? 'bg-white border-b border-gray-200' : 'bg-purple-50 border-b border-purple-200'
-                }`}>
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${
-                      activeDashboard === 'admin' ? 'bg-red-500' : 'bg-blue-500'
-                    }`}></div>
-                    <div className="text-xs sm:text-sm font-medium text-gray-900 hidden sm:block">
-                      {activeDashboard === 'admin' ? 'Admin Dashboard - Live Preview' : 'Seller Dashboard - Live Preview'}
-                    </div>
-                    <div className="text-xs text-gray-500 hidden sm:block">localhost:3000</div>
+              {/* Browser Header */}
+              <div className={`px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between ${
+                activeDashboard === 'admin' ? 'bg-white border-b border-gray-200' : 'bg-purple-50 border-b border-purple-200'
+              }`}>
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    activeDashboard === 'admin' ? 'bg-red-500' : 'bg-blue-500'
+                  }`}></div>
+                  <div className="text-xs sm:text-sm font-medium text-gray-900 hidden sm:block">
+                    {activeDashboard === 'admin' ? 'Admin Dashboard - Live Preview' : 'Seller Dashboard - Live Preview'}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-400 rounded-sm"></div>
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-400 rounded-sm"></div>
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-400 rounded-sm"></div>
-                  </div>
+                  <div className="text-xs text-gray-500 hidden sm:block">localhost:3000</div>
                 </div>
-
-                <div className="browser-mockup-frame overflow-auto relative h-[500px] md:h-[800px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="bg-white min-h-full">
-                    {activeDashboard === 'admin' ? <DashboardContent /> : <SellerDashboardContent />}
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-400 rounded-sm"></div>
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-400 rounded-sm"></div>
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-400 rounded-sm"></div>
                 </div>
               </div>
-              
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white via-white/95 to-transparent pointer-events-none"></div>
-            </motion.div>
-          </div>
+
+              {/* Dashboard Content */}
+              <div className="browser-mockup-frame overflow-auto relative h-[500px] md:h-[800px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="bg-white min-h-full">
+                  {activeDashboard === 'admin' ? <DashboardContent /> : <SellerDashboardContent />}
+                </div>
+              </div>
+            </div>
+            
+            {/* Fading Overlay Effect */}
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white via-white/95 to-transparent pointer-events-none"></div>
+          </motion.div>
         </div>
       </div>
 
       {/* Analytics Preview Section */}
-      <section className="py-20 bg-gradient-to-br from-[#0f172a] to-[#020617]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Real-time Analytics Dashboard
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Pantau performa marketplace secara real-time
-            </p>
-          </motion.div>
-
-          <AnalyticsTabComponent />
+      <section className="py-24 deep-ambient-glow relative" style={{ backgroundColor: '#0a0f1d' }}>
+        {/* Background Glow Effects - Neon Cloud */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Blue/Cyan Glow - Top Left */}
+          <div 
+            className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, rgba(37, 99, 235, 0.2) 40%, transparent 70%)',
+              filter: 'blur(100px)'
+            }}
+          ></div>
+          
+          {/* Purple Glow - Bottom Left */}
+          <div 
+            className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, rgba(168, 85, 247, 0.15) 40%, transparent 70%)',
+              filter: 'blur(90px)'
+            }}
+          ></div>
+          
+          {/* Green/Magenta Glow - Right */}
+          <div 
+            className="absolute top-1/2 right-0 transform -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(219, 39, 119, 0.15) 40%, transparent 70%)',
+              filter: 'blur(110px)'
+            }}
+          ></div>
+          
+          {/* Additional Center Cloud */}
+          <div 
+            className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-[700px] h-[350px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(96, 165, 250, 0.15) 0%, rgba(99, 102, 241, 0.1) 40%, transparent 70%)',
+              filter: 'blur(120px)'
+            }}
+          ></div>
+          
+          {/* Bottom Right Accent */}
+          <div 
+            className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(236, 72, 153, 0.08) 40%, transparent 70%)',
+              filter: 'blur(80px)'
+            }}
+          ></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Marketing Text */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+              viewport={{ once: true }}
+              className="relative z-10"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-6"
+              >
+                <BarChart3 className="w-4 h-4 text-blue-400 mr-2" />
+                <span className="text-sm font-medium text-blue-300">Real-time Analytics</span>
+              </motion.div>
+              
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                viewport={{ once: true }}
+                className="text-4xl md:text-5xl font-bold text-white mb-6 font-['Inter'] leading-tight"
+              >
+                Advanced Analytics Dashboard
+                <motion.span 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                  viewport={{ once: true }}
+                  className="block text-2xl md:text-3xl font-normal text-blue-300 mt-2"
+                >
+                  Real-time insights for data-driven decisions
+                </motion.span>
+              </motion.h2>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="text-lg text-gray-300 mb-8 leading-relaxed max-w-lg"
+              >
+                Monitor key metrics, track performance trends, and gain actionable insights with our powerful analytics engine designed for modern marketplaces.
+              </motion.p>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                viewport={{ once: true }}
+                className="grid grid-cols-2 gap-4 mb-8"
+              >
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-white mb-1">99.9%</div>
+                  <div className="text-sm text-gray-400">Data Accuracy</div>
+                </div>
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-white mb-1">&lt;100ms</div>
+                  <div className="text-sm text-gray-400">Response Time</div>
+                </div>
+              </motion.div>
+              
+            </motion.div>
+            
+            {/* Right Column - Analytics Preview */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                viewport={{ once: true }}
+                className="analytics-preview-card relative bg-gray-900/50 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-6 shadow-2xl"
+              >
+                <div className="analytics-preview-content relative z-10">
+                  {/* Analytics Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium text-gray-300">Live Analytics</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                      <div className="w-4 h-4 bg-green-400 rounded-sm"></div>
+                      <div className="w-4 h-4 bg-blue-400 rounded-sm"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-gray-800/50 rounded-xl p-3">
+                      <div className="text-xs text-gray-400 mb-1">Total Revenue</div>
+                      <div className="text-xl font-bold text-white mb-2">$2.4M</div>
+                      <div className="flex items-center text-xs text-green-400">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        +12.5%
+                      </div>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-xl p-3">
+                      <div className="text-xs text-gray-400 mb-1">Active Users</div>
+                      <div className="text-xl font-bold text-white mb-2">48.2K</div>
+                      <div className="flex items-center text-xs text-green-400">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        +8.3%
+                      </div>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-xl p-3">
+                      <div className="text-xs text-gray-400 mb-1">Conversion</div>
+                      <div className="text-xl font-bold text-white mb-2">3.2%</div>
+                      <div className="flex items-center text-xs text-red-400">
+                        <TrendingDown className="w-3 h-3 mr-1" />
+                        -2.1%
+                      </div>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-xl p-3">
+                      <div className="text-xs text-gray-400 mb-1">Avg. Order</div>
+                      <div className="text-xl font-bold text-white mb-2">$156</div>
+                      <div className="flex items-center text-xs text-green-400">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        +5.7%
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Chart Preview */}
+                  <div className="bg-gray-800/50 rounded-xl p-4">
+                    <div className="text-xs text-gray-400 mb-3">Revenue Trend</div>
+                    <div className="flex items-end justify-between h-20 mb-2">
+                      {[40, 65, 45, 80, 55, 90, 75, 95, 85, 100, 70, 88].map((height, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ height: 0 }}
+                          whileInView={{ height: `${height}%` }}
+                          transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+                          viewport={{ once: true }}
+                          className="w-2 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t"
+                          style={{ height: `${height}%` }}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Jan</span>
+                      <span>Jun</span>
+                      <span>Dec</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Analytics & Growth Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1835,68 +2186,166 @@ export default function Homee() {
             viewport={{ once: true }}
             className="mb-12"
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Track Your Business Growth
-            </h2>
-            <p className="text-gray-600 max-w-2xl">
-              Comprehensive analytics to help you make data-driven decisions
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full mb-4">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                  <span className="text-sm font-medium text-blue-700">Real-time Data</span>
+                </div>
+                <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                  Pantau Pertumbuhan Bisnis Anda secara Detail.
+                </h2>
+                <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
+                  Dapatkan laporan penjualan, statistik pengunjung, dan performa produk secara real-time 
+                  dengan grafik yang mudah dipahami.
+                </p>
+              </div>
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.05 }}
+                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-lg shadow-blue-600/25 flex items-center space-x-2"
+              >
+                <BarChart3 className="w-5 h-5" />
+                <span>Lihat Analytics Lengkap</span>
+              </motion.button>
+            </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Dashboard Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Chart Card */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              className="bg-white rounded-xl p-6 shadow-sm"
+              className="lg:col-span-2 bg-white rounded-3xl shadow-md p-8"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
-                </div>
-                <span className="text-green-600 text-sm font-medium">+12.5%</span>
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Grafik Penjualan</h3>
+                <p className="text-sm text-gray-500">Performa penjualan 6 bulan terakhir</p>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">Rp 2.4M</div>
-              <div className="text-gray-500 text-sm">Total Revenue</div>
+              <div className="h-80">
+                <AnimatedBarChart />
+              </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-xl p-6 shadow-sm"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
+            {/* Stats Cards Column */}
+            <div className="space-y-6">
+              {/* Total Revenue Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                viewport={{ once: true }}
+                className="bg-white rounded-2xl shadow-md p-6"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="flex items-center text-green-600 text-sm font-medium">
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    +12.5%
+                  </div>
                 </div>
-                <span className="text-green-600 text-sm font-medium">+8.2%</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">24.8%</div>
-              <div className="text-gray-500 text-sm">Growth Rate</div>
-            </motion.div>
+                <div className="mb-1">
+                  <p className="text-sm text-gray-500 mb-1">Total Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">Rp 2.4M</p>
+                </div>
+                <p className="text-xs text-gray-400">vs bulan lalu</p>
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-xl p-6 shadow-sm"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <ShoppingCart className="w-6 h-6 text-purple-600" />
+              {/* Growth Rate Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="bg-white rounded-2xl shadow-md p-6"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="flex items-center text-green-600 text-sm font-medium">
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    +8.2%
+                  </div>
                 </div>
-                <span className="text-red-600 text-sm font-medium">-3.1%</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">1,847</div>
-              <div className="text-gray-500 text-sm">Total Orders</div>
-            </motion.div>
+                <div className="mb-1">
+                  <p className="text-sm text-gray-500 mb-1">Growth Rate</p>
+                  <p className="text-2xl font-bold text-gray-900">24.8%</p>
+                </div>
+                <p className="text-xs text-gray-400">rata-rata bulanan</p>
+              </motion.div>
+
+              {/* Total Orders Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                viewport={{ once: true }}
+                className="bg-white rounded-2xl shadow-md p-6"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <ShoppingCart className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="flex items-center text-red-600 text-sm font-medium">
+                    <TrendingDown className="w-4 h-4 mr-1" />
+                    -3.1%
+                  </div>
+                </div>
+                <div className="mb-1">
+                  <p className="text-sm text-gray-500 mb-1">Total Orders</p>
+                  <p className="text-2xl font-bold text-gray-900">1,847</p>
+                </div>
+                <p className="text-xs text-gray-400">transaksi bulan ini</p>
+              </motion.div>
+            </div>
           </div>
+
+          {/* Features List */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            viewport={{ once: true }}
+            className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
+            {[
+              { icon: BarChart3, title: 'Laporan Pendapatan', desc: 'Harian/Bulanan' },
+              { icon: TrendingUp, title: 'Analisis Produk', desc: 'Terlaris' },
+              { icon: Users, title: 'Tracking Konversi', desc: 'Pelanggan' }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <feature.icon className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">{feature.title}</h4>
+                    <p className="text-sm text-gray-500">{feature.desc}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
+
 
       {/* Gateway & Security Section */}
       <section className="py-24 bg-white relative overflow-hidden">
@@ -1966,7 +2415,7 @@ export default function Homee() {
                     <input
                       type="password"
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       disabled
                     />
                   </div>
@@ -2080,7 +2529,7 @@ export default function Homee() {
                     <input
                       type="text"
                       placeholder="John Doe"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                       disabled
                     />
                   </div>
@@ -2090,7 +2539,7 @@ export default function Homee() {
                     <input
                       type="email"
                       placeholder="john@example.com"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                       disabled
                     />
                   </div>
@@ -2100,7 +2549,7 @@ export default function Homee() {
                     <input
                       type="password"
                       placeholder="Minimal 8 karakter"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                       disabled
                     />
                   </div>
@@ -3123,6 +3572,7 @@ export default function Homee() {
           </motion.div>
         </div>
       </section>
+    </div>
     </AppLayout>
   );
 }

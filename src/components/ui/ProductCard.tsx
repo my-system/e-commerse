@@ -173,7 +173,7 @@ export default function ProductCard({
           {/* Badge */}
           {product.featured && (
             <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
-              <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-black text-white text-[8px] sm:text-[9px] font-medium tracking-wider uppercase rounded-[4px] sm:rounded-[6px] shadow-md">
+              <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-red-600 text-white text-[8px] sm:text-[9px] font-bold tracking-wider uppercase rounded-[4px] sm:rounded-[6px] shadow-md">
                 Hot
               </span>
             </div>
@@ -214,21 +214,25 @@ export default function ProductCard({
 
       {/* Product Info */}
       <div className="p-3 sm:p-4 flex flex-col flex-grow bg-white relative">
-        {/* Category */}
-        <div className="text-[9px] sm:text-[10px] text-gray-500 mb-1.5 sm:mb-2 uppercase tracking-[0.5px] font-light">
-          {product.category}
+        {/* Row 1: Category (left) and Rating Chip (right) */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-[0.5px] font-light">
+            {product.category}
+          </div>
+          <div className="flex items-center gap-1 bg-black text-white px-2 py-0.5 rounded-full">
+            <span className="text-amber-400 text-[10px] sm:text-xs">★</span>
+            <span className="text-[10px] sm:text-xs font-medium">{product.rating || '4.5'}</span>
+          </div>
         </div>
-        
-        {/* Product Name - Clickable */}
-        <div className="flex-grow">
-          <Link href={`/product/${(product as any).slug || generateSlug(product.name || product.title || '')}`}>
-            <h3 className="text-xs sm:text-sm font-medium text-[#2d3436] mb-1.5 sm:mb-2 line-clamp-2 cursor-pointer hover:text-black transition-colors duration-300 leading-tight">
-              {product.name || product.title}
-            </h3>
-          </Link>
-        </div>
-        
-        {/* Price & Cart Icon */}
+
+        {/* Row 2: Product Title */}
+        <Link href={`/product/${(product as any).slug || generateSlug(product.name || product.title || '')}`}>
+          <h3 className="text-xs sm:text-sm font-medium text-[#2d3436] mb-2 line-clamp-2 cursor-pointer hover:text-black transition-colors duration-300 leading-tight">
+            {product.name || product.title}
+          </h3>
+        </Link>
+
+        {/* Row 3: Price (left) and Cart Icon (right) */}
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-0.5">
             <span className="text-[9px] sm:text-[10px] text-gray-500 font-light">Rp</span>
@@ -236,12 +240,10 @@ export default function ProductCard({
               {formatPrice(product.price).replace('Rp', '')}
             </span>
           </div>
-          
-          {/* Cart Icon - Bottom Right */}
           <button
             onClick={handleAddToCart}
             disabled={isLoading}
-            className="w-7 h-7 sm:w-8 sm:h-8 bg-black text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <div className="animate-spin rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 border-b border-white"></div>
@@ -249,12 +251,6 @@ export default function ProductCard({
               <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             )}
           </button>
-        </div>
-
-        {/* Rating - Compact */}
-        <div className="flex items-center gap-1 mt-1.5 sm:mt-2">
-          <span className="text-amber-400 text-[10px] sm:text-xs">★</span>
-          <span className="text-[10px] sm:text-xs text-gray-600 font-light">{product.rating || '4.8'}</span>
         </div>
       </div>
       

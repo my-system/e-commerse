@@ -1,14 +1,18 @@
 import { NextAuthOptions } from 'next-auth';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL
+    }
+  }
+});
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     // Google OAuth Provider
     GoogleProvider({
@@ -83,11 +87,23 @@ export const authOptions: NextAuthOptions = {
   
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 60 * 60, // 1 hour
   },
   
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 60 * 60, // 1 hour
+  },
+  
+  cookies: {
+    sessionToken: {
+      name: 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
   },
   
   pages: {
@@ -99,18 +115,32 @@ export const authOptions: NextAuthOptions = {
     // JWT callback
     async jwt({ token, user }) {
       if (user) {
+        token.sub = user.id;
+        token.name = user.name;
+        token.email = user.email;
         token.role = user.role;
         token.status = user.status;
+        token.picture = user.image;
       }
       return token;
     },
     
     // Session callback
-    async session({ session, token }) {
-      if (token) {
+    async session({ session, token, user }) {
+      if (user) {
+        session.user.id = user.id;
+        session.user.name = user.name;
+        session.user.email = user.email;
+        session.user.role = user.role as string;
+        session.user.status = user.status as string;
+        session.user.image = user.image;
+      } else if (token) {
         session.user.id = token.sub!;
+        session.user.name = token.name || '';
+        session.user.email = token.email || '';
         session.user.role = token.role as string;
         session.user.status = token.status as string;
+        session.user.image = token.picture || null;
       }
       return session;
     },
@@ -125,21 +155,42 @@ export const authOptions: NextAuthOptions = {
             where: { email: user.email! }
           });
 
-          if (existingUser && existingUser.status === 'INACTIVE') {
-            // Activate the user
-            await prisma.user.update({
-              where: { id: existingUser.id },
-              data: { status: 'ACTIVE', emailVerified: new Date() }
-            });
-          }
+          if (existingUser) {
+            if (existingUser.status === 'INACTIVE') {
+              // Activate the user
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { status: 'ACTIVE', emailVerified: new Date() }
+              });
+            }
 
-          // Assign ADMIN role to specific email addresses
-          const adminEmails = ['yusufdarwis097@gmail.com'];
-          if (adminEmails.includes(user.email!)) {
-            await prisma.user.update({
-              where: { email: user.email! },
-              data: { role: 'ADMIN' }
+            // Assign ADMIN role to specific email addresses
+            const adminEmails = ['yusufdarwis097@gmail.com'];
+            if (adminEmails.includes(user.email!)) {
+              await prisma.user.update({
+                where: { email: user.email! },
+                data: { role: 'ADMIN' }
+              });
+            }
+
+            // Set user role from database
+            user.role = existingUser.role;
+            user.status = existingUser.status;
+          } else {
+            // Create new user if not exists
+            const adminEmails = ['yusufdarwis097@gmail.com'];
+            const newUser = await prisma.user.create({
+              data: {
+                email: user.email!,
+                name: user.name || 'Google User',
+                image: user.image,
+                role: adminEmails.includes(user.email!) ? 'ADMIN' : 'USER',
+                status: 'ACTIVE',
+                emailVerified: new Date()
+              }
             });
+            user.role = newUser.role;
+            user.status = newUser.status;
           }
         } catch (error) {
           console.error('Error activating user:', error);

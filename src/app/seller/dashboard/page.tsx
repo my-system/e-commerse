@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { RoleGuard } from '@/components/auth/RoleGuard';
 import { motion } from 'framer-motion';
 
 interface DashboardStats {
@@ -500,8 +501,9 @@ export default function SellerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <RoleGuard allowedRoles={['SELLER', 'ADMIN']}>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -1082,5 +1084,6 @@ export default function SellerDashboardPage() {
         </div>
       </div>
     </div>
+    </RoleGuard>
   );
 }

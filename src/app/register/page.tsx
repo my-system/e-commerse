@@ -107,12 +107,12 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Registrasi gagal')
       }
 
-      toast.success('Registrasi berhasil! Silakan periksa email Anda.');
+      toast.success('Registrasi berhasil! Silakan login dengan akun Anda.');
       setIsSuccess(true);
       
-      // Redirect to verification page after successful registration
+      // Redirect to login page after successful registration
       setTimeout(() => {
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        router.push('/login');
       }, 2000);
     } catch (err: any) {
       toast.error(err.message || 'Registrasi gagal. Email mungkin sudah digunakan.');

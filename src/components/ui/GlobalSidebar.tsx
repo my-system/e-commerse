@@ -434,13 +434,13 @@ export default function GlobalSidebar() {
             onClick={closeSidebar}
           />
           
-          {/* Dropdown Menu */}
+          {/* Sidebar - Full Floating */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ duration: 0.15 }}
-            className="fixed right-4 top-16 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-[80vh] overflow-hidden"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed right-4 top-20 h-fit max-h-[calc(100vh-6rem)] w-[300px] bg-white shadow-2xl z-50 flex flex-col rounded-2xl overflow-hidden"
           >
             {/* Header - Compact */}
             <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white p-4 flex items-center justify-between">
@@ -540,7 +540,7 @@ export default function GlobalSidebar() {
                         href={item.href}
                         onClick={closeSidebar}
                         className={`
-                          flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200
+                          flex items-center gap-2 px-2 py-2 rounded-lg text-sm transition-all duration-200
                           ${active 
                             ? 'bg-blue-50 text-blue-700 font-medium border border-blue-200' 
                             : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
@@ -560,7 +560,7 @@ export default function GlobalSidebar() {
                 {/* Role-based Menus - Only show if logged in */}
                 {status === 'authenticated' && roleBasedMenus[userRole]?.map((section) => (
                   <div key={section.title} className="mb-3">
-                    <div className="px-3 py-2">
+                    <div className="px-2 py-2">
                       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                         {section.title}
                       </h3>
@@ -574,7 +574,7 @@ export default function GlobalSidebar() {
                             href={item.href}
                             onClick={closeSidebar}
                             className={`
-                              flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200
+                              flex items-center gap-2 px-2 py-2 rounded-lg text-sm transition-all duration-200
                               ${active 
                                 ? 'bg-blue-50 text-blue-700 font-medium border border-blue-200' 
                                 : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
@@ -598,27 +598,27 @@ export default function GlobalSidebar() {
                 {/* Guest User Info - Only show if not logged in */}
                 {status !== 'authenticated' && (
                   <div className="mb-3">
-                    <div className="px-3 py-2">
+                    <div className="px-2 py-2">
                       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                         AKUN TAMU
                       </h3>
                     </div>
-                    <div className="px-3 py-2 text-center">
+                    <div className="px-2 py-2 text-center">
                       <p className="text-xs text-gray-600 mb-2">Login untuk mengakses fitur lengkap</p>
                       <div className="space-y-1">
-                        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500">
+                        <div className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-gray-500">
                           <User className="w-4 h-4 flex-shrink-0" />
                           <span>Profil Pengguna</span>
                         </div>
-                        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500">
+                        <div className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-gray-500">
                           <Package className="w-4 h-4 flex-shrink-0" />
                           <span>Pesanan Saya</span>
                         </div>
-                        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500">
+                        <div className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-gray-500">
                           <Heart className="w-4 h-4 flex-shrink-0" />
                           <span>Wishlist</span>
                         </div>
-                        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500">
+                        <div className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-gray-500">
                           <Store className="w-4 h-4 flex-shrink-0" />
                           <span>Dashboard Toko</span>
                         </div>
@@ -629,7 +629,7 @@ export default function GlobalSidebar() {
 
                 {/* Information */}
                 <div className="mb-2">
-                  <div className="px-3 py-2">
+                  <div className="px-2 py-2">
                     <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                       INFORMASI
                     </h3>
@@ -642,9 +642,9 @@ export default function GlobalSidebar() {
                         href={item.href}
                         onClick={closeSidebar}
                         className={`
-                          flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200
-                          ${active 
-                            ? 'bg-blue-50 text-blue-700 font-medium border border-blue-200' 
+                          flex items-center gap-2 px-2 py-2 rounded-lg text-sm transition-all duration-200
+                          ${active
+                            ? 'bg-blue-50 text-blue-700 font-medium border border-blue-200'
                             : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                           }
                         `}

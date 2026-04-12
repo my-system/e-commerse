@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { RoleGuard } from '@/components/auth/RoleGuard';
 import { 
   BarChart3, 
   Users, 
@@ -274,9 +275,10 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div>
-        <div className="flex-1">
+    <RoleGuard allowedRoles={['ADMIN']}>
+      <div className="min-h-screen bg-gray-50">
+        <div>
+          <div className="flex-1">
           {/* Header */}
           <motion.div 
             initial={{ opacity: 0, y: -30 }}
@@ -732,5 +734,6 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
+    </RoleGuard>
   );
 }

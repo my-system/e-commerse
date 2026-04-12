@@ -109,6 +109,11 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
               -{discountPercentage}%
             </span>
           )}
+          {(product as any).featured && (
+            <span className="bg-red-600 text-white text-[9px] px-2 py-1 rounded-[6px] font-bold tracking-wider uppercase shadow-sm">
+              Hot
+            </span>
+          )}
         </div>
 
         {/* Wishlist Button - Top Right */}
@@ -129,18 +134,29 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
       </div>
 
       {/* Product Info - Mobile Optimized */}
-      <div className="p-3 space-y-2 bg-white relative flex flex-col flex-grow">
-        {/* Product Name - Clear Typography */}
-        <div className="flex-grow min-h-[2rem]">
-          <h3 
-            className="text-sm font-medium text-[#2d3436] line-clamp-2 leading-tight hover:text-black transition-colors duration-300 cursor-pointer"
-            onClick={handleProductNavigation}
-          >
-            {productName}
-          </h3>
+      <div className="p-3 bg-white relative flex flex-col flex-grow">
+        {/* Row 1: Category (left) and Rating Chip (right) */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-[0.5px] font-light">
+            {product.category || 'PRODUCT'}
+          </div>
+          {product.rating && (
+            <div className="flex items-center gap-1 bg-black text-white px-2 py-0.5 rounded-full">
+              <span className="text-amber-400 text-[10px] sm:text-xs">★</span>
+              <span className="text-[10px] sm:text-xs font-medium">{product.rating}</span>
+            </div>
+          )}
         </div>
 
-        {/* Price & Cart Icon */}
+        {/* Row 2: Product Title */}
+        <h3
+          className="text-sm font-medium text-[#2d3436] mb-2 line-clamp-2 leading-tight hover:text-black transition-colors duration-300 cursor-pointer"
+          onClick={handleProductNavigation}
+        >
+          {productName}
+        </h3>
+
+        {/* Row 3: Price (left) and Cart Icon (right) */}
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-0.5">
             <span className="text-[10px] text-gray-500 font-light">Rp</span>
@@ -153,14 +169,14 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
               {formatPrice(product.originalPrice)}
             </span>
           )}
-          
-          {/* Cart Icon - Bottom Right */}
+
+          {/* Cart Icon - Right Aligned */}
           <button
             onClick={handleAddToCart}
             className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
               isAdded
-                ? 'bg-black text-white'
-                : 'bg-black hover:bg-gray-800 text-white'
+                ? 'bg-blue-600 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
           >
             {isAdded ? (
@@ -172,14 +188,6 @@ export function ProductCardModern({ product, onClick }: ProductCardModernProps) 
             )}
           </button>
         </div>
-
-        {/* Rating - Compact */}
-        {product.rating && (
-          <div className="flex items-center gap-1">
-            <span className="text-amber-400 text-xs">★</span>
-            <span className="text-xs text-gray-600 font-light">{product.rating} ({product.reviews || 0})</span>
-          </div>
-        )}
       </div>
     </div>
   )

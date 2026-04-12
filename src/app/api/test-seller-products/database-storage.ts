@@ -73,61 +73,34 @@ export async function addProduct(product: Omit<Product, 'id' | 'createdAt' | 'up
   await ensureInitialized();
   
   try {
-    console.log('🔄 Connecting to database...');
-    console.log('📋 Database URL:', process.env.DATABASE_URL);
-    
     const client = await pool.connect();
-    console.log('✅ Database connected successfully');
-    
+
     const id = Date.now().toString();
     const now = new Date().toISOString();
-    
-    console.log('💾 Inserting product:', { id, title: product.title, price: product.price });
-    
+
     const result = await client.query(`
       INSERT INTO products (
         id, title, price, category, description, featured, in_stock,
         rating, reviews, images, material, care, status, badges, seller_id,
-        created_at, updated_at
+        approved_at, created_at, updated_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       RETURNING *
     `, [
       id, product.title, product.price, product.category, product.description,
       product.featured, product.inStock, product.rating, product.reviews,
-      JSON.stringify(product.images), // Stringify the images array
-      product.material, product.care, product.status,
-      JSON.stringify(product.badges), // Stringify the badges array
-      product.sellerId, now, now
+      JSON.stringify(product.images), product.material, product.care,
+      'approved', 'Approved', product.sellerId, now, now, now
     ]);
-    
-    console.log('✅ Product inserted successfully');
+
     client.release();
-    
-    const row = result.rows[0];
+
     const savedProduct = {
-      id: row.id,
-      title: row.title,
-      price: parseFloat(row.price),
-      category: row.category,
-      description: row.description || '',
-      featured: row.featured,
-      inStock: row.in_stock,
-      rating: row.rating,
-      reviews: row.reviews,
-      images: row.images || '[]',
-      material: row.material || '',
-      care: row.care || '',
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      status: row.status,
-      badges: row.badges || '[]',
-      sellerId: row.seller_id,
-      sizes: [],
-      colors: [],
-      specifications: {}
+      id,
+      ...product,
+      createdAt: now,
+      updatedAt: now
     };
-    
-    console.log('📦 Saved product:', savedProduct);
+
     return savedProduct;
     
   } catch (error: any) {

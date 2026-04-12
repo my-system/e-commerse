@@ -172,11 +172,21 @@ export default function AdminProducts() {
   }, [activeTab]);
 
   // Parse images safely
-  const parseImages = (imagesData: string | string[]): string[] => {
-    if (!imagesData) return ['/placeholder.jpg'];
+  const parseImages = (imagesData: string | string[] | any): string[] => {
+    if (!imagesData) return ['/images/placeholder-1.jpg'];
+    
+    // If already an array, return it
+    if (Array.isArray(imagesData)) {
+      return imagesData.length > 0 ? imagesData : ['/images/placeholder-1.jpg'];
+    }
     
     // Convert to string if not already
     const imagesString = String(imagesData);
+    
+    // Check for empty string
+    if (!imagesString.trim()) {
+      return ['/images/placeholder-1.jpg'];
+    }
     
     // Check if it's a single base64 data URL
     if (imagesString.startsWith('data:image')) {
@@ -191,13 +201,13 @@ export default function AdminProducts() {
     try {
       const parsed = JSON.parse(imagesString);
       if (Array.isArray(parsed)) {
-        return parsed.length > 0 ? parsed : ['/placeholder.jpg'];
+        return parsed.length > 0 ? parsed : ['/images/placeholder-1.jpg'];
       }
       return [imagesString];
     } catch (error) {
       console.error('Error parsing images:', error);
       // Return as single image if it's not empty, otherwise placeholder
-      return imagesString.trim() ? [imagesString] : ['/placeholder.jpg'];
+      return imagesString.trim() ? [imagesString] : ['/images/placeholder-1.jpg'];
     }
   };
 
@@ -208,11 +218,9 @@ export default function AdminProducts() {
       let apiUrl: string;
       
       if (activeTab === 'marketplace') {
-        apiUrl = '/api/marketplace-products';
-        console.log('Fetching marketplace products...');
+        apiUrl = '/api/marketplace-products?all=true'; // Get all products for admin
       } else {
         apiUrl = '/api/admin/pending-products';
-        console.log('Fetching pending products...');
       }
       
       const response = await fetch(apiUrl);
@@ -220,18 +228,13 @@ export default function AdminProducts() {
       
       if (data.success && data.products) {
         setProducts(data.products);
-        console.log(`Loaded ${data.products.length} products`);
-        
-        // Log status distribution for debugging
-        const statusCount = data.products.reduce((acc: Record<string, number>, product) => {
-          acc[product.status] = (acc[product.status] || 0) + 1;
-          return acc;
-        }, {});
-        console.log('Product status distribution:', statusCount);
       } else {
         setError(data.error || 'Failed to load products');
         setProducts([]);
       }
+    } catch (error) {
+      setError('Failed to fetch products');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -393,14 +396,6 @@ export default function AdminProducts() {
     await fetchProducts();
   };
 
-  useEffect(() => {
-    // Auto-refresh every 30 seconds
-    fetchProducts();
-    const interval = setInterval(fetchProducts, 30000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory.toLowerCase();
@@ -409,6 +404,9 @@ export default function AdminProducts() {
     let matchesStatus = false;
     if (activeTab === 'pending') {
       matchesStatus = product.status === 'PENDING' || product.status === 'pending';
+    } else if (activeTab === 'marketplace') {
+      // For marketplace tab, only show APPROVED products
+      matchesStatus = product.status === 'APPROVED' || product.status === 'approved';
     } else {
       matchesStatus = selectedStatus === 'all' || product.status === selectedStatus;
     }

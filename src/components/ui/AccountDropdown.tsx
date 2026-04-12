@@ -9,6 +9,7 @@ interface User {
   email: string;
   phone: string;
   role?: 'user' | 'admin';
+  image?: string | null;
 }
 
 interface AccountDropdownProps {
@@ -75,7 +76,8 @@ export default function AccountDropdown({ user, isLoggedIn, onLogin, onLogout }:
               </Link>
               
               <button
-                onClick={() => {
+                onClick={async () => {
+                  // Call the onLogout prop
                   onLogout();
                   setIsDropdownOpen(false);
                 }}

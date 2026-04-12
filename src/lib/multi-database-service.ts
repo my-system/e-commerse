@@ -83,7 +83,6 @@ export class PendingDatabaseService {
         client.release();
       }
     } catch (error) {
-      console.warn('Database connection failed, using fallback data:', error);
       // Fallback to dummy data if database fails
       return products.slice(0, 5).map(p => ({
         ...p,
@@ -115,7 +114,6 @@ export class PendingDatabaseService {
         client.release();
       }
     } catch (error) {
-      console.warn('Database connection failed for getSellerProducts, using fallback data:', error);
       // Fallback to dummy data if database fails
       return products.slice(0, 3).map(p => ({
         ...p,
@@ -150,7 +148,6 @@ export class PendingDatabaseService {
         client.release();
       }
     } catch (error) {
-      console.warn('Database connection failed for updateProductStatus:', error);
       return null;
     }
   }
@@ -166,7 +163,6 @@ export class PendingDatabaseService {
         client.release();
       }
     } catch (error) {
-      console.warn('Database connection failed for deleteProduct:', error);
       return false;
     }
   }
@@ -227,39 +223,70 @@ export class MarketplaceDatabaseService {
     }
   }
   
-  // Get all approved products for marketplace
-  static async getMarketplaceProducts(): Promise<Product[]> {
+  // Get all approved products for marketplace with pagination and filtering
+  static async getMarketplaceProducts(
+    page: number = 1,
+    limit: number = 50,
+    search?: string,
+    category?: string,
+    featured?: boolean
+  ): Promise<{ products: Product[], total: number }> {
     try {
       const client = await marketplacePool.connect();
       try {
-        console.log('MarketplaceDatabaseService: Fetching approved products...');
-        
-        // Use the actual database schema - only get approved products
-        const result = await client.query('SELECT * FROM products WHERE status = $1 ORDER BY "createdAt" DESC', ['APPROVED']);
-        
-        console.log(`MarketplaceDatabaseService: Found ${result.rows.length} approved products`);
-        
-        if (result.rows.length === 0) {
-          console.warn('MarketplaceDatabaseService: No approved products found');
+        // Build WHERE clause dynamically
+        const conditions: string[] = ['status = $1'];
+        const params: any[] = ['APPROVED'];
+        let paramIndex = 2;
+
+        if (search && search.trim()) {
+          conditions.push(`(title ILIKE $${paramIndex} OR description ILIKE $${paramIndex} OR category ILIKE $${paramIndex})`);
+          params.push(`%${search.trim()}%`);
+          paramIndex++;
         }
-        
-        const mappedProducts = result.rows.map(row => this.mapRowToProduct(row));
-        console.log('MarketplaceDatabaseService: Successfully mapped products');
-        
-        return mappedProducts;
+
+        if (category && category !== 'all') {
+          conditions.push(`category = $${paramIndex}`);
+          params.push(category);
+          paramIndex++;
+        }
+
+        if (featured === true) {
+          conditions.push(`featured = $${paramIndex}`);
+          params.push(true);
+          paramIndex++;
+        }
+
+        const whereClause = conditions.join(' AND ');
+
+        // Get total count first
+        const countResult = await client.query(
+          `SELECT COUNT(*) FROM products WHERE ${whereClause}`,
+          params
+        );
+        const total = parseInt(countResult.rows[0].count);
+
+        // Get paginated products
+        const offset = (page - 1) * limit;
+        params.push(limit, offset);
+        const result = await client.query(`
+          SELECT id, title, price, category, description, featured, "inStock",
+                 rating, "reviewCount", images, "sellerId", "createdAt", "updatedAt"
+          FROM products
+          WHERE ${whereClause}
+          ORDER BY "createdAt" DESC
+          LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        `, params);
+
+        return {
+          products: result.rows.map(row => this.mapRowToProduct(row)),
+          total
+        };
       } finally {
         client.release();
       }
     } catch (error) {
-      console.error('MarketplaceDatabaseService: Database connection failed:', error);
-      console.error('MarketplaceDatabaseService: Error details:', {
-        message: (error as Error).message,
-        stack: (error as Error).stack
-      });
-      
-      // Fallback to dummy data if database fails
-      console.log('MarketplaceDatabaseService: Using fallback data...');
-      return products.filter(p => p.featured !== undefined).map(p => ({
+      const fallbackProducts = products.filter(p => p.featured !== undefined).map(p => ({
         ...p,
         featured: p.featured || false,
         inStock: p.inStock !== undefined ? p.inStock : true,
@@ -267,11 +294,20 @@ export class MarketplaceDatabaseService {
         reviews: p.reviews || 0,
         images: Array.isArray(p.images) ? p.images.join(',') : (p.images?.[0] || ''),
         status: 'approved' as const,
-        badges: 'Approved', // Simple string for fallback
+        badges: 'Approved',
         sellerId: 'demo-seller',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }));
+      
+      // Apply pagination to fallback data
+      const offset = (page - 1) * limit;
+      const paginatedFallback = fallbackProducts.slice(offset, offset + limit);
+      
+      return {
+        products: paginatedFallback,
+        total: fallbackProducts.length
+      };
     }
   }
 
@@ -292,7 +328,6 @@ export class MarketplaceDatabaseService {
       }
 
       if (!pendingProduct) {
-        console.error('Pending product not found:', productId);
         return false;
       }
 
@@ -328,13 +363,11 @@ export class MarketplaceDatabaseService {
           now // updated_at
         ]);
 
-        console.log(`✅ Product approved: ${result.rows[0].title} by ${approvedBy}`);
         return true;
       } finally {
         marketplaceClient.release();
       }
     } catch (error) {
-      console.error('Error approving product:', error);
       return false;
     }
   }
@@ -351,13 +384,11 @@ export class MarketplaceDatabaseService {
           WHERE id = $4
         `, ['rejected', reason, new Date().toISOString(), productId]);
 
-        console.log(`❌ Product rejected: ${productId} - Reason: ${reason} by ${rejectedBy}`);
         return true;
       } finally {
         pendingClient.release();
       }
     } catch (error) {
-      console.error('Error rejecting product:', error);
       return false;
     }
   }
@@ -373,7 +404,6 @@ export class MarketplaceDatabaseService {
         client.release();
       }
     } catch (error) {
-      console.error('Error fetching pending products:', error);
       return [];
     }
   }
@@ -389,12 +419,26 @@ export class MarketplaceDatabaseService {
         client.release();
       }
     } catch (error) {
-      console.error('Error deleting marketplace product:', error);
       return false;
     }
   }
   
   private static mapRowToProduct(row: any): Product {
+    // Parse images from JSON string to array
+    let parsedImages = '[]';
+    try {
+      if (row.images) {
+        if (typeof row.images === 'string') {
+          parsedImages = row.images;
+        } else if (Array.isArray(row.images)) {
+          parsedImages = JSON.stringify(row.images);
+        }
+      }
+    } catch (error) {
+      console.warn('Error parsing images:', error);
+      parsedImages = '[]';
+    }
+
     return {
       id: row.id,
       title: row.title,
@@ -402,17 +446,17 @@ export class MarketplaceDatabaseService {
       category: row.category,
       description: row.description || '',
       featured: row.featured || false,
-      inStock: row.in_stock !== undefined ? row.in_stock : true,
+      inStock: row.inStock !== undefined ? row.inStock : true,
       rating: row.rating || 0,
-      reviews: row.reviews || 0,
-      images: row.images || '[]',
+      reviews: row.reviewCount || row.reviews || 0,
+      images: parsedImages,
       material: row.material || '',
       care: row.care || '',
       status: 'approved', // All products in main database are considered approved
       badges: 'Approved', // Default badge
-      sellerId: row.seller_id || 'default-seller',
-      createdAt: row.created_at,
-      updatedAt: row.updated_at
+      sellerId: row.sellerId || 'default-seller',
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
     };
   }
 }
@@ -436,11 +480,9 @@ export class ApprovalWorkflowService {
       // 3. Remove from pending database (not just update status)
       await PendingDatabaseService.deleteProduct(productId);
       
-      console.log(`✅ Product ${productId} approved and moved to marketplace, removed from pending`);
       return true;
       
     } catch (error) {
-      console.error('Error approving product:', error);
       return false;
     }
   }
@@ -449,10 +491,8 @@ export class ApprovalWorkflowService {
   static async rejectProduct(productId: string): Promise<boolean> {
     try {
       await PendingDatabaseService.updateProductStatus(productId, 'rejected');
-      console.log(`❌ Product ${productId} rejected`);
       return true;
     } catch (error) {
-      console.error('Error rejecting product:', error);
       return false;
     }
   }

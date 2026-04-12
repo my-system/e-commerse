@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient({
   datasources: {
@@ -11,6 +12,31 @@ const prisma = new PrismaClient({
 
 async function main() {
   console.log('Start seeding...');
+
+  // Create tester account
+  const testerEmail = 'akuntester@gmail.com';
+  const testerPassword = '12345678';
+  
+  const existingTester = await prisma.user.findUnique({
+    where: { email: testerEmail }
+  });
+
+  if (!existingTester) {
+    const hashedPassword = await bcrypt.hash(testerPassword, 12);
+    await prisma.user.create({
+      data: {
+        email: testerEmail,
+        name: 'Tester Account',
+        password: hashedPassword,
+        role: 'ADMIN',
+        status: 'ACTIVE',
+        emailVerified: new Date()
+      }
+    });
+    console.log(`Created tester account: ${testerEmail} / ${testerPassword}`);
+  } else {
+    console.log(`Tester account already exists: ${testerEmail}`);
+  }
 
   // Clear existing data
   await prisma.productSpec.deleteMany();

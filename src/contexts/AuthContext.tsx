@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 interface User {
   id: string;
@@ -10,6 +10,7 @@ interface User {
   role: 'USER' | 'SELLER' | 'ADMIN';
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
+  image?: string | null;
 }
 
 interface AuthState {
@@ -20,37 +21,19 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (userData: { name: string; email: string; password: string }) => Promise<{ success: boolean; message?: string }>;
   showToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-// Local storage keys
-const STORAGE_KEYS = {
-  USER: 'luxe_user',
-  USERS: 'luxe_users',
-  REMEMBER_ME: 'luxe_remember_me'
-};
-
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession();
   const [state, setState] = useState<AuthState>({
     user: null,
     isLoggedIn: false,
-    isLoading: true
+    isLoading: false
   });
 
   const [toast, setToast] = useState<{
@@ -63,60 +46,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isVisible: false
   });
 
-  // Initialize auth state from localStorage and NextAuth session
+  // Sync with NextAuth session
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        // First check NextAuth session (for Google OAuth)
-        const session = await getSession();
-
-        if (session?.user) {
-          // User is logged in via OAuth
-          setState({
-            user: {
-              id: session.user.id,
-              name: session.user.name || '',
-              email: session.user.email,
-              role: (session.user.role as 'USER' | 'SELLER' | 'ADMIN') || 'USER',
-              status: (session.user.status as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED') || 'ACTIVE',
-              createdAt: new Date().toISOString()
-            },
-            isLoggedIn: true,
-            isLoading: false
-          });
-          return;
-        }
-
-        // Fallback to localStorage (for email/password login)
-        const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
-        const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
-
-        if (savedUser && rememberMe === 'true') {
-          const user = JSON.parse(savedUser);
-          setState({
-            user,
-            isLoggedIn: true,
-            isLoading: false
-          });
-        } else {
-          setState({
-            user: null,
-            isLoggedIn: false,
-            isLoading: false
-          });
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        setState({
-          user: null,
-          isLoggedIn: false,
-          isLoading: false
-        });
-      }
-    };
-
-    initializeAuth();
-  }, []);
+    if (status === 'loading') {
+      setState(prev => ({ ...prev, isLoading: true }));
+    } else if (status === 'authenticated' && session?.user) {
+      setState({
+        user: session.user as User,
+        isLoggedIn: true,
+        isLoading: false
+      });
+    } else {
+      setState({
+        user: null,
+        isLoggedIn: false,
+        isLoading: false
+      });
+    }
+  }, [session, status]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info') => {
     setToast({ message, type, isVisible: true });
@@ -144,17 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, message: data.message };
       }
 
-      // Save user to localStorage for session persistence
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
-      localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
-
-      // Update state
-      setState({
-        user: data.user,
-        isLoggedIn: true,
-        isLoading: false
-      });
-
+      // NextAuth session will be updated automatically
       showToast(`Selamat datang kembali, ${data.user.name}!`, 'success');
       return { success: true };
 
@@ -167,19 +104,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      // Sign out from NextAuth (for OAuth users)
-      await fetch('/api/auth/signout', { method: 'POST' });
-
-      // Clear localStorage
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-
-      // Update state
-      setState({
-        user: null,
-        isLoggedIn: false,
-        isLoading: false
-      });
+      // Use NextAuth signOut
+      const { signOut } = await import('next-auth/react');
+      await signOut({ callbackUrl: '/' });
 
       showToast('Anda telah berhasil logout.', 'info');
     } catch (error) {
@@ -204,18 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, message: data.message };
       }
 
-      // Auto login after registration
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
-      localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
-
-      // Update state
-      setState({
-        user: data.user,
-        isLoggedIn: true,
-        isLoading: false
-      });
-
-      showToast(`Registrasi berhasil! Selamat datang, ${userData.name}!`, 'success');
+      showToast('Registrasi berhasil! Silakan login.', 'success');
       return { success: true };
 
     } catch (error) {
@@ -225,45 +141,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const value: AuthContextType = {
-    ...state,
-    login,
-    logout,
-    register,
-    showToast
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ ...state, login, logout, register, showToast }}>
       {children}
-      
-      {/* Toast Notification */}
       {toast.isVisible && (
-        <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
-          toast.type === 'success' ? 'bg-green-500 text-white' :
-          toast.type === 'error' ? 'bg-red-500 text-white' :
-          'bg-blue-500 text-white'
-        }`}>
-          <div className="flex items-center gap-3">
-            {toast.type === 'success' && (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-            {toast.type === 'error' && (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            )}
-            {toast.type === 'info' && (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            )}
-            <span className="font-medium">{toast.message}</span>
-          </div>
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg ${
+          toast.type === 'success' ? 'bg-green-500' : toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+        } text-white`}>
+          {toast.message}
         </div>
       )}
     </AuthContext.Provider>
   );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }
